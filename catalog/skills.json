@@ -119,6 +119,23 @@
         "cursor": "experimental",
         "github-copilot": "experimental"
       }
+    },
+    {
+      "id": "review-stale-content",
+      "name": "Review Stale Stack Internal Content",
+      "version": "0.1.0",
+      "tier": "extended",
+      "summary": "Compare existing company guidance with current verified evidence and propose only approval-gated, targeted updates.",
+      "path": "skills/extended/review-stale-content",
+      "tags": ["curation", "stale-content", "updates"],
+      "required_tools": ["search", "get_question", "get_article", "get_comments", "update_question", "update_answer"],
+      "write_actions": ["update_question", "update_answer"],
+      "adapters": {
+        "codex": "experimental",
+        "claude-code": "experimental",
+        "cursor": "experimental",
+        "github-copilot": "experimental"
+      }
     }
   ]
 }

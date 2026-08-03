@@ -529,6 +529,146 @@ def test_fill_knowledge_gap_requires_exhausted_search_and_exact_question_approva
     assert "Never claim success without server confirmation." in body
 
 
+def test_review_stale_content_requires_full_retrieval_comments_and_exact_update_args():
+    """Staleness conclusions need source comparison, complete target context, and replayable edits."""
+    root = Path(__file__).parents[2]
+    skill_path = root / "skills/extended/review-stale-content/SKILL.md"
+    signals_path = root / "skills/extended/review-stale-content/references/staleness-signals.md"
+    eval_path = root / "skills/extended/review-stale-content/evals/evals.json"
+
+    assert skill_path.is_file()
+    assert signals_path.is_file()
+    body = skill_path.read_text(encoding="utf-8")
+    signals = signals_path.read_text(encoding="utf-8")
+    cases = json.loads(eval_path.read_text(encoding="utf-8"))["cases"]
+    cases_by_id = {case["id"]: case for case in cases}
+
+    assert {
+        "jenkins-guidance-after-verified-github-actions-migration",
+        "old-article-remains-accurate",
+        "conflicting-sources-require-human-resolution",
+    } <= cases_by_id.keys()
+    assert "confirmed-divergence" in body
+    assert "possible-divergence" in body
+    assert "still-current" in body
+    assert "age alone" in body
+    assert "get_comments" in body
+    assert "answer ID" in body
+    assert "inspect the connected MCP tool's current input schema" in body
+    assert "byte-for-byte" in body
+    assert "Never claim success without server confirmation." in body
+    assert "Strong signals" in signals
+    assert "Weak signals" in signals
+    assert "removed configuration" in signals.lower()
+    assert "migration" in signals.lower()
+    assert "explicit deprecation" in signals.lower()
+    assert "date" in signals.lower()
+    assert "low score" in signals.lower()
+    assert "style" in signals.lower()
+
+    all_write_actions = list(_KNOWLEDGE_GAP_WRITE_ACTIONS)
+    for case in cases:
+        assert case["forbidden_actions"] == all_write_actions
+        assert "Before explicit approval, do not call any write action." in case["expected"]
+        assert not set(case["expected_tool_sequence"]) & set(all_write_actions)
+
+    migration = cases_by_id["jenkins-guidance-after-verified-github-actions-migration"]
+    assert migration["expected_tool_sequence"] == [
+        "search:focused",
+        "get_question:501",
+        "get_comments:question:501",
+        "get_comments:answer:901",
+    ]
+    retrieved_question = migration["simulated_mcp"]["get_question"]
+    assert retrieved_question["id"] == 501
+    answer = retrieved_question["answers"][0]
+    assert answer["id"] == 901
+    assert migration["simulated_mcp"]["get_comments"] == {
+        "question:501": [{"id": 71, "body": "Is this still current after the CI migration?"}],
+        "answer:901": [{"id": 72, "body": "Jenkins jobs were retired after the GitHub Actions cutover."}],
+    }
+    assert migration["current_practice_evidence"] == {
+        "kind": "verified-current-code",
+        "source": ".github/workflows/payments-deploy.yml",
+        "fact": "The payments deployment workflow runs in GitHub Actions, and the Jenkinsfile was removed in the verified migration change.",
+    }
+    assert migration["classification"] == "confirmed-divergence"
+    payload = migration["expected_local_payload"]
+    assert payload["target"] == {"question_id": 501, "answer_id": 901}
+    assert payload["target_id"] == 901
+    assert payload["intended_action"] == {
+        "tool": "update_answer",
+        "args": {
+            "questionId": 501,
+            "answerId": 901,
+            "newBodyContent": payload["proposed_answer"],
+        },
+    }
+    assert migration["simulated_write_tool_schema"] == {
+        "tool": "update_answer",
+        "input_schema": {
+            "type": "object",
+            "required": ["questionId", "answerId", "newBodyContent"],
+            "properties": {
+                "questionId": {"type": "number"},
+                "answerId": {"type": "number"},
+                "newBodyContent": {"type": "string"},
+            },
+        },
+    }
+
+    current = cases_by_id["old-article-remains-accurate"]
+    assert current["expected_tool_sequence"] == ["search:focused", "get_article:601"]
+    assert current["classification"] == "still-current"
+    assert current["simulated_mcp"]["get_article"]["comments"]
+    assert "expected_local_payload" not in current
+
+    conflict = cases_by_id["conflicting-sources-require-human-resolution"]
+    assert conflict["expected_tool_sequence"] == [
+        "search:focused",
+        "get_question:701",
+        "get_comments:question:701",
+        "get_comments:answer:971",
+        "get_article:702",
+    ]
+    assert conflict["classification"] == "possible-divergence"
+    assert conflict["simulated_mcp"]["get_question"]["answers"]
+    assert conflict["simulated_mcp"]["get_comments"]["question:701"]
+    assert conflict["simulated_mcp"]["get_comments"]["answer:971"]
+    assert conflict["simulated_mcp"]["get_article"]["comments"]
+    assert "expected_local_payload" not in conflict
+    assert "human resolution" in conflict["expected"].lower()
+
+    wrong_answer_target = deepcopy(migration)
+    wrong_answer_target["expected_local_payload"]["target_id"] = 501
+    with pytest.raises(AssertionError):
+        changed_payload = wrong_answer_target["expected_local_payload"]
+        assert changed_payload["target_id"] == changed_payload["target"]["answer_id"]
+
+    missing_answer_comments = deepcopy(migration)
+    del missing_answer_comments["simulated_mcp"]["get_comments"]["answer:901"]
+    with pytest.raises(AssertionError):
+        assert missing_answer_comments["simulated_mcp"]["get_comments"] == migration["simulated_mcp"]["get_comments"]
+
+    weakened_classification = deepcopy(migration)
+    weakened_classification["classification"] = "possible-divergence"
+    with pytest.raises(AssertionError):
+        assert weakened_classification["classification"] == "confirmed-divergence"
+
+    changed_argument = deepcopy(migration)
+    changed_argument["expected_local_payload"]["intended_action"]["args"]["newBodyContent"] = "Unshown rewrite"
+    with pytest.raises(AssertionError):
+        changed_payload = changed_argument["expected_local_payload"]
+        assert changed_payload["intended_action"]["args"]["newBodyContent"] == changed_payload["proposed_answer"]
+
+    weakened_schema = deepcopy(migration)
+    schema = weakened_schema["simulated_write_tool_schema"]["input_schema"]
+    schema["required"].remove("questionId")
+    del schema["properties"]["questionId"]
+    with pytest.raises(AssertionError):
+        assert weakened_schema["simulated_write_tool_schema"] == migration["simulated_write_tool_schema"]
+
+
 def test_established_company_debugging_eval_requires_matching_runtime_evidence_and_label():
     """Prevent the established-practice eval from accepting an unsupported label."""
     eval_path = Path(__file__).parents[2] / "skills/core/company-debugging/evals/evals.json"
