@@ -4,7 +4,7 @@
 
 For a repository, copy each complete, self-contained skill directory into `.claude/skills/<skill-name>/`. For your user scope, copy it into `~/.claude/skills/<skill-name>/`. Preserve each directory’s `SKILL.md`, `evals/`, and referenced local resources; do not copy only the markdown file or flatten the folders. Select any of the nine directories listed in the [common adapter guide](../README.md).
 
-Claude Code discovers filesystem skills automatically when a request matches their descriptions. This guide targets Claude Code filesystem skills only: it deliberately includes no Claude API skill-upload procedure.
+Claude Code discovers filesystem skills automatically when a request matches their descriptions. Invoke a selected skill directly with `/skill-name`. This guide targets Claude Code filesystem skills only: it deliberately includes no Claude API skill-upload procedure.
 
 ## Connect Stack Internal MCP
 
@@ -14,7 +14,13 @@ Your Stack Internal administrator must enable the MCP server, and you must have 
 claude mcp add --transport http stack-internal https://[slug].stackenterprise.co/mcp
 ```
 
-Complete the OAuth browser flow if Claude Code opens it, using an authorized tenant account. A failed authorization, unavailable endpoint, or missing permission is an MCP access failure, not evidence that Stack Internal was searched.
+The add command may register the server without opening the browser. Open `/mcp`, or complete OAuth with an authorized tenant account by running:
+
+```bash
+claude mcp login stack-internal
+```
+
+The browser opens at login or first use when authentication is required. A failed authorization, unavailable endpoint, or missing permission is an MCP access failure, not evidence that Stack Internal was searched.
 
 ## Compatibility status
 

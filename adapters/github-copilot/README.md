@@ -2,9 +2,9 @@
 
 ## Install the skills
 
-For a repository, copy each complete, self-contained skill directory into `.github/skills/<skill-name>/`. For your user scope, copy it into `~/.copilot/skills/<skill-name>/`. `.agents/skills/<skill-name>/` is also available for shared project or user setups. Preserve each directory’s `SKILL.md`, `evals/`, and referenced local resources; do not copy only the markdown file or flatten the folders. Select any of the nine directories listed in the [common adapter guide](../README.md).
+For a repository, copy each complete, self-contained skill directory into `.github/skills/<skill-name>/`. For your user scope, copy it into `~/.copilot/skills/<skill-name>/`. In a shared Agent Skills setup, the alternate project path is `.agents/skills/<skill-name>/` and the alternate personal path is `~/.agents/skills/<skill-name>/`; do not treat those two scopes as interchangeable. Preserve each directory’s `SKILL.md`, `evals/`, and referenced local resources; do not copy only the markdown file or flatten the folders. Select any of the nine directories listed in the [common adapter guide](../README.md).
 
-Follow the current [GitHub Copilot Agent Skills documentation](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills) for discovery behavior and any client-specific invocation surface.
+An automatic selection can use a skill when the request matches its description. For Copilot CLI, or another surface that documents this invocation, invoke a selected skill explicitly as `/SKILL-NAME`; do not assume that slash command exists in every Copilot surface. Follow the current [GitHub Copilot Agent Skills documentation](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills) for discovery behavior and any client-specific invocation surface.
 
 ## Connect Stack Internal MCP
 
