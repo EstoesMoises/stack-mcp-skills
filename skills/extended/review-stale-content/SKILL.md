@@ -62,7 +62,7 @@ Show the complete target, tool, action, and every argument. Do this locally: bef
 
 Stop after displaying the exact evidence comparison and proposed update. Do not call `update_question` or `update_answer` until the user explicitly approves the displayed classification, evidence comparison, target, selected action, and every exact argument.
 
-Approval covers only the unchanged client payload, target IDs, action, arguments, and each visible sensitive-data removal. Any material edit, source interpretation, classification, target, action, schema mapping, argument, or sensitive-data removal change requires redisplaying the complete payload and obtaining approval again. After approval, replay `intended_action.args` byte-for-byte with the approved update tool. Never add defaults, transform content, infer a field, substitute a target, or switch actions after approval.
+Approval covers only the unchanged client payload, target IDs, action, arguments, and each visible sensitive-data removal. Any material edit, source interpretation, classification, target, action, schema mapping, argument, or sensitive-data removal change requires redisplaying the complete payload and obtaining approval again; a changed payload requires new approval. After approval, replay `intended_action.args` byte-for-byte with the approved update tool. Never add defaults, transform content, infer a field, substitute a target, or switch actions after approval.
 
 ## Confirmed result
 

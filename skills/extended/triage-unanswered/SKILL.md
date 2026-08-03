@@ -89,7 +89,7 @@ Show the target, every source, the complete payload, selected tool, and every ar
 
 Stop after displaying the exact local payload. Do not call `submit_user_answer` or `vote` until the user explicitly approves the displayed evidence, target, selected action, and every exact argument. A vote additionally requires approval of its exact Boolean direction, add-or-remove action, and target type.
 
-Approval covers only the unchanged displayed client payload, target IDs, sources, sensitive-data removals, action, arguments, and vote operation. Any material content, evidence, source interpretation, target, action, schema mapping, argument, target type, vote direction, add-or-remove action, or sensitive-data removal change requires redisplaying the complete payload and obtaining new approval. After approval, call only the selected tool with `intended_action.args` byte-for-byte. Never add defaults, transform content, infer an argument, substitute a target, or switch an answer submission into a vote after approval.
+Approval covers only the unchanged displayed client payload, target IDs, sources, sensitive-data removals, action, arguments, and vote operation. Any material content, evidence, source interpretation, target, action, schema mapping, argument, target type, vote direction, add-or-remove action, or sensitive-data removal change requires redisplaying the complete payload and obtaining new approval; a changed payload requires new approval. After approval, call only the selected tool with `intended_action.args` byte-for-byte. Never add defaults, transform content, infer an argument, substitute a target, or switch an answer submission into a vote after approval.
 
 ## Confirmed result
 

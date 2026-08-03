@@ -1421,6 +1421,17 @@ def test_write_skill_requires_approval_gate(repo_fixture):
     assert "write-capable skill must contain ## Approval gate" in validate_repository(repo_fixture.root)
 
 
+def test_every_write_action_is_covered_by_exact_approval():
+    root = Path(__file__).parents[2]
+    catalog = json.loads((root / "catalog" / "skills.json").read_text(encoding="utf-8"))
+
+    for entry in catalog["skills"]:
+        if entry["write_actions"]:
+            body = (root / entry["path"] / "SKILL.md").read_text(encoding="utf-8")
+            assert "## Approval gate" in body
+            assert "changed payload requires new approval" in body.lower()
+
+
 def test_valid_skill_fixture_passes(repo_fixture):
     repo_fixture.add_skill()
 

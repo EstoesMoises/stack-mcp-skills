@@ -85,3 +85,47 @@ def test_catalog_requires_write_actions_to_be_required_tools(repo_fixture):
         "catalog write actions must be included in required_tools: example-skill "
         "(missing: create_QA)"
     ) in validate_repository(repo_fixture.root)
+
+
+def test_v1_has_three_core_and_six_extended():
+    root = Path(__file__).parents[2]
+    catalog = load_catalog(root / "catalog" / "skills.json")
+    tiers = [entry["tier"] for entry in catalog["skills"]]
+
+    assert tiers.count("core") == 3
+    assert tiers.count("extended") == 6
+
+
+def test_all_documented_mcp_tools_are_known():
+    root = Path(__file__).parents[2]
+    schema = json.loads((root / "standards" / "catalog-schema.json").read_text(encoding="utf-8"))
+    expected = {
+        "search",
+        "get_question",
+        "get_article",
+        "get_comments",
+        "get_questions_to_answer",
+        "get_existing_tags",
+        "recommend_SME",
+        "create_article",
+        "create_question",
+        "create_QA",
+        "draft_question",
+        "submit_user_answer",
+        "update_answer",
+        "update_question",
+        "vote",
+    }
+
+    assert set(schema["$defs"]["tool"]["enum"]) == expected
+
+
+def test_catalog_write_actions_are_known_required_tools():
+    root = Path(__file__).parents[2]
+    catalog = load_catalog(root / "catalog" / "skills.json")
+    schema = json.loads((root / "standards" / "catalog-schema.json").read_text(encoding="utf-8"))
+    known_write_actions = set(schema["$defs"]["write_action"]["enum"])
+
+    for entry in catalog["skills"]:
+        assert set(entry["write_actions"]) <= known_write_actions
+        assert set(entry["write_actions"]) <= set(entry["required_tools"])

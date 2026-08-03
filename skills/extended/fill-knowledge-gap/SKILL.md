@@ -49,7 +49,7 @@ Show the tool, complete arguments, tags, and `draftReviewed` value with the draf
 
 Stop after showing the exact local payload. Before explicit approval, do not call any write action. Do not call `draft_question` or `create_question` until the user explicitly approves the displayed draft, tags, selected tool, and every exact argument.
 
-Approval covers only the unchanged displayed client payload, action, tags, `draftReviewed` value, and arguments. Any material content, tag, review value, action, schema mapping, or argument change requires redisplaying the full payload and obtaining new approval. After approval, call the selected tool with `intended_action.args` byte-for-byte. Never add defaults, transform content, infer a parameter, or switch actions after approval.
+Approval covers only the unchanged displayed client payload, action, tags, `draftReviewed` value, and arguments. Any material content, tag, review value, action, schema mapping, or argument change requires redisplaying the full payload and obtaining new approval; a changed payload requires new approval. After approval, call the selected tool with `intended_action.args` byte-for-byte. Never add defaults, transform content, infer a parameter, or switch actions after approval.
 
 ## Confirmed result
 

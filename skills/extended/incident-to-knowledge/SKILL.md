@@ -36,7 +36,7 @@ Turn a verified internal incident into a concise, factual knowledge record. Requ
 
 Stop after showing the complete local payload. Before explicit approval, do not call any write action. Do not call `create_article` or `create_QA` unless the user explicitly approves the displayed draft, target, tags, selected action, and every exact argument.
 
-Approval covers only the unchanged displayed client payload, intended action, target, and arguments. Any material content, unresolved-fact status, tag, action, target, schema mapping, or argument change requires redisplaying the entire payload and obtaining new approval. After approval, replay `intended_action.args` byte-for-byte with the selected tool; never add defaults, transform content, infer a parameter, or select a different action. Server-added provenance or system metadata is allowed only when it does not change or hide a client payload field.
+Approval covers only the unchanged displayed client payload, intended action, target, and arguments. Any material content, unresolved-fact status, tag, action, target, schema mapping, or argument change requires redisplaying the entire payload and obtaining new approval; a changed payload requires new approval. After approval, replay `intended_action.args` byte-for-byte with the selected tool; never add defaults, transform content, infer a parameter, or select a different action. Server-added provenance or system metadata is allowed only when it does not change or hide a client payload field.
 
 ## Confirmed result
 
