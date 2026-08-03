@@ -4,6 +4,16 @@
       "id": "new-backend-engineer-path",
       "prompt": "I am a new backend engineer joining the Orders service. Build a first-week onboarding path so I can run the service locally, understand its boundaries, and choose a safe first task.",
       "missing_topics": ["prerequisites"],
+      "search_attempts": [
+        {"topic": "prerequisites", "query_kind": "focused", "result_key": "prerequisites"},
+        {"topic": "setup", "query_kind": "focused", "result_key": "setup"},
+        {"topic": "architecture", "query_kind": "focused", "result_key": "architecture"},
+        {"topic": "architecture", "query_kind": "broadened", "result_key": "architecture-broadened-1"},
+        {"topic": "workflows", "query_kind": "focused", "result_key": "workflows"},
+        {"topic": "first-tasks", "query_kind": "focused", "result_key": "first-tasks"},
+        {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-1"},
+        {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-2"}
+      ],
       "simulated_mcp": {
         "search": {
           "prerequisites": [],
@@ -33,6 +43,23 @@
       "id": "payments-team-transfer-path",
       "prompt": "I am transferring from the Web Platform team to Payments. I have two weeks to learn the payment authorization flow, its release process, and the first support rotation task.",
       "missing_topics": ["prerequisites", "setup"],
+      "search_attempts": [
+        {"topic": "prerequisites", "query_kind": "focused", "result_key": "prerequisites"},
+        {"topic": "setup", "query_kind": "focused", "result_key": "setup"},
+        {"topic": "architecture", "query_kind": "focused", "result_key": "architecture"},
+        {"topic": "workflows", "query_kind": "focused", "result_key": "workflows"},
+        {"topic": "first-tasks", "query_kind": "focused", "result_key": "first-tasks"},
+        {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-1"},
+        {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-2"},
+        {"topic": "setup", "query_kind": "broadened", "result_key": "setup-broadened-1"},
+        {"topic": "setup", "query_kind": "broadened", "result_key": "setup-broadened-2"}
+      ],
+      "budget_checkpoint": {
+        "after_search_call": 8,
+        "before_search_call": 9,
+        "disclosure_step": "disclose_whole_path_budget",
+        "confirmation_step": "user_confirms_continue"
+      },
       "simulated_mcp": {
         "search": {
           "prerequisites": [],
@@ -60,6 +87,25 @@
       "id": "incomplete-onboarding-coverage",
       "prompt": "Create a two-day onboarding path for a new engineer joining the Ledger reconciliation workflow. We need local setup, architecture, deployment workflow, and a first task.",
       "missing_topics": ["prerequisites", "workflows", "first-tasks"],
+      "search_attempts": [
+        {"topic": "prerequisites", "query_kind": "focused", "result_key": "prerequisites"},
+        {"topic": "setup", "query_kind": "focused", "result_key": "setup"},
+        {"topic": "architecture", "query_kind": "focused", "result_key": "architecture"},
+        {"topic": "workflows", "query_kind": "focused", "result_key": "workflows"},
+        {"topic": "first-tasks", "query_kind": "focused", "result_key": "first-tasks"},
+        {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-1"},
+        {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-2"},
+        {"topic": "workflows", "query_kind": "broadened", "result_key": "workflows-broadened-1"},
+        {"topic": "workflows", "query_kind": "broadened", "result_key": "workflows-broadened-2"},
+        {"topic": "first-tasks", "query_kind": "broadened", "result_key": "first-tasks-broadened-1"},
+        {"topic": "first-tasks", "query_kind": "broadened", "result_key": "first-tasks-broadened-2"}
+      ],
+      "budget_checkpoint": {
+        "after_search_call": 8,
+        "before_search_call": 9,
+        "disclosure_step": "disclose_whole_path_budget",
+        "confirmation_step": "user_confirms_continue"
+      },
       "simulated_mcp": {
         "search": {
           "prerequisites": [],

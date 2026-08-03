@@ -27,30 +27,51 @@ _ONBOARDING_TOPICS = (
 )
 
 
-def _assert_onboarding_search_guards(sequence: list[str]) -> None:
-    """Validate per-topic and whole-path search limits in an eval sequence."""
+def _assert_onboarding_search_contract(
+    sequence: list[str],
+    attempts: list[dict[str, str]],
+    responses: dict[str, list[object]],
+    budget_checkpoint: dict[str, object] | None,
+) -> None:
+    """Validate explicit topic metadata, result mapping, and hard search guards."""
+    search_steps = [step for step in sequence if step.startswith("search:")]
+    assert len(search_steps) == len(attempts)
+
     searches_by_topic: dict[str, int] = {}
-    total_searches = 0
-    checkpoint_seen = False
-    confirmation_seen = False
+    for step, attempt in zip(search_steps, attempts, strict=True):
+        assert set(("topic", "query_kind", "result_key")) <= set(attempt)
+        topic = attempt["topic"]
+        query_kind = attempt["query_kind"]
+        result_key = attempt["result_key"]
+        assert topic in _ONBOARDING_TOPICS
+        assert query_kind in {"focused", "broadened"}
+        assert step == f"search:{result_key}"
+        assert result_key in responses
 
-    for step in sequence:
-        if step == "disclose_whole_path_budget":
-            checkpoint_seen = True
-            continue
-        if step == "user_confirms_continue":
-            assert checkpoint_seen
-            confirmation_seen = True
-            continue
-        if not step.startswith("search:"):
-            continue
-
-        total_searches += 1
-        topic = step.removeprefix("search:").split("-broadened-", 1)[0]
         searches_by_topic[topic] = searches_by_topic.get(topic, 0) + 1
         assert searches_by_topic[topic] <= 3
-        if total_searches >= 9:
-            assert checkpoint_seen and confirmation_seen
+        assert query_kind == ("focused" if searches_by_topic[topic] == 1 else "broadened")
+
+    disclosure_step = "disclose_whole_path_budget"
+    confirmation_step = "user_confirms_continue"
+    if len(search_steps) <= 8:
+        assert budget_checkpoint is None
+        assert disclosure_step not in sequence
+        assert confirmation_step not in sequence
+        return
+
+    assert budget_checkpoint == {
+        "after_search_call": 8,
+        "before_search_call": 9,
+        "disclosure_step": disclosure_step,
+        "confirmation_step": confirmation_step,
+    }
+    disclosure_index = sequence.index(disclosure_step)
+    confirmation_index = sequence.index(confirmation_step)
+    ninth_search_index = sequence.index(search_steps[8])
+    assert sum(step.startswith("search:") for step in sequence[:disclosure_index]) == 8
+    assert sum(step.startswith("search:") for step in sequence[:confirmation_index]) == 8
+    assert disclosure_index < confirmation_index < ninth_search_index
 
 
 def test_onboarding_evals_search_every_topic_and_exhaust_missing_coverage():
@@ -61,7 +82,12 @@ def test_onboarding_evals_search_every_topic_and_exhaust_missing_coverage():
     for case in cases:
         sequence = case["expected_tool_sequence"]
         responses = case["simulated_mcp"]["search"]
-        _assert_onboarding_search_guards(sequence)
+        _assert_onboarding_search_contract(
+            sequence,
+            case["search_attempts"],
+            responses,
+            case.get("budget_checkpoint"),
+        )
         for topic in _ONBOARDING_TOPICS:
             assert f"search:{topic}" in sequence
             assert topic in responses
@@ -95,6 +121,12 @@ def test_onboarding_eval_exposes_whole_path_search_budget_guard():
     body = skill_path.read_text(encoding="utf-8")
     assert "including focused" in body
     assert "before call 9 of any kind" in body
+    assert case["budget_checkpoint"] == {
+        "after_search_call": 8,
+        "before_search_call": 9,
+        "disclosure_step": "disclose_whole_path_budget",
+        "confirmation_step": "user_confirms_continue",
+    }
 
 
 def test_onboarding_continuation_cannot_permit_a_fourth_topic_search():
@@ -105,22 +137,75 @@ def test_onboarding_continuation_cannot_permit_a_fourth_topic_search():
     assert "even if the user asks to continue" in body
     assert "separately scoped follow-up" in body
     with pytest.raises(AssertionError):
-        _assert_onboarding_search_guards(
+        _assert_onboarding_search_contract(
             [
-                "search:architecture",
-                "search:architecture-broadened-1",
-                "search:architecture-broadened-2",
-                "disclose_whole_path_budget",
-                "user_confirms_continue",
-                "search:architecture-broadened-3",
-            ]
+                "search:architecture-primary",
+                "search:architecture-alternate-1",
+                "search:architecture-alternate-2",
+                "search:architecture-alternate-3",
+            ],
+            [
+                {"topic": "architecture", "query_kind": "focused", "result_key": "architecture-primary"},
+                {"topic": "architecture", "query_kind": "broadened", "result_key": "architecture-alternate-1"},
+                {"topic": "architecture", "query_kind": "broadened", "result_key": "architecture-alternate-2"},
+                {"topic": "architecture", "query_kind": "broadened", "result_key": "architecture-alternate-3"},
+            ],
+            {
+                "architecture-primary": [],
+                "architecture-alternate-1": [],
+                "architecture-alternate-2": [],
+                "architecture-alternate-3": [],
+            },
+            None,
         )
 
 
-def test_onboarding_ninth_focused_search_cannot_bypass_confirmation():
-    """The whole-path guard counts focused searches as well as broadenings."""
+def test_onboarding_early_confirmation_cannot_bypass_ninth_search_gate():
+    """A checkpoint before call eight cannot authorize call nine."""
     with pytest.raises(AssertionError):
-        _assert_onboarding_search_guards([f"search:focused-topic-{number}" for number in range(1, 10)])
+        _assert_onboarding_search_contract(
+            [
+                "search:prerequisites",
+                "search:setup",
+                "search:architecture",
+                "search:workflows",
+                "search:first-tasks",
+                "search:prerequisites-broadened-1",
+                "search:setup-broadened-1",
+                "disclose_whole_path_budget",
+                "user_confirms_continue",
+                "search:architecture-broadened-1",
+                "search:workflows-broadened-1",
+            ],
+            [
+                {"topic": "prerequisites", "query_kind": "focused", "result_key": "prerequisites"},
+                {"topic": "setup", "query_kind": "focused", "result_key": "setup"},
+                {"topic": "architecture", "query_kind": "focused", "result_key": "architecture"},
+                {"topic": "workflows", "query_kind": "focused", "result_key": "workflows"},
+                {"topic": "first-tasks", "query_kind": "focused", "result_key": "first-tasks"},
+                {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-1"},
+                {"topic": "setup", "query_kind": "broadened", "result_key": "setup-broadened-1"},
+                {"topic": "architecture", "query_kind": "broadened", "result_key": "architecture-broadened-1"},
+                {"topic": "workflows", "query_kind": "broadened", "result_key": "workflows-broadened-1"},
+            ],
+            {
+                "prerequisites": [],
+                "setup": [],
+                "architecture": [],
+                "workflows": [],
+                "first-tasks": [],
+                "prerequisites-broadened-1": [],
+                "setup-broadened-1": [],
+                "architecture-broadened-1": [],
+                "workflows-broadened-1": [],
+            },
+            {
+                "after_search_call": 8,
+                "before_search_call": 9,
+                "disclosure_step": "disclose_whole_path_budget",
+                "confirmation_step": "user_confirms_continue",
+            },
+        )
 
 
 def test_capture_quality_qa_evals_forbid_every_write_before_approval():
