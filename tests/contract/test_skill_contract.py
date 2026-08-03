@@ -426,11 +426,20 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
     # skill still inspects the connected tenant's live schema at runtime.
     simulated_action_contracts = {
         "create_article": {
-            "properties": {"title": "string", "body": "string", "tags": "array"},
+            "properties": {
+                "title": {"type": "string"},
+                "body": {"type": "string"},
+                "tags": {"type": "array", "items": {"type": "string"}},
+            },
             "visible_fields": ("title", "body", "tags"),
         },
         "create_QA": {
-            "properties": {"title": "string", "question": "string", "answer": "string", "tags": "array"},
+            "properties": {
+                "title": {"type": "string"},
+                "question": {"type": "string"},
+                "answer": {"type": "string"},
+                "tags": {"type": "array", "items": {"type": "string"}},
+            },
             "visible_fields": ("title", "question", "answer", "tags"),
         },
     }
@@ -443,17 +452,15 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
         args = action["args"]
         properties = input_schema["properties"]
         contract = simulated_action_contracts[action["tool"]]
-        expected_properties = contract["properties"]
+        expected_property_schemas = contract["properties"]
 
         assert action["tool"] == schema["tool"]
         assert input_schema["type"] == "object"
-        assert input_schema["required"] == list(expected_properties)
-        assert properties == {
-            name: {"type": expected_type}
-            for name, expected_type in expected_properties.items()
-        }
-        assert set(args) == set(expected_properties)
-        for name, expected_type in expected_properties.items():
+        assert input_schema["required"] == list(expected_property_schemas)
+        assert properties == expected_property_schemas
+        assert set(args) == set(expected_property_schemas)
+        for name, expected_property_schema in expected_property_schemas.items():
+            expected_type = expected_property_schema["type"]
             value = args[name]
             assert (expected_type == "string" and isinstance(value, str)) or (
                 expected_type == "array" and isinstance(value, list)
@@ -495,6 +502,20 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
         with pytest.raises(AssertionError):
             assert_schema_derived_args(changed, content_argument, ("Summary:",))
 
+    def assert_rejects_changed_tags_items_schema(case, content_argument):
+        changed = deepcopy(case)
+        changed["simulated_write_tool_schema"]["input_schema"]["properties"]["tags"]["items"] = {
+            "type": "integer"
+        }
+        with pytest.raises(AssertionError):
+            assert_schema_derived_args(changed, content_argument, ("Summary:",))
+
+    def assert_rejects_removed_tags_items_schema(case, content_argument):
+        changed = deepcopy(case)
+        changed["simulated_write_tool_schema"]["input_schema"]["properties"]["tags"].pop("items", None)
+        with pytest.raises(AssertionError):
+            assert_schema_derived_args(changed, content_argument, ("Summary:",))
+
     assert {
         "verified-load-balancer-outage-article",
         "related-incident-changes-prevention-actions",
@@ -526,6 +547,8 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
     wrong_article_tags["expected_local_payload"]["intended_action"]["args"]["tags"] = "wrong type"
     with pytest.raises(AssertionError):
         assert_schema_derived_args(wrong_article_tags, "body", ("Summary:",))
+    assert_rejects_changed_tags_items_schema(article, "body")
+    assert_rejects_removed_tags_items_schema(article, "body")
     assert_rejects_removed_argument_and_schema_property(article, "body", "body")
     article_payload = json.dumps(article["expected_local_payload"])
     assert "Aurora Labs" not in article_payload
@@ -554,6 +577,8 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
     wrong_qa_tags["expected_local_payload"]["intended_action"]["args"]["tags"] = ["wrong-tag"]
     with pytest.raises(AssertionError):
         assert_schema_derived_args(wrong_qa_tags, "answer", ("Summary:",))
+    assert_rejects_changed_tags_items_schema(related, "answer")
+    assert_rejects_removed_tags_items_schema(related, "answer")
     assert_rejects_removed_argument_and_schema_property(related, "question", "answer")
     assert_rejects_removed_argument_and_schema_property(related, "answer", "answer")
 
