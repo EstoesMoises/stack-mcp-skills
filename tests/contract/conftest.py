@@ -44,12 +44,25 @@ class RepoFixture:
         )
         evals_dir = skill_dir / "evals"
         evals_dir.mkdir()
+        catalog_write_actions = json.loads(
+            (self.root / "standards" / "catalog-schema.json").read_text(encoding="utf-8")
+        )["$defs"]["write_action"]["enum"]
         (evals_dir / "evals.json").write_text(
             json.dumps(
                 {
                     "cases": [
-                        {"id": "case-one", "prompt": "Find an internal policy.", "expected": "Search."},
-                        {"id": "case-two", "prompt": "Find an incident.", "expected": "Retrieve content."},
+                        {
+                            "id": "case-one",
+                            "prompt": "Find an internal policy.",
+                            "expected": "Search.",
+                            "forbidden_actions": catalog_write_actions,
+                        },
+                        {
+                            "id": "case-two",
+                            "prompt": "Find an incident.",
+                            "expected": "Retrieve content.",
+                            "forbidden_actions": catalog_write_actions,
+                        },
                     ]
                 }
             ),

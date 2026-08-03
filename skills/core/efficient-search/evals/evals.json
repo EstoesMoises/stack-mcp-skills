@@ -23,7 +23,16 @@
       },
       "expected": "Call search once with a focused order-service and InventoryLedgerError query, inspect candidate metadata, then call get_question for q-241 before answering. Cite the title and ID, state only the boundary-handling and metric requirement as supported evidence, and label any implementation advice beyond that content as Inference.",
       "expected_tool_sequence": ["search", "get_question"],
-      "forbidden_actions": ["create_question", "create_QA", "create_article", "vote"]
+      "forbidden_actions": [
+        "draft_question",
+        "create_question",
+        "create_QA",
+        "create_article",
+        "submit_user_answer",
+        "update_question",
+        "update_answer",
+        "vote"
+      ]
     },
     {
       "id": "onboarding-test-suite-instructions",
@@ -48,7 +57,16 @@
       },
       "expected": "Call search before get_article, retrieve a-118 in full, and cite its title and ID. Present only the documented command ordering as evidence; label any environment assumptions or troubleshooting guidance as Inference.",
       "expected_tool_sequence": ["search", "get_article"],
-      "forbidden_actions": ["draft_question", "create_question", "update_question", "update_answer"]
+      "forbidden_actions": [
+        "draft_question",
+        "create_question",
+        "create_QA",
+        "create_article",
+        "submit_user_answer",
+        "update_question",
+        "update_answer",
+        "vote"
+      ]
     },
     {
       "id": "no-result-rate-limiting-request",
@@ -62,7 +80,16 @@
       },
       "expected": "Use one focused rate-limiting query and at most two broader queries, then stop after the third search. Do not fetch absent sources or invent a policy. Report that no relevant Stack Internal guidance was found, offer a knowledge-gap workflow, and make no write.",
       "expected_tool_sequence": ["search", "search", "search"],
-      "forbidden_actions": ["get_question", "get_article", "draft_question", "create_question", "create_QA"]
+      "forbidden_actions": [
+        "draft_question",
+        "create_question",
+        "create_QA",
+        "create_article",
+        "submit_user_answer",
+        "update_question",
+        "update_answer",
+        "vote"
+      ]
     }
   ]
 }

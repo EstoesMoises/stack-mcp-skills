@@ -63,6 +63,16 @@ def _json_object(path: Path, description: str, errors: list[str]) -> dict[str, A
     return value
 
 
+def _catalog_write_actions(root: Path) -> set[str]:
+    """Return the canonical write actions declared by the catalog schema."""
+    try:
+        schema = json.loads((root / "standards" / "catalog-schema.json").read_text(encoding="utf-8"))
+        actions = schema["$defs"]["write_action"]["enum"]
+    except (KeyError, OSError, TypeError, json.JSONDecodeError):
+        return set()
+    return {action for action in actions if isinstance(action, str)}
+
+
 def _local_links(body: str) -> list[str]:
     links: list[str] = []
     for target in _LINK_PATTERN.findall(body):
@@ -102,7 +112,13 @@ def _validate_resources(skill_dir: Path, body: str, errors: list[str]) -> None:
                 errors.append(f"local resource must be linked from SKILL.md: {relative}")
 
 
-def _validate_evals(skill_dir: Path, tier: object, errors: list[str]) -> None:
+def _validate_evals(
+    root: Path,
+    skill_dir: Path,
+    tier: object,
+    read_only: bool,
+    errors: list[str],
+) -> None:
     evals_dir = skill_dir / "evals"
     eval_cases = _json_object(evals_dir / "evals.json", "evals/evals.json", errors)
     if eval_cases is not None:
@@ -115,6 +131,19 @@ def _validate_evals(skill_dir: Path, tier: object, errors: list[str]) -> None:
             for case in cases
         ):
             errors.append("each eval case must include non-empty id, prompt, and expected strings")
+        elif read_only:
+            required_actions = _catalog_write_actions(root)
+            for case in cases:
+                forbidden_actions = case.get("forbidden_actions")
+                forbidden = {
+                    action for action in forbidden_actions if isinstance(action, str)
+                } if isinstance(forbidden_actions, list) else set()
+                missing = sorted(required_actions - forbidden)
+                if missing:
+                    errors.append(
+                        "read-only eval case must forbid all catalog write actions: "
+                        f"{case['id']} (missing: {', '.join(missing)})"
+                    )
 
     trigger_cases = _json_object(evals_dir / "trigger-evals.json", "evals/trigger-evals.json", errors)
     if trigger_cases is not None:
@@ -195,5 +224,11 @@ def validate_skill(root: Path, skill_dir: Path, catalog_entry: dict[str, object]
         errors.append("metadata stack-internal-adapters must match catalog")
 
     _validate_resources(skill_dir, body, errors)
-    _validate_evals(skill_dir, catalog_entry.get("tier"), errors)
+    _validate_evals(
+        root,
+        skill_dir,
+        catalog_entry.get("tier"),
+        isinstance(expected_actions, list) and not expected_actions,
+        errors,
+    )
     return sorted(set(errors))

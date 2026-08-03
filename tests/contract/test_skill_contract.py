@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from stack_skill_catalog.validation import validate_repository
 
 
@@ -99,3 +101,17 @@ def test_markdown_image_link_counts_as_an_asset_reference(repo_fixture):
     )
 
     assert validate_repository(repo_fixture.root) == []
+
+
+def test_read_only_skill_evals_must_forbid_every_catalog_write_action(repo_fixture):
+    repo_fixture.add_skill()
+    eval_path = repo_fixture.root / "skills/core/example-skill/evals/evals.json"
+    evals = json.loads(eval_path.read_text(encoding="utf-8"))
+    evals["cases"][0]["forbidden_actions"] = ["create_question"]
+    eval_path.write_text(json.dumps(evals), encoding="utf-8")
+
+    assert (
+        "read-only eval case must forbid all catalog write actions: case-one "
+        "(missing: create_QA, create_article, draft_question, submit_user_answer, "
+        "update_answer, update_question, vote)"
+    ) in validate_repository(repo_fixture.root)
