@@ -68,6 +68,23 @@
         "cursor": "experimental",
         "github-copilot": "experimental"
       }
+    },
+    {
+      "id": "find-sme",
+      "name": "Find Stack Internal Subject-Matter Experts",
+      "version": "0.1.0",
+      "tier": "extended",
+      "summary": "Find internal subject-matter experts through read-only topic discovery and exact existing-tag resolution.",
+      "path": "skills/extended/find-sme",
+      "tags": ["sme", "experts", "escalation"],
+      "required_tools": ["search", "get_existing_tags", "recommend_SME"],
+      "write_actions": [],
+      "adapters": {
+        "codex": "experimental",
+        "claude-code": "experimental",
+        "cursor": "experimental",
+        "github-copilot": "experimental"
+      }
     }
   ]
 }

@@ -334,6 +334,65 @@ def test_established_company_debugging_eval_requires_matching_runtime_evidence_a
     assert "Label the diagnosis `established-company-practice`." in case["expected"]
 
 
+def test_find_sme_evals_preserve_discovery_and_tag_resolution_contract():
+    """SME recommendations follow discovery only after an exact tag ID is resolved."""
+    root = Path(__file__).parents[2]
+    skill_path = root / "skills/extended/find-sme/SKILL.md"
+    eval_path = root / "skills/extended/find-sme/evals/evals.json"
+
+    assert skill_path.is_file()
+    assert eval_path.is_file()
+    body = skill_path.read_text(encoding="utf-8")
+    cases = json.loads(eval_path.read_text(encoding="utf-8"))["cases"]
+    cases_by_id = {case["id"]: case for case in cases}
+    all_write_actions = [
+        "draft_question",
+        "create_question",
+        "create_QA",
+        "create_article",
+        "submit_user_answer",
+        "update_question",
+        "update_answer",
+        "vote",
+    ]
+
+    assert {"kubernetes-sme-after-insufficient-discovery", "ambiguous-auth-tags-require-clarification", "tag-with-no-activity-has-no-sme"} <= cases_by_id.keys()
+    assert "discovery metadata, not a full-source answer" in body
+    assert "current conversation already contains a verified full-source answer" in body
+    assert "user says a surfaced source resolves the need" in body
+    assert "Do not call `get_question` or `get_article`." in body
+    assert "exact semantic match" in body
+    assert "do not infer expertise" in body.lower()
+
+    kubernetes = cases_by_id["kubernetes-sme-after-insufficient-discovery"]
+    assert kubernetes["expected_tool_sequence"] == [
+        "search:kubernetes-network-policy",
+        "get_existing_tags:kubernetes-network-policy",
+        "recommend_SME:tag-kubernetes",
+    ]
+    assert kubernetes["resolved_tag"] == {"id": "tag-kubernetes", "name": "kubernetes"}
+
+    ambiguous = cases_by_id["ambiguous-auth-tags-require-clarification"]
+    assert ambiguous["expected_tool_sequence"] == [
+        "search:authentication-ownership",
+        "get_existing_tags:authentication-ownership",
+        "ask_user_to_choose_tag",
+    ]
+    assert "recommend_SME" not in ambiguous["expected_tool_sequence"]
+
+    no_candidate = cases_by_id["tag-with-no-activity-has-no-sme"]
+    assert no_candidate["expected_tool_sequence"] == [
+        "search:legacy-batch-import",
+        "get_existing_tags:legacy-batch-import",
+        "recommend_SME:tag-legacy-batch-import",
+    ]
+    assert no_candidate["simulated_mcp"]["recommend_SME"] == []
+    assert "No SME candidates were returned" in no_candidate["expected"]
+
+    for case in cases:
+        assert case["forbidden_actions"] == all_write_actions
+
+
 def test_write_skill_requires_approval_gate(repo_fixture):
     repo_fixture.add_skill(write_actions="create_QA", body="# Skill\n\n## Workflow\nDraft content.")
 
