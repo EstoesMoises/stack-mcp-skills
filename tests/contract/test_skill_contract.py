@@ -16,6 +16,52 @@ _QA_WRITE_ACTIONS = (
     "vote",
 )
 
+_ONBOARDING_TOPICS = (
+    "prerequisites",
+    "setup",
+    "architecture",
+    "workflows",
+    "first-tasks",
+)
+
+
+def test_onboarding_evals_search_every_topic_and_exhaust_missing_coverage():
+    """A rendered gap is evidence of three empty topic searches, never an assumption."""
+    eval_path = Path(__file__).parents[2] / "skills/extended/onboarding/evals/evals.json"
+    cases = json.loads(eval_path.read_text(encoding="utf-8"))["cases"]
+
+    for case in cases:
+        sequence = case["expected_tool_sequence"]
+        responses = case["simulated_mcp"]["search"]
+        for topic in _ONBOARDING_TOPICS:
+            assert f"search:{topic}" in sequence
+            assert topic in responses
+
+        for topic in case["missing_topics"]:
+            attempts = (
+                f"search:{topic}",
+                f"search:{topic}-broadened-1",
+                f"search:{topic}-broadened-2",
+            )
+            assert all(attempt in sequence for attempt in attempts)
+            assert all(responses[attempt.removeprefix("search:")] == [] for attempt in attempts)
+            assert f"Missing coverage: {topic}" in case["expected"]
+
+
+def test_onboarding_eval_exposes_whole_path_search_budget_guard():
+    """More than eight path searches must pause before another broadening."""
+    eval_path = Path(__file__).parents[2] / "skills/extended/onboarding/evals/evals.json"
+    cases = json.loads(eval_path.read_text(encoding="utf-8"))["cases"]
+    case = next(item for item in cases if item["id"] == "payments-team-transfer-path")
+    sequence = case["expected_tool_sequence"]
+    checkpoint = sequence.index("disclose_whole_path_budget")
+
+    assert sum(step.startswith("search:") for step in sequence[:checkpoint]) == 8
+    assert sequence[checkpoint + 1] == "user_confirms_continue"
+    assert any(step.startswith("search:") for step in sequence[checkpoint + 2:])
+    assert "completed searches" in case["expected"]
+    assert "remaining topics" in case["expected"]
+
 
 def test_capture_quality_qa_evals_forbid_every_write_before_approval():
     """Keep every capture scenario safely paused at its approval gate."""
