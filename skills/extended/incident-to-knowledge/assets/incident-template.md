@@ -8,6 +8,9 @@ Use this template only after all material incident facts are verified, related s
 {
   "format": "article or qa",
   "title": "Searchable incident title",
+  "question": "Required only for Q&A: the visible searchable operational question.",
+  "body": "Required only for an article: complete rendered incident record.",
+  "answer": "Required only for Q&A: complete rendered incident record.",
   "summary": "Objective one-paragraph description of what happened.",
   "impact": "Measured user, system, and duration impact.",
   "timeline": [
@@ -45,6 +48,6 @@ Use this template only after all material incident facts are verified, related s
 }
 ```
 
-For an article, render the title, summary, impact, chronological timeline, root cause, resolution, validation, follow-ups, unresolved-fact status, and related-source citations into the visible article body. For Q&A, render a searchable operational question and an answer containing the same factual sections. The `args` object must use the complete current input schema for the selected tool, including its exact parameter names; the example key above is intentionally not portable. Every displayed action argument must be complete before approval, and after approval it is replayed byte-for-byte.
+For an article, render the title, summary, impact, chronological timeline, root cause, resolution, validation, follow-ups, unresolved-fact status, and related-source citations into the visible article body. For Q&A, render the visible `question` and an answer containing the same factual sections; copy both into the selected tool's exact live-schema arguments. The `args` object must use the complete current input schema for the selected tool, including its exact parameter names; the example key above is intentionally not portable. Every displayed action argument must be complete before approval, and after approval it is replayed byte-for-byte.
 
 Omit only non-material empty optional details. Never pad the record with generic conclusions, hide open material facts, include secrets or personal data, or publish an incident with a speculative root cause.

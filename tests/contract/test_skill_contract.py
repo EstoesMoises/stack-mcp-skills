@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 from pathlib import Path
 
@@ -421,10 +422,55 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
         "vote",
     ]
 
+    def assert_schema_derived_args(case, content_argument, section_headings):
+        payload = case["expected_local_payload"]
+        action = payload["intended_action"]
+        schema = case["simulated_write_tool_schema"]
+        input_schema = schema["input_schema"]
+        args = action["args"]
+        properties = input_schema["properties"]
+
+        assert action["tool"] == schema["tool"]
+        assert input_schema["type"] == "object"
+        assert set(args) == set(input_schema["required"]) == set(properties)
+        for name, value in args.items():
+            expected_type = properties[name]["type"]
+            assert (expected_type == "string" and isinstance(value, str)) or (
+                expected_type == "array" and isinstance(value, list)
+            )
+
+        assert args["title"] == payload["title"]
+        assert args["tags"] == payload["tags"]
+        if "question" in args:
+            assert args["question"] == payload["question"]
+        assert args[content_argument] == payload[content_argument]
+        content = args[content_argument]
+        for heading in section_headings:
+            assert heading in content
+        for field in ("summary", "impact", "root_cause", "resolution", "validation"):
+            assert payload[field] in content
+        for entry in payload["timeline"]:
+            assert entry["timestamp"] in content
+            assert entry["event"] in content
+        for follow_up in payload["follow_ups"]:
+            assert follow_up["action"] in content
+        for unresolved_fact in payload["unresolved_facts"]:
+            assert unresolved_fact["fact"] in content
+        for source in payload["related_sources"]:
+            assert source["title"] in content
+            assert source["id"] in content
+
+    def assert_rejects_changed_argument(case, content_argument, changed_value):
+        changed = deepcopy(case)
+        changed["expected_local_payload"]["intended_action"]["args"][content_argument] = changed_value
+        with pytest.raises(AssertionError):
+            assert_schema_derived_args(changed, content_argument, ("Summary:",))
+
     assert {
         "verified-load-balancer-outage-article",
         "related-incident-changes-prevention-actions",
         "unresolved-incident-must-not-publish",
+        "unclear-incident-format-requires-user-choice",
     } <= cases_by_id.keys()
     assert "speculative root cause" in body
     assert "unresolved material facts" in body
@@ -441,22 +487,59 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
     article = cases_by_id["verified-load-balancer-outage-article"]
     assert article["expected_local_payload"]["intended_action"]["tool"] == "create_article"
     assert article["expected_local_payload"]["unresolved_facts"] == []
-    assert set(article["expected_local_payload"]["intended_action"]["args"]) == set(
-        article["simulated_write_tool_schema"]["input_schema"]["required"]
+    assert_schema_derived_args(
+        article,
+        "body",
+        ("Summary:", "Impact:", "Timeline:", "Root cause:", "Resolution:", "Validation:", "Follow-up:"),
     )
+    assert_rejects_changed_argument(article, "body", "wrong content")
+    wrong_article_tags = deepcopy(article)
+    wrong_article_tags["expected_local_payload"]["intended_action"]["args"]["tags"] = "wrong type"
+    with pytest.raises(AssertionError):
+        assert_schema_derived_args(wrong_article_tags, "body", ("Summary:",))
+    article_payload = json.dumps(article["expected_local_payload"])
+    assert "Aurora Labs" not in article_payload
+    assert "edge-token-should-not-publish" not in article_payload
 
     related = cases_by_id["related-incident-changes-prevention-actions"]
     assert related["expected_tool_sequence"][:2] == ["search", "get_article"]
     assert "previous incident" in related["expected"]
     assert related["expected_local_payload"]["intended_action"]["tool"] == "create_QA"
-    assert set(related["expected_local_payload"]["intended_action"]["args"]) == set(
-        related["simulated_write_tool_schema"]["input_schema"]["required"]
+    assert_schema_derived_args(
+        related,
+        "answer",
+        ("Summary:", "Impact:", "Timeline:", "Root cause:", "Resolution:", "Validation:", "Prevention:"),
     )
+    assert related["expected_local_payload"]["unresolved_facts"] == [
+        {
+            "fact": "Owner for the prevention action is not specified.",
+            "material": False,
+            "reason": "The prevention action itself is verified and can be tracked without an assigned owner.",
+        }
+    ]
+    assert "get_existing_tags" in related["expected_tool_sequence"]
+    assert "non-material unresolved owner" in related["expected"]
+    assert_rejects_changed_argument(related, "answer", "wrong content")
+    wrong_qa_tags = deepcopy(related)
+    wrong_qa_tags["expected_local_payload"]["intended_action"]["args"]["tags"] = ["wrong-tag"]
+    with pytest.raises(AssertionError):
+        assert_schema_derived_args(wrong_qa_tags, "answer", ("Summary:",))
 
     unresolved = cases_by_id["unresolved-incident-must-not-publish"]
     assert "expected_local_payload" not in unresolved
     assert "must not publish" in unresolved["expected"]
     assert "get_existing_tags" not in unresolved["expected_tool_sequence"]
+
+    unclear = cases_by_id["unclear-incident-format-requires-user-choice"]
+    assert unclear["expected_tool_sequence"] == [
+        "search",
+        "get_article",
+        "get_existing_tags",
+        "ask_user_to_choose_article_or_qa",
+    ]
+    assert "expected_local_payload" not in unclear
+    assert "simulated_write_tool_schema" not in unclear
+    assert "schema inspection" in unclear["expected"]
 
 
 def test_write_skill_requires_approval_gate(repo_fixture):
