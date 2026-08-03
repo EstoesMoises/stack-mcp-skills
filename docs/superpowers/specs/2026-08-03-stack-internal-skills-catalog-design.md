@@ -131,7 +131,7 @@ The main `SKILL.md` stays below both 500 lines and the recommended 5,000-token b
 
 The catalog entry repeats only discovery metadata: identifier, name, version, tier, summary, path, tags, required tools, write capability, supported adapters, and adapter compatibility status. The identifier equals the specification-compliant skill `name`; the `SKILL.md` remains the source of truth for behavior.
 
-For v1, `tier` is `core` or `extended`; adapter compatibility is `supported`, `experimental`, or `unsupported`; and write actions are an explicit list drawn from `create_question`, `create_QA`, `create_article`, `submit_user_answer`, `update_question`, `update_answer`, and `vote`. Required tool names must exist in the catalog schema's documented MCP tool enumeration.
+For v1, `tier` is `core` or `extended`; adapter compatibility is `supported`, `experimental`, or `unsupported`; and write actions are an explicit list drawn from `draft_question`, `create_question`, `create_QA`, `create_article`, `submit_user_answer`, `update_question`, `update_answer`, and `vote`. Required tool names must exist in the catalog schema's documented MCP tool enumeration.
 
 ## Shared behavior model
 
