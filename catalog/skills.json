@@ -85,6 +85,23 @@
         "cursor": "experimental",
         "github-copilot": "experimental"
       }
+    },
+    {
+      "id": "incident-to-knowledge",
+      "name": "Incident to Stack Internal Knowledge",
+      "version": "0.1.0",
+      "tier": "extended",
+      "summary": "Turn verified internal incidents into sourced, approval-gated articles or Q&A with objective incident records.",
+      "path": "skills/extended/incident-to-knowledge",
+      "tags": ["incident", "postmortem", "knowledge-capture"],
+      "required_tools": ["search", "get_question", "get_article", "get_existing_tags", "create_article", "create_QA"],
+      "write_actions": ["create_article", "create_QA"],
+      "adapters": {
+        "codex": "experimental",
+        "claude-code": "experimental",
+        "cursor": "experimental",
+        "github-copilot": "experimental"
+      }
     }
   ]
 }

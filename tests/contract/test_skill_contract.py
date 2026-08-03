@@ -402,6 +402,63 @@ def test_find_sme_evals_preserve_discovery_and_tag_resolution_contract():
         assert case["forbidden_actions"] == all_write_actions
 
 
+def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_payloads():
+    """Incident publishing stays blocked until facts, form, and exact args are approved."""
+    root = Path(__file__).parents[2]
+    skill_path = root / "skills/extended/incident-to-knowledge/SKILL.md"
+    eval_path = root / "skills/extended/incident-to-knowledge/evals/evals.json"
+    body = skill_path.read_text(encoding="utf-8")
+    cases = json.loads(eval_path.read_text(encoding="utf-8"))["cases"]
+    cases_by_id = {case["id"]: case for case in cases}
+    all_write_actions = [
+        "draft_question",
+        "create_question",
+        "create_QA",
+        "create_article",
+        "submit_user_answer",
+        "update_question",
+        "update_answer",
+        "vote",
+    ]
+
+    assert {
+        "verified-load-balancer-outage-article",
+        "related-incident-changes-prevention-actions",
+        "unresolved-incident-must-not-publish",
+    } <= cases_by_id.keys()
+    assert "speculative root cause" in body
+    assert "unresolved material facts" in body
+    assert "ask the user to choose" in body
+    assert "inspect the selected connected MCP tool's current input schema" in body
+    assert "byte-for-byte" in body
+    assert "Never claim success without server confirmation." in body
+
+    for case in cases:
+        assert case["forbidden_actions"] == all_write_actions
+        assert "Before explicit approval, do not call any write action." in case["expected"]
+        assert not set(case["expected_tool_sequence"]) & set(all_write_actions)
+
+    article = cases_by_id["verified-load-balancer-outage-article"]
+    assert article["expected_local_payload"]["intended_action"]["tool"] == "create_article"
+    assert article["expected_local_payload"]["unresolved_facts"] == []
+    assert set(article["expected_local_payload"]["intended_action"]["args"]) == set(
+        article["simulated_write_tool_schema"]["input_schema"]["required"]
+    )
+
+    related = cases_by_id["related-incident-changes-prevention-actions"]
+    assert related["expected_tool_sequence"][:2] == ["search", "get_article"]
+    assert "previous incident" in related["expected"]
+    assert related["expected_local_payload"]["intended_action"]["tool"] == "create_QA"
+    assert set(related["expected_local_payload"]["intended_action"]["args"]) == set(
+        related["simulated_write_tool_schema"]["input_schema"]["required"]
+    )
+
+    unresolved = cases_by_id["unresolved-incident-must-not-publish"]
+    assert "expected_local_payload" not in unresolved
+    assert "must not publish" in unresolved["expected"]
+    assert "get_existing_tags" not in unresolved["expected_tool_sequence"]
+
+
 def test_write_skill_requires_approval_gate(repo_fixture):
     repo_fixture.add_skill(write_actions="create_QA", body="# Skill\n\n## Workflow\nDraft content.")
 

@@ -1,0 +1,14 @@
+{
+  "positive": [
+    "Turn the verified internal postmortem for yesterday's API outage into an article after searching for related incidents.",
+    "Document our resolved degraded Kafka consumer incident with the measured impact, timeline, cause, fix, and validation.",
+    "Capture the failed production deployment as reusable Stack Internal knowledge once the incident review confirms the root cause.",
+    "Create a sourced Q&A from the resolved internal security event and include the verified prevention follow-up."
+  ],
+  "negative": [
+    "Help us plan a hypothetical disaster-recovery exercise for a regional outage.",
+    "Set up generic monitoring alerts for Kubernetes pods.",
+    "Summarize this public news report about a cloud-provider outage.",
+    "Debug our still-unresolved database timeout; we do not know the cause yet."
+  ]
+}
