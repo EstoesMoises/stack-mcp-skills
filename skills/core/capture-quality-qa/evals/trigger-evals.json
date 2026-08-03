@@ -1,0 +1,22 @@
+{
+  "positive": [
+    "Document this validated fix as an internal Q&A.",
+    "The migration issue is resolved; capture the workaround for the team.",
+    "Turn this reusable production workaround into Stack Internal guidance.",
+    "We finished debugging the cache failure. Save the lesson as internal knowledge.",
+    "Create an internal how-to for rotating the service certificate safely.",
+    "Update the outdated answer about the deployment rollback command.",
+    "Answer the existing internal question with the verified SSO configuration steps.",
+    "Vote on the internal guidance we used for this incident after I review the payload."
+  ],
+  "negative": [
+    "The bug is still intermittent; what should we investigate next?",
+    "Summarize the approach in generic terms.",
+    "Clean up these meeting notes for the engineering sync.",
+    "Draft a public blog post about our architecture.",
+    "Add a short code comment explaining this function.",
+    "Polish the README installation section.",
+    "Write a changelog entry for version 2.3.",
+    "I think the incident was caused by a database race, but we have not verified it."
+  ]
+}

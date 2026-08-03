@@ -6,6 +6,28 @@ from pathlib import Path
 from stack_skill_catalog.validation import validate_repository
 
 
+_QA_WRITE_ACTIONS = (
+    "draft_question",
+    "create_question",
+    "create_QA",
+    "submit_user_answer",
+    "update_question",
+    "update_answer",
+    "vote",
+)
+
+
+def test_capture_quality_qa_evals_forbid_every_write_before_approval():
+    """Keep every capture scenario safely paused at its approval gate."""
+    eval_path = Path(__file__).parents[2] / "skills/core/capture-quality-qa/evals/evals.json"
+    cases = json.loads(eval_path.read_text(encoding="utf-8"))["cases"]
+
+    required_guard = "Before explicit approval, do not call any write action."
+    for case in cases:
+        assert case["forbidden_actions"] == list(_QA_WRITE_ACTIONS)
+        assert required_guard in case["expected"]
+
+
 def test_established_company_debugging_eval_requires_matching_runtime_evidence_and_label():
     """Prevent the established-practice eval from accepting an unsupported label."""
     eval_path = Path(__file__).parents[2] / "skills/core/company-debugging/evals/evals.json"

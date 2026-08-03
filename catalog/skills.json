@@ -34,6 +34,23 @@
         "cursor": "experimental",
         "github-copilot": "experimental"
       }
+    },
+    {
+      "id": "capture-quality-qa",
+      "name": "Capture High-Quality Stack Internal Q&A",
+      "version": "0.1.0",
+      "tier": "core",
+      "summary": "Turn validated technical learnings into sanitized, duplicate-aware Stack Internal Q&A drafts with exact approval before writes.",
+      "path": "skills/core/capture-quality-qa",
+      "tags": ["knowledge-capture", "qa", "curation"],
+      "required_tools": ["search", "get_question", "get_article", "get_existing_tags", "draft_question", "create_question", "create_QA", "submit_user_answer", "update_question", "update_answer", "vote"],
+      "write_actions": ["draft_question", "create_question", "create_QA", "submit_user_answer", "update_question", "update_answer", "vote"],
+      "adapters": {
+        "codex": "experimental",
+        "claude-code": "experimental",
+        "cursor": "experimental",
+        "github-copilot": "experimental"
+      }
     }
   ]
 }
