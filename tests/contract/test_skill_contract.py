@@ -14,6 +14,7 @@ _QA_WRITE_ACTIONS = (
     "draft_question",
     "create_question",
     "create_QA",
+    "create_article",
     "submit_user_answer",
     "update_question",
     "update_answer",
@@ -267,29 +268,37 @@ def test_capture_quality_qa_evals_forbid_every_write_before_approval():
     required_guard = "Before explicit approval, do not call any write action."
     for case in cases:
         assert case["forbidden_actions"] == list(_QA_WRITE_ACTIONS)
-        assert required_guard in case["expected"]
+        if case["id"] != "response-lost-after-success":
+            assert required_guard in case["expected"]
         assert not set(case["expected_tool_sequence"]) & set(_QA_WRITE_ACTIONS)
 
     duplicate = cases_by_id["duplicate-proposes-existing-answer-update"]
     assert duplicate["simulated_mcp"]["get_question"]["answers"] == [
-        {"id": "a-241", "body": "Retry the migration manually after lock contention."}
+        {"id": 1241, "body": "Retry the migration manually after lock contention."}
     ]
-    assert duplicate["expected_local_payload"]["target_id"] == "a-241"
+    assert duplicate["expected_local_payload"]["target"] == {
+        "question_id": 241,
+        "answer_id": 1241,
+        "content_type": "answer",
+    }
+    assert duplicate["expected_local_payload"]["target_id"] == 1241
     assert duplicate["expected_local_payload"]["intended_action"] == {
         "tool": "update_answer",
         "args": {
-            "answer_id": "a-241",
-            "answer_body": "Resolution: set the orders schema lock timeout to 30 seconds before the backfill instead of manually retrying the migration.",
+            "questionId": 241,
+            "answerId": 1241,
+            "newBodyContent": "Resolution: set the orders schema lock timeout to 30 seconds before the backfill instead of manually retrying the migration.",
         },
     }
 
-    for case_id, operation in (("preapproval-upvote", "upvote"), ("preapproval-downvote", "downvote")):
+    for case_id, answer_id, is_upvote in (("preapproval-upvote", 1512, True), ("preapproval-downvote", 1513, False)):
         assert cases_by_id[case_id]["expected_local_payload"]["intended_action"] == {
             "tool": "vote",
             "args": {
-                "content_id": "a-512" if operation == "upvote" else "a-513",
-                "content_type": "answer",
-                "operation": operation,
+                "questionId": 512,
+                "answerId": answer_id,
+                "isUpvote": is_upvote,
+                "action": "add",
             },
         }
 
@@ -307,13 +316,7 @@ def test_capture_quality_qa_evals_require_complete_live_schema_arguments():
     """The displayed action args must be the complete post-approval MCP call."""
     eval_path = Path(__file__).parents[2] / "skills/core/capture-quality-qa/evals/evals.json"
     cases = json.loads(eval_path.read_text(encoding="utf-8"))["cases"]
-    visible_mappings = {
-        "create_QA": {"title": "title", "question": "question", "answer": "answer", "tags": "tags"},
-        "update_answer": {"answer_id": "target_id", "answer_body": "answer"},
-        "vote": {"content_id": "target_id"},
-    }
-
-    for case in cases:
+    for case in (case for case in cases if "expected_local_payload" in case):
         payload = case["expected_local_payload"]
         action = payload["intended_action"]
         schema = case["simulated_write_tool_schema"]
@@ -322,11 +325,21 @@ def test_capture_quality_qa_evals_require_complete_live_schema_arguments():
         assert action["tool"] == schema["tool"]
         assert set(args) == set(schema["input_schema"]["required"])
         assert args
-        for argument_name, visible_field in visible_mappings[action["tool"]].items():
-            assert args[argument_name] == payload[visible_field]
-        if action["tool"] == "vote":
-            assert args["content_type"] == "answer"
-            assert args["operation"] in {"upvote", "downvote"}
+        if action["tool"] == "create_QA":
+            assert args == {name: payload[name] for name in ("title", "question", "answer", "tags")}
+        elif action["tool"] == "update_answer":
+            assert args == {
+                "questionId": payload["target"]["question_id"],
+                "answerId": payload["target"]["answer_id"],
+                "newBodyContent": payload["answer"],
+            }
+        else:
+            assert args == {
+                "questionId": payload["target"]["question_id"],
+                "answerId": payload["target"]["answer_id"],
+                "isUpvote": payload["vote"]["isUpvote"],
+                "action": payload["vote"]["action"],
+            }
 
     skill_path = Path(__file__).parents[2] / "skills/core/capture-quality-qa/SKILL.md"
     body = skill_path.read_text(encoding="utf-8")
@@ -429,7 +442,8 @@ def test_fill_knowledge_gap_requires_exhausted_search_and_exact_question_approva
     for case in cases:
         assert case["forbidden_actions"] == list(_KNOWLEDGE_GAP_WRITE_ACTIONS)
         assert not set(case["expected_tool_sequence"]) & set(_KNOWLEDGE_GAP_WRITE_ACTIONS)
-        assert "Before explicit approval, do not call any write action." in case["expected"]
+        if case["id"] != "response-lost-after-success":
+            assert "Before explicit approval, do not call any write action." in case["expected"]
 
     missing = cases_by_id["missing-internal-api-rate-limit-standard"]
     assert_missing_gap_case(missing)
@@ -545,7 +559,7 @@ def test_triage_unanswered_requires_full_evidence_and_exact_approved_writes():
         "kubernetes-backlog-triage-with-evidence-based-answer",
         "existing-unaccepted-answer-requires-explicit-vote-approval",
         "insufficient-evidence-escalates-without-answer",
-    } == cases_by_id.keys()
+    } <= cases_by_id.keys()
 
     canonical_answer_schema = {
         "tool": "submit_user_answer",
@@ -654,7 +668,8 @@ def test_triage_unanswered_requires_full_evidence_and_exact_approved_writes():
         )
 
     for case in cases:
-        assert_preapproval_safety(case)
+        if case["id"] != "response-lost-after-success":
+            assert_preapproval_safety(case)
 
     backlog = cases_by_id["kubernetes-backlog-triage-with-evidence-based-answer"]
     assert backlog["expected_tool_sequence"] == [
@@ -891,7 +906,8 @@ def test_review_stale_content_requires_full_retrieval_comments_and_exact_update_
     all_write_actions = list(_KNOWLEDGE_GAP_WRITE_ACTIONS)
     for case in cases:
         assert case["forbidden_actions"] == all_write_actions
-        assert "Before explicit approval, do not call any write action." in case["expected"]
+        if case["id"] != "response-lost-after-success":
+            assert "Before explicit approval, do not call any write action." in case["expected"]
         assert not set(case["expected_tool_sequence"]) & set(all_write_actions)
 
     def assert_write_case_approval(case: dict[str, object]) -> None:
@@ -1037,7 +1053,8 @@ def test_review_stale_content_requires_full_retrieval_comments_and_exact_update_
     current = cases_by_id["old-article-remains-accurate"]
     assert current["expected_tool_sequence"] == ["search:focused", "get_article:601"]
     assert current["classification"] == "still-current"
-    assert current["simulated_mcp"]["get_article"]["comments"]
+    assert "comments" not in current["simulated_mcp"]["get_article"]
+    assert current["article_feedback_review"] == "incomplete-comments-unavailable"
     assert "expected_local_payload" not in current
 
     conflict = cases_by_id["conflicting-sources-require-human-resolution"]
@@ -1348,7 +1365,8 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
 
     for case in cases:
         assert case["forbidden_actions"] == all_write_actions
-        assert "Before explicit approval, do not call any write action." in case["expected"]
+        if case["id"] != "response-lost-after-success":
+            assert "Before explicit approval, do not call any write action." in case["expected"]
         assert not set(case["expected_tool_sequence"]) & set(all_write_actions)
 
     article = cases_by_id["verified-load-balancer-outage-article"]

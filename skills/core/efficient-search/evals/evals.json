@@ -69,6 +69,27 @@
       ]
     },
     {
+      "id": "answer-hit-resolves-parent-question",
+      "prompt": "What retry limit does our Fulfillment worker use?",
+      "simulated_mcp": {
+        "search": [{"results": [{"id": 9441, "type": "answer", "question_id": 441, "title": "How does Fulfillment retry work?", "tags": ["fulfillment"]}]}],
+        "get_question": {"id": 441, "title": "How does Fulfillment retry work?", "body": "How many attempts are made?", "answers": [{"id": 9441, "body": "The worker makes three attempts."}]}
+      },
+      "expected": "Inspect the answer result type, use its supplied parent question ID 441, call get_question for the full parent and answer, then cite the question title and ID and state only the three-attempt fact.",
+      "expected_tool_sequence": ["search", "get_question:441"],
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
+    },
+    {
+      "id": "answer-hit-without-parent-question-id",
+      "prompt": "What retry limit does our legacy Fulfillment worker use?",
+      "simulated_mcp": {
+        "search": [{"results": [{"id": 9551, "type": "answer", "title": "Legacy worker retries", "tags": ["fulfillment"]}]}]
+      },
+      "expected": "Inspect the answer result type, report that full retrieval is impossible because the parent question ID is unavailable, do not guess or cite the answer, and do not use its discovery metadata as evidence.",
+      "expected_tool_sequence": ["search"],
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
+    },
+    {
       "id": "no-result-rate-limiting-request",
       "prompt": "What is our internal rate-limiting policy for the partner import API?",
       "simulated_mcp": {

@@ -72,8 +72,8 @@ SMOKE_TESTS = (
     ),
     (
         "### Smoke test 3 — Write approval",
-        "We fixed the timeout; publish a Q&A.",
-        "duplicate search, valid tags, an exact local draft, and a pause before any write.",
+        "verified non-sensitive resolution",
+        "Request a payload/action change",
     ),
     (
         "### Smoke test 4 — MCP failure",
@@ -107,6 +107,9 @@ def test_adapter_guides_preserve_native_install_auth_and_smoke_contracts(repo_ro
         assert all(note in body for note in requirements["notes"])
         assert body.count("### Smoke test") == 4
         assert all(text in body for scenario in SMOKE_TESTS for text in scenario)
+        assert "byte-for-byte" in body
+        assert "fresh approval" in body
+        assert "non-production result" in body
         assert "copy each complete, self-contained skill directory" in body.lower()
         assert "[slug].stackenterprise.co/mcp" in body
         assert "oauth" in body.lower()

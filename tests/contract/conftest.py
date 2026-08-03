@@ -108,11 +108,19 @@ def repo_fixture(tmp_path: Path) -> RepoFixture:
     root = tmp_path / "repo"
     (root / "catalog").mkdir(parents=True)
     (root / "standards").mkdir()
+    (root / "compatibility").mkdir()
     (root / "catalog" / "skills.json").write_text(
         json.dumps({"catalog_version": "1.0.0", "skills": []}), encoding="utf-8"
     )
     (root / "standards" / "catalog-schema.json").write_text(
         (Path(__file__).parents[2] / "standards" / "catalog-schema.json").read_text(encoding="utf-8"),
         encoding="utf-8",
+    )
+    (root / "standards" / "adapter-evidence-schema.json").write_text(
+        (Path(__file__).parents[2] / "standards" / "adapter-evidence-schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (root / "compatibility" / "evidence.json").write_text(
+        json.dumps({"schema_version": "1.0.0", "records": []}), encoding="utf-8"
     )
     return RepoFixture(root)

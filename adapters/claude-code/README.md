@@ -36,7 +36,7 @@ Ask: “Write a Python function that reverses a string.” Expect no Stack Inter
 
 ### Smoke test 3 — Write approval
 
-Say: “We fixed the timeout; publish a Q&A.” Expect duplicate search, valid tags, an exact local draft, and a pause before any write.
+Use a verified non-sensitive resolution in a deterministic multi-turn test. Ask to publish it, then inspect the duplicate search, valid tags, exact local draft/action, and byte-for-byte tool arguments. Request a payload/action change and confirm there is no write and the changed payload requires fresh approval. Then approve the unchanged payload, inspect that the tool receives the displayed arguments byte-for-byte, and confirm only a non-production result.
 
 ### Smoke test 4 — MCP failure
 

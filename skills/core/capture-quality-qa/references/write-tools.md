@@ -16,7 +16,7 @@ Before any write, inspect the selected connected MCP tool's current input schema
 | `submit_user_answer` | Write | Retrieve the target question, review duplicates, obtain required tags if applicable, sanitize, and render the payload with `target_id`. | Explicit approval of the unchanged payload, `submit_user_answer`, and target is required first. |
 | `update_question` | Write | Retrieve the target question, confirm that an update is better than a duplicate, obtain required tags, sanitize, and render the payload with `target_id`. | Explicit approval of the unchanged payload, `update_question`, and target is required first. |
 | `update_answer` | Write | Retrieve the target question or answer context, confirm the answer is the proper target, sanitize, and render the payload with `target_id`. | Explicit approval of the unchanged payload, `update_answer`, and target is required first. |
-| `vote` | Write | Retrieve the target and confirm the exact supported operation (`upvote`, `downvote`, or `remove` if documented) and target type. Render those values in `intended_action.args` with `target_id`. | Explicit approval of the unchanged action, exact arguments, and target is required first; a vote is never automatic and no argument may be invented afterward. |
+| `vote` | Write | Retrieve the question and optional answer target; confirm the exact Boolean direction and supported `add` or `remove` action. Render structured IDs and those values without raw answer text. | Explicit approval of the unchanged action, exact arguments, and target is required first; a vote is never automatic and no argument may be invented afterward. |
 
 ## Write argument semantics
 
@@ -25,7 +25,7 @@ Before any write, inspect the selected connected MCP tool's current input schema
 - `create_QA`: map the visible title, question, answer, and valid tags.
 - `submit_user_answer`: map the retrieved question ID and visible answer.
 - `update_question`: map the retrieved question ID and the exact changed title, body, and tags.
-- `update_answer`: map the retrieved answer ID and exact changed answer body.
-- `vote`: map the retrieved target ID and type plus the exact user-selected supported operation.
+- `update_answer`: map the retrieved question ID, answer ID, and exact changed answer body. The current modeled schema is `questionId`, `answerId`, and `newBodyContent`; inspect runtime schema before calling.
+- `vote`: map the retrieved question ID, optional answer ID, exact Boolean direction, and exact user-selected `add` or `remove` action. The current modeled schema is `questionId`, optional `answerId`, `isUpvote`, and `action`; inspect runtime schema before calling. Never include raw retrieved answer text in a vote display or call.
 
 For every write, server-added provenance is acceptable only when it leaves the approved client payload unchanged and visible. Any client-field, target, tag, or action change requires a new rendered payload and confirmation.

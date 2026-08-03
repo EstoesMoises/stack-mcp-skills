@@ -8,7 +8,9 @@
         "get_existing_tags": [{"id": "tag-kubernetes", "name": "kubernetes"}],
         "recommend_SME": [{"name": "Ari Chen", "activity": "Kubernetes-tagged Stack Internal activity"}]
       },
-      "expected_tool_sequence": ["search:kubernetes-network-policy", "get_existing_tags:kubernetes-network-policy", "recommend_SME:tag-kubernetes"],
+      "expected_tool_sequence": ["search:kubernetes-network-policy", "get_existing_tags:{}", "recommend_SME:tag-kubernetes"],
+      "simulated_tool_schemas": {"get_existing_tags": {"required": [], "additionalProperties": false}},
+      "local_tag_filter": "kubernetes",
       "resolved_tag": {"id": "tag-kubernetes", "name": "kubernetes"},
       "expected": "Run search first and present Kubernetes NetworkPolicy rollout notes (ID: q-101) only as Discovery:, not as an answer. Because the user says the discovery result does not resolve the problem, resolve the exact kubernetes tag ID before calling recommend_SME. List Ari Chen only as an SME candidate returned for that tag; do not infer expertise from the name or title.",
       "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
@@ -20,7 +22,9 @@
         "search": [{"id": "a-202", "type": "article", "title": "Authentication migration overview", "tags": ["authentication", "identity"], "snippet": "Migration overview."}],
         "get_existing_tags": [{"id": "tag-authentication", "name": "authentication"}, {"id": "tag-identity", "name": "identity"}]
       },
-      "expected_tool_sequence": ["search:authentication-ownership", "get_existing_tags:authentication-ownership", "ask_user_to_choose_tag"],
+      "expected_tool_sequence": ["search:authentication-ownership", "get_existing_tags:{}", "ask_user_to_choose_tag"],
+      "simulated_tool_schemas": {"get_existing_tags": {"required": [], "additionalProperties": false}},
+      "local_tag_filter": "authentication ownership",
       "expected": "Present Authentication migration overview (ID: a-202) as Discovery: only. Both authentication and identity are plausible tags for the request, so ask the user to choose the intended tag and do not call recommend_SME.",
       "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
     },
@@ -32,7 +36,9 @@
         "get_existing_tags": [{"id": "tag-ledger", "name": "ledger"}],
         "recommend_SME": [{"name": "Mika Rao", "activity": "Ledger-tagged Stack Internal activity"}]
       },
-      "expected_tool_sequence": ["search:ledger-retention-policy", "get_existing_tags:ledger-retention-policy", "recommend_SME:tag-ledger"],
+      "expected_tool_sequence": ["search:ledger-retention-policy", "get_existing_tags:{}", "recommend_SME:tag-ledger"],
+      "simulated_tool_schemas": {"get_existing_tags": {"required": [], "additionalProperties": false}},
+      "local_tag_filter": "ledger retention policy",
       "resolved_tag": {"id": "tag-ledger", "name": "ledger"},
       "expected": "The successful empty search must state: No relevant sources were found. It is not an MCP failure. Because the Ledger topic is clear and the user still needs help, resolve the ledger tag and call recommend_SME with ID tag-ledger. List Mika Rao only as an SME candidate returned for that tag.",
       "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
@@ -45,7 +51,9 @@
         "get_existing_tags": [{"id": "tag-legacy-batch-import", "name": "legacy-batch-import"}],
         "recommend_SME": []
       },
-      "expected_tool_sequence": ["search:legacy-batch-import", "get_existing_tags:legacy-batch-import", "recommend_SME:tag-legacy-batch-import"],
+      "expected_tool_sequence": ["search:legacy-batch-import", "get_existing_tags:{}", "recommend_SME:tag-legacy-batch-import"],
+      "simulated_tool_schemas": {"get_existing_tags": {"required": [], "additionalProperties": false}},
+      "local_tag_filter": "legacy batch import",
       "resolved_tag": {"id": "tag-legacy-batch-import", "name": "legacy-batch-import"},
       "expected": "Present Legacy batch import migration (ID: q-303) as Discovery: rather than a full answer. Resolve legacy-batch-import by ID, call recommend_SME with that ID, then state: No SME candidates were returned for tag legacy-batch-import (ID: tag-legacy-batch-import). Do not infer an expert from legacy ownership or the search hit.",
       "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]

@@ -47,14 +47,14 @@ Record the commit SHA, reviewer, review date, changed skills and adapters, pass/
 
 Using an authorized test tenant, run all four adapter smoke tests from each adapter guide for Codex, Claude Code, Cursor, and GitHub Copilot. Test the exact release candidate skill content. Confirm conditional search, the generic negative trigger, the write-approval pause, and honest MCP failure handling from observable tool calls and responses.
 
-Create one evidence record per client and skill version:
+Create one evidence record per client and skill version in `compatibility/evidence.json`, validated by `standards/adapter-evidence-schema.json`:
 
-| Date | Client | Client version | Skill version | Commit SHA | Tenant | Smoke tests | Pass/fail | Notes | Reviewer |
+| Date | Client | Client version | Skill version | Commit SHA | Tenant purpose | Smoke tests | Pass/fail | Notes | Reviewer |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| YYYY-MM-DD | Codex, Claude Code, Cursor, or GitHub Copilot | Exact tested version | Exact tested catalog/skill version | Tested commit | Authorized test tenant identifier | 1-4 with evidence links | Pass or fail | Limitations and failures | Name |
+| YYYY-MM-DD | Codex, Claude Code, Cursor, or GitHub Copilot | Exact tested version | Exact tested catalog/skill version | Tested commit | non-production skill validation | 1-4 with non-sensitive evidence references | Pass or fail | Limitations and failures | Name |
 
 - [ ] Every client has results for smoke tests 1 through 4.
-- [ ] Evidence identifies the authorized test tenant without recording credentials, tokens, personal data, or unnecessary customer data.
+- [ ] Evidence records only the fixed tenant purpose `non-production skill validation`. It must not record a public or private tenant identifier, slug, name, credentials, tokens, raw retrieved content, personal data, or customer data.
 - [ ] Failures and client limitations are documented; no simulated result is substituted for a live run.
 - [ ] The evidence record is reviewed before any compatibility metadata changes.
 

@@ -28,6 +28,8 @@ Core skills cover the default search, debugging, and knowledge-capture loop. Ext
 
 Adapter compatibility is experimental until the tenant-backed release gate passes for the exact client and skill versions. See the [release checklist](docs/release-checklist.md) for the distinction between automated validation and live compatibility evidence.
 
+Auditable compatibility records use the versioned [evidence schema](standards/adapter-evidence-schema.json) and [evidence registry](compatibility/evidence.json). The empty registry is the valid pre-gate state; no adapter is promoted without complete passing tenant-backed records, and records never contain tenant identifiers or raw content.
+
 ## Ten-minute quickstart
 
 1. Ask your Stack Internal administrator to enable MCP, then connect your client to `https://[slug].stackenterprise.co/mcp` and complete OAuth with your authorized tenant account. Use your customer-specific slug.
