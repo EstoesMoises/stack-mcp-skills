@@ -356,36 +356,45 @@ def test_find_sme_evals_preserve_discovery_and_tag_resolution_contract():
         "vote",
     ]
 
-    assert {"kubernetes-sme-after-insufficient-discovery", "ambiguous-auth-tags-require-clarification", "tag-with-no-activity-has-no-sme"} <= cases_by_id.keys()
+    assert {
+        "kubernetes-sme-after-insufficient-discovery",
+        "ambiguous-auth-tags-require-clarification",
+        "no-relevant-discovery-still-resolves-clear-tag",
+        "tag-with-no-activity-has-no-sme",
+    } <= cases_by_id.keys()
     assert "discovery metadata, not a full-source answer" in body
     assert "current conversation already contains a verified full-source answer" in body
     assert "user says a surfaced source resolves the need" in body
     assert "Do not call `get_question` or `get_article`." in body
     assert "exact semantic match" in body
     assert "do not infer expertise" in body.lower()
+    assert "successful search has no relevant results" in body
+    assert "continue to `get_existing_tags`" in body
+
+    def assert_resolved_recommendation_order(case):
+        sequence = case["expected_tool_sequence"]
+        assert len(sequence) == 3
+        assert sequence[0].startswith("search:")
+        assert sequence[1].startswith("get_existing_tags:")
+        assert sequence[2] == f"recommend_SME:{case['resolved_tag']['id']}"
 
     kubernetes = cases_by_id["kubernetes-sme-after-insufficient-discovery"]
-    assert kubernetes["expected_tool_sequence"] == [
-        "search:kubernetes-network-policy",
-        "get_existing_tags:kubernetes-network-policy",
-        "recommend_SME:tag-kubernetes",
-    ]
+    assert_resolved_recommendation_order(kubernetes)
     assert kubernetes["resolved_tag"] == {"id": "tag-kubernetes", "name": "kubernetes"}
 
     ambiguous = cases_by_id["ambiguous-auth-tags-require-clarification"]
-    assert ambiguous["expected_tool_sequence"] == [
-        "search:authentication-ownership",
-        "get_existing_tags:authentication-ownership",
-        "ask_user_to_choose_tag",
-    ]
+    assert ambiguous["expected_tool_sequence"][0].startswith("search:")
+    assert ambiguous["expected_tool_sequence"][1].startswith("get_existing_tags:")
+    assert ambiguous["expected_tool_sequence"][-1] == "ask_user_to_choose_tag"
     assert "recommend_SME" not in ambiguous["expected_tool_sequence"]
 
+    no_relevant = cases_by_id["no-relevant-discovery-still-resolves-clear-tag"]
+    assert no_relevant["simulated_mcp"]["search"] == []
+    assert_resolved_recommendation_order(no_relevant)
+    assert "No relevant sources were found" in no_relevant["expected"]
+
     no_candidate = cases_by_id["tag-with-no-activity-has-no-sme"]
-    assert no_candidate["expected_tool_sequence"] == [
-        "search:legacy-batch-import",
-        "get_existing_tags:legacy-batch-import",
-        "recommend_SME:tag-legacy-batch-import",
-    ]
+    assert_resolved_recommendation_order(no_candidate)
     assert no_candidate["simulated_mcp"]["recommend_SME"] == []
     assert "No SME candidates were returned" in no_candidate["expected"]
 

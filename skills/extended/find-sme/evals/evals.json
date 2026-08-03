@@ -25,6 +25,19 @@
       "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
     },
     {
+      "id": "no-relevant-discovery-still-resolves-clear-tag",
+      "prompt": "Find the internal expert for our clear, company-specific Ledger retention-policy question; I still need help even if no Stack Internal search result is relevant.",
+      "simulated_mcp": {
+        "search": [],
+        "get_existing_tags": [{"id": "tag-ledger", "name": "ledger"}],
+        "recommend_SME": [{"name": "Mika Rao", "activity": "Ledger-tagged Stack Internal activity"}]
+      },
+      "expected_tool_sequence": ["search:ledger-retention-policy", "get_existing_tags:ledger-retention-policy", "recommend_SME:tag-ledger"],
+      "resolved_tag": {"id": "tag-ledger", "name": "ledger"},
+      "expected": "The successful empty search must state: No relevant sources were found. It is not an MCP failure. Because the Ledger topic is clear and the user still needs help, resolve the ledger tag and call recommend_SME with ID tag-ledger. List Mika Rao only as an SME candidate returned for that tag.",
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
+    },
+    {
       "id": "tag-with-no-activity-has-no-sme",
       "prompt": "The old batch-import workflow is failing and the returned search metadata does not answer my question. Can you find an internal expert?",
       "simulated_mcp": {

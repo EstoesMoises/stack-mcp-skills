@@ -20,8 +20,8 @@ Load [the SME tool reference](references/sme-tools.md) only when tool input sema
 
 1. Confirm the technical topic and what help the user still needs. If the request has no company-specific context or is not an internal-expert request, continue without Stack Internal.
 2. Run one focused `search` for the topic, using distinctive internal component, error, workflow, or technology terms. Search may return titles, tags, IDs, and snippets; these are discovery metadata, not a full-source answer. Do not call `get_question` or `get_article`.
-3. Present relevant search hits as discovery, with their title and ID when available. Do not state that a hit answers the question or treat its snippet as evidence.
-4. Avoid SME escalation only when the current conversation already contains a verified full-source answer, or the user says a surfaced source resolves the need. A `search` result alone cannot establish either condition. Otherwise, if the user still needs help, continue to tag resolution.
+3. Present relevant search hits as discovery, with their title and ID when available. Do not state that a hit answers the question or treat its snippet as evidence. If a successful search has no relevant results or only irrelevant discovery metadata, state `No relevant sources were found.` This is an honest zero-source result, not a search failure.
+4. Avoid SME escalation only when the current conversation already contains a verified full-source answer, or the user says a surfaced source resolves the need. A `search` result alone cannot establish either condition. Otherwise, if the user still needs help, continue to `get_existing_tags` even after a successful zero-source result when the topic is clear.
 5. Call `get_existing_tags` with the topic terms and candidate tags from discovery. Select a tag only when it is an exact semantic match for the topic. If several returned tags are plausible, show the alternatives and ask the user which tag they mean; do not call `recommend_SME` until they choose. If no returned tag is an exact semantic match, say that no matching existing tag was found and do not guess or create one.
 6. Call `recommend_SME` only with the resolved existing tag ID, never a tag name. Report its candidates as recommendations associated with that tag; do not infer expertise from names, job titles, generic organizational assumptions, or unrelated activity.
 7. If `recommend_SME` returns no candidates, say `No SME candidates were returned for tag <name> (ID: <id>).` Offer to refine the topic or choose another existing tag only with the user's direction.
@@ -29,6 +29,7 @@ Load [the SME tool reference](references/sme-tools.md) only when tool input sema
 ## Response rules
 
 - State the focused search query and label its results `Discovery:`. Include a title and content ID for every surfaced hit when available.
+- For a successful search with no relevant discovery, state `No relevant sources were found.` and continue the clear-topic SME workflow; do not describe this absence as an MCP failure.
 - State `Resolved tag:` with the exact tag name and ID before listing candidates.
 - State `SME candidates:` only after `recommend_SME` succeeds. If it returns none, use the no-candidate wording from the workflow; do not substitute a guessed person.
 - Keep discovery separate from a verified answer. This skill cannot retrieve full sources, so it must not claim that search snippets fully answer the user's need.
@@ -36,7 +37,7 @@ Load [the SME tool reference](references/sme-tools.md) only when tool input sema
 
 ## Failure handling
 
-- If `search` is unavailable, fails, or returns no relevant discovery metadata, report that outcome honestly and ask whether the user wants to refine the topic or continue without Stack Internal. Do not claim that internal content was searched successfully when the call failed.
-- If `get_existing_tags` is unavailable, fails, or yields no exact semantic match, report that tag resolution could not be completed and do not call `recommend_SME`.
+- If `search` is unavailable or fails, report the tool or access failure honestly and ask whether the user wants to retry, refine the topic, or continue without Stack Internal. Do not claim that internal content was searched successfully when the call failed.
+- If `get_existing_tags` is unavailable or fails, report that tag resolution could not be completed and do not call `recommend_SME`.
 - If tag choice is ambiguous, pause for clarification rather than selecting the closest-looking tag.
 - If `recommend_SME` fails, report the failed recommendation step and do not claim that a person was recommended. If it succeeds with an empty result, report no candidates rather than an error or an inferred expert.
