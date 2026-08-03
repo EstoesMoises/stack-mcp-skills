@@ -13,7 +13,12 @@ ADAPTERS = {
             "codex mcp login stack-internal",
         ),
         "invocation": ("automatically when the request matches its description", "$skill-name", "/skills"),
-        "notes": ("may register the server without opening the browser", "restart Codex"),
+        "notes": (
+            "may register the server without opening the browser",
+            "The browser opens when you invoke this explicit login action.",
+            "Unauthenticated use may report that authentication is required; it is not promised to open a browser.",
+            "restart Codex",
+        ),
     },
     "claude-code": {
         "paths": (".claude/skills/<skill-name>/", "~/.claude/skills/<skill-name>/"),
@@ -22,7 +27,11 @@ ADAPTERS = {
             "claude mcp login stack-internal",
         ),
         "invocation": ("automatically when a request matches their descriptions", "/skill-name"),
-        "notes": ("may register the server without opening the browser",),
+        "notes": (
+            "may register the server without opening the browser",
+            "The browser opens when you invoke `/mcp` authentication or this explicit login action.",
+            "Unauthenticated use may report that authentication is required; it is not promised to open a browser.",
+        ),
     },
     "cursor": {
         "paths": (".cursor/skills/<skill-name>/", "~/.cursor/skills/<skill-name>/"),
@@ -104,6 +113,10 @@ def test_adapter_guides_preserve_native_install_auth_and_smoke_contracts(repo_ro
         assert "```json" not in body.lower()
         assert "experimental" in body.lower()
         assert "adapter compatibility: supported" not in body.lower()
+
+    for adapter in ("codex", "claude-code"):
+        body = (repo_root / "adapters" / adapter / "README.md").read_text(encoding="utf-8").lower()
+        assert "first use" not in body
 
     assert "Claude API skill-upload" in (repo_root / "adapters" / "claude-code" / "README.md").read_text(encoding="utf-8")
     for adapter in ("cursor", "github-copilot"):

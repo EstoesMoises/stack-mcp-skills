@@ -14,13 +14,13 @@ Your Stack Internal administrator must enable the MCP server, and you must have 
 codex mcp add stack-internal --url https://[slug].stackenterprise.co/mcp
 ```
 
-The add command may register the server without opening the browser. Complete OAuth with an authorized tenant account by logging in; the browser opens at login or first use, rather than necessarily during registration:
+The add command may register the server without opening the browser. Complete OAuth with an authorized tenant account by logging in:
 
 ```bash
 codex mcp login stack-internal
 ```
 
-Return to Codex after authorization. Codex detects skill changes automatically; if discovery appears stale, restart Codex and try again. A failed authorization, unavailable endpoint, or missing permission is an MCP access failure, not evidence that Stack Internal was searched.
+The browser opens when you invoke this explicit login action. Return to Codex after authorization. Unauthenticated use may report that authentication is required; it is not promised to open a browser. Codex detects skill changes automatically; if discovery appears stale, restart Codex and try again. A failed authorization, unavailable endpoint, or missing permission is an MCP access failure, not evidence that Stack Internal was searched.
 
 ## Compatibility status
 

@@ -20,7 +20,7 @@ The add command may register the server without opening the browser. Open `/mcp`
 claude mcp login stack-internal
 ```
 
-The browser opens at login or first use when authentication is required. A failed authorization, unavailable endpoint, or missing permission is an MCP access failure, not evidence that Stack Internal was searched.
+The browser opens when you invoke `/mcp` authentication or this explicit login action. Unauthenticated use may report that authentication is required; it is not promised to open a browser. A failed authorization, unavailable endpoint, or missing permission is an MCP access failure, not evidence that Stack Internal was searched.
 
 ## Compatibility status
 
