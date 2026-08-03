@@ -13,6 +13,14 @@ REQUIRED_AUTOMATED_COMMANDS = (
     "uv run pytest -q",
     "uv run python scripts/validate_catalog.py .",
 )
+PINNED_ACTIONS = (
+    "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+    "astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b",
+)
+PINNED_ACTION_LINES = (
+    "- uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0",
+    "- uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0",
+)
 
 
 def _markdown_links(path: Path) -> list[str]:
@@ -48,6 +56,16 @@ def test_readme_catalog_table_matches_catalog():
     assert documented == expected
 
 
+def test_readme_describes_experimental_adapter_packaging_without_portability_claim():
+    """The landing page must not imply compatibility before tenant-backed evidence exists."""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    introduction = readme.split("## Catalog", 1)[0].lower()
+
+    assert "packaged for the documented experimental adapters" in introduction
+    assert "tenant-backed" in introduction
+    assert "portable across the documented clients" not in introduction
+
+
 def test_public_document_relative_links_resolve():
     """Public navigation may not point to missing repository artifacts."""
     documents = (
@@ -67,13 +85,15 @@ def test_public_document_relative_links_resolve():
 def test_ci_runs_every_automated_release_gate():
     """A green CI run must exercise every locally documented automated gate."""
     workflow_path = ROOT / ".github/workflows/validate.yml"
-    workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+    workflow_text = workflow_path.read_text(encoding="utf-8")
+    workflow = yaml.safe_load(workflow_text)
     steps = workflow["jobs"]["validate"]["steps"]
     used_actions = [step["uses"] for step in steps if "uses" in step]
     run_steps = [step["run"] for step in steps if "run" in step]
     release_checklist = (ROOT / "docs/release-checklist.md").read_text(encoding="utf-8")
 
-    assert used_actions == ["actions/checkout@v4", "astral-sh/setup-uv@v6"]
+    assert used_actions == list(PINNED_ACTIONS)
+    assert all(line in workflow_text for line in PINNED_ACTION_LINES)
     assert all(command in run_steps for command in REQUIRED_AUTOMATED_COMMANDS)
     assert all(command in release_checklist for command in REQUIRED_AUTOMATED_COMMANDS)
     assert any(
@@ -82,6 +102,17 @@ def test_ci_runs_every_automated_release_gate():
         for command in run_steps
     )
     assert 'uv run skills-ref validate "$skill"' in release_checklist
+
+
+def test_ci_triggers_on_pull_requests_and_main_pushes():
+    """Validation must run for proposed changes and every update to the release branch."""
+    workflow_text = (ROOT / ".github/workflows/validate.yml").read_text(encoding="utf-8")
+
+    assert re.search(
+        r"^on:\n  pull_request:\n  push:\n    branches: \[main\]$",
+        workflow_text,
+        flags=re.MULTILINE,
+    )
 
 
 def test_contribution_contract_states_eval_and_resource_requirements():

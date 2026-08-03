@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 import json
 from pathlib import Path
+import re
 
 import pytest
 
@@ -1428,8 +1429,26 @@ def test_every_write_action_is_covered_by_exact_approval():
     for entry in catalog["skills"]:
         if entry["write_actions"]:
             body = (root / entry["path"] / "SKILL.md").read_text(encoding="utf-8")
-            assert "## Approval gate" in body
-            assert "changed payload requires new approval" in body.lower()
+            approval_match = re.search(
+                r"^## Approval gate\s*$\n(?P<section>.*?)(?=^## |\Z)",
+                body,
+                flags=re.MULTILINE | re.DOTALL,
+            )
+            assert approval_match, f"missing exact approval section: {entry['id']}"
+            approval_section = approval_match.group("section")
+            assert "changed payload requires new approval" in approval_section.lower()
+
+            guarded_paragraphs = [
+                paragraph
+                for paragraph in approval_section.split("\n\n")
+                if "do not call" in paragraph.lower()
+                and ("until" in paragraph.lower() or "unless" in paragraph.lower())
+                and "approv" in paragraph.lower()
+            ]
+            for action in entry["write_actions"]:
+                assert any(
+                    f"`{action}`" in paragraph for paragraph in guarded_paragraphs
+                ), f"{entry['id']} does not explicitly guard {action} before approval"
 
 
 def test_valid_skill_fixture_passes(repo_fixture):

@@ -2,7 +2,7 @@
 
 Install these Agent Skills to make coding agents search Stack Internal automatically when work depends on company-specific knowledge, while keeping every content write under explicit human control.
 
-The catalog ships three foundational core skills and six opt-in extended workflows. Each skill is self-contained, portable across the documented clients, and validated against the [Agent Skills specification](https://agentskills.io/specification).
+The catalog ships three foundational core skills and six opt-in extended workflows. Each skill is self-contained, validated against the [Agent Skills specification](https://agentskills.io/specification), and packaged for the documented experimental adapters. Adapter compatibility remains experimental until tenant-backed evidence exists for the exact client and skill versions.
 
 ## Catalog
 
