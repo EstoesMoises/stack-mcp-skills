@@ -2,6 +2,8 @@
 
 Load this reference when selecting an action, identifying its target, or deciding whether tags and confirmation are required.
 
+Before any write, inspect the selected connected MCP tool's current input schema. Its parameter names are the only authoritative names; the semantic mappings below describe values, not portable request keys. Render the complete schema-required `intended_action.args` object before approval, visibly copying or deriving each value from the top-level payload. If the schema is unavailable, ambiguous, or cannot be mapped completely, stop without writing. After approval, pass those exact args byte-for-byte.
+
 | Tool | Kind | Prerequisite | Confirmation rule |
 | --- | --- | --- | --- |
 | `search` | Read | A resolved or reusable internal learning and one focused duplicate query. | No confirmation; use results only to discover candidates. |
@@ -15,5 +17,15 @@ Load this reference when selecting an action, identifying its target, or decidin
 | `update_question` | Write | Retrieve the target question, confirm that an update is better than a duplicate, obtain required tags, sanitize, and render the payload with `target_id`. | Explicit approval of the unchanged payload, `update_question`, and target is required first. |
 | `update_answer` | Write | Retrieve the target question or answer context, confirm the answer is the proper target, sanitize, and render the payload with `target_id`. | Explicit approval of the unchanged payload, `update_answer`, and target is required first. |
 | `vote` | Write | Retrieve the target and confirm the exact supported operation (`upvote`, `downvote`, or `remove` if documented) and target type. Render those values in `intended_action.args` with `target_id`. | Explicit approval of the unchanged action, exact arguments, and target is required first; a vote is never automatic and no argument may be invented afterward. |
+
+## Write argument semantics
+
+- `draft_question`: map the visible title, question body, and valid tags.
+- `create_question`: map the visible title, body, and valid tags.
+- `create_QA`: map the visible title, question, answer, and valid tags.
+- `submit_user_answer`: map the retrieved question ID and visible answer.
+- `update_question`: map the retrieved question ID and the exact changed title, body, and tags.
+- `update_answer`: map the retrieved answer ID and exact changed answer body.
+- `vote`: map the retrieved target ID and type plus the exact user-selected supported operation.
 
 For every write, server-added provenance is acceptable only when it leaves the approved client payload unchanged and visible. Any client-field, target, tag, or action change requires a new rendered payload and confirmation.

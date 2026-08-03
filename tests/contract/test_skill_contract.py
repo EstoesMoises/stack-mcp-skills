@@ -44,13 +44,20 @@ def test_capture_quality_qa_evals_forbid_every_write_before_approval():
     assert duplicate["expected_local_payload"]["target_id"] == "a-241"
     assert duplicate["expected_local_payload"]["intended_action"] == {
         "tool": "update_answer",
-        "args": {"target_type": "answer"},
+        "args": {
+            "answer_id": "a-241",
+            "answer_body": "Resolution: set the orders schema lock timeout to 30 seconds before the backfill instead of manually retrying the migration.",
+        },
     }
 
     for case_id, operation in (("preapproval-upvote", "upvote"), ("preapproval-downvote", "downvote")):
         assert cases_by_id[case_id]["expected_local_payload"]["intended_action"] == {
             "tool": "vote",
-            "args": {"operation": operation, "target_type": "answer"},
+            "args": {
+                "content_id": "a-512" if operation == "upvote" else "a-513",
+                "content_type": "answer",
+                "operation": operation,
+            },
         }
 
 
@@ -61,6 +68,37 @@ def test_capture_quality_qa_reports_only_confirmed_write_results():
 
     assert "Report the confirmed result and returned created or updated content ID when available." in body
     assert "Never claim success without server confirmation." in body
+
+
+def test_capture_quality_qa_evals_require_complete_live_schema_arguments():
+    """The displayed action args must be the complete post-approval MCP call."""
+    eval_path = Path(__file__).parents[2] / "skills/core/capture-quality-qa/evals/evals.json"
+    cases = json.loads(eval_path.read_text(encoding="utf-8"))["cases"]
+    visible_mappings = {
+        "create_QA": {"title": "title", "question": "question", "answer": "answer", "tags": "tags"},
+        "update_answer": {"answer_id": "target_id", "answer_body": "answer"},
+        "vote": {"content_id": "target_id"},
+    }
+
+    for case in cases:
+        payload = case["expected_local_payload"]
+        action = payload["intended_action"]
+        schema = case["simulated_write_tool_schema"]
+        args = action["args"]
+
+        assert action["tool"] == schema["tool"]
+        assert set(args) == set(schema["input_schema"]["required"])
+        assert args
+        for argument_name, visible_field in visible_mappings[action["tool"]].items():
+            assert args[argument_name] == payload[visible_field]
+        if action["tool"] == "vote":
+            assert args["content_type"] == "answer"
+            assert args["operation"] in {"upvote", "downvote"}
+
+    skill_path = Path(__file__).parents[2] / "skills/core/capture-quality-qa/SKILL.md"
+    body = skill_path.read_text(encoding="utf-8")
+    assert "inspect the connected MCP tool's current input schema" in body
+    assert "byte-for-byte" in body
 
 
 def test_established_company_debugging_eval_requires_matching_runtime_evidence_and_label():
