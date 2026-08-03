@@ -334,7 +334,7 @@ def test_capture_quality_qa_evals_require_complete_live_schema_arguments():
 
 
 def test_fill_knowledge_gap_requires_exhausted_search_and_exact_question_approval():
-    """A gap draft follows three empty searches, full duplicate retrieval, and no hidden write."""
+    """A gap draft has bounded proof and one fully visible live-schema action per approved path."""
     root = Path(__file__).parents[2]
     skill_path = root / "skills/extended/fill-knowledge-gap/SKILL.md"
     eval_path = root / "skills/extended/fill-knowledge-gap/evals/evals.json"
@@ -346,17 +346,24 @@ def test_fill_knowledge_gap_requires_exhausted_search_and_exact_question_approva
     cases_by_id = {case["id"]: case for case in cases}
     assert {
         "missing-internal-api-rate-limit-standard",
+        "create-question-after-exhausted-search",
         "near-match-prevents-duplicate-question",
         "authentication-failure-is-not-a-gap",
     } <= cases_by_id.keys()
 
-    canonical_draft_question_schema = {
+    canonical_question_input_schema = {
         "type": "object",
-        "required": ["title", "question", "tags"],
+        "required": ["title", "body", "tags", "draftReviewed"],
         "properties": {
             "title": {"type": "string"},
-            "question": {"type": "string"},
-            "tags": {"type": "array", "items": {"type": "string"}},
+            "body": {"type": "string"},
+            "tags": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 3,
+                "items": {"type": "string", "minLength": 1},
+            },
+            "draftReviewed": {"type": "boolean"},
         },
     }
 
@@ -379,19 +386,25 @@ def test_fill_knowledge_gap_requires_exhausted_search_and_exact_question_approva
         assert set(searches) == {"focused", "broadened-1", "broadened-2"}
         assert all(results == [] for results in searches.values())
 
-    def assert_exact_draft_question_args(
-        payload: dict[str, object], schema: dict[str, object]
+    def assert_exact_question_write_args(
+        payload: dict[str, object], schema: dict[str, object], tool: str
     ) -> None:
-        assert schema == {"tool": "draft_question", "input_schema": canonical_draft_question_schema}
+        assert schema == {"tool": tool, "input_schema": canonical_question_input_schema}
         action = payload["intended_action"]
         assert isinstance(action, dict)
-        assert action["tool"] == "draft_question"
+        assert action["tool"] == tool
         args = action["args"]
         assert isinstance(args, dict)
-        assert set(args) == {"title", "question", "tags"}
+        assert set(args) == {"title", "body", "tags", "draftReviewed"}
         assert args["title"] == payload["title"]
-        assert args["question"] == payload["question"]
+        assert args["body"] == payload["question"]
         assert args["tags"] == payload["tags"]
+        assert args["draftReviewed"] is True
+        assert payload["draftReviewed"] is True
+        tags = args["tags"]
+        assert isinstance(tags, list)
+        assert 1 <= len(tags) <= 3
+        assert all(isinstance(tag, str) and tag for tag in tags)
 
     def assert_near_match_halts(case: dict[str, object]) -> None:
         assert case["expected_tool_sequence"] == ["search:focused", "get_question"]
@@ -421,7 +434,23 @@ def test_fill_knowledge_gap_requires_exhausted_search_and_exact_question_approva
     assert_missing_gap_case(missing)
     payload = missing["expected_local_payload"]
     schema = missing["simulated_write_tool_schema"]
-    assert_exact_draft_question_args(payload, schema)
+    assert_exact_question_write_args(payload, schema, "draft_question")
+
+    create = cases_by_id["create-question-after-exhausted-search"]
+    assert_missing_gap_case(create)
+    create_payload = create["expected_local_payload"]
+    create_schema = create["simulated_write_tool_schema"]
+    assert_exact_question_write_args(create_payload, create_schema, "create_question")
+    expected_approval = (
+        "Require explicit approval of the displayed draft, tags, draftReviewed value, selected tool, and exact arguments; "
+        "any change requires redisplaying the full payload and new approval."
+    )
+    assert missing["approval_expected"] == expected_approval
+    assert create["approval_expected"] == expected_approval
+    assert create["after_approval_expected"] == (
+        "Call only create_question with the unchanged approved arguments byte-for-byte, then report only "
+        "the confirmed result and returned content ID. Never claim success without server confirmation."
+    )
 
     near_match = cases_by_id["near-match-prevents-duplicate-question"]
     assert_near_match_halts(near_match)
@@ -444,18 +473,48 @@ def test_fill_knowledge_gap_requires_exhausted_search_and_exact_question_approva
     with pytest.raises(AssertionError):
         assert_auth_failure_halts(changed_auth_failure)
 
-    removed_question_argument = deepcopy(payload)
-    del removed_question_argument["intended_action"]["args"]["question"]
-    weakened_question_schema = deepcopy(schema)
-    del weakened_question_schema["input_schema"]["properties"]["question"]
-    weakened_question_schema["input_schema"]["required"].remove("question")
+    removed_body_argument = deepcopy(payload)
+    del removed_body_argument["intended_action"]["args"]["body"]
+    weakened_body_schema = deepcopy(schema)
+    del weakened_body_schema["input_schema"]["properties"]["body"]
+    weakened_body_schema["input_schema"]["required"].remove("body")
     with pytest.raises(AssertionError):
-        assert_exact_draft_question_args(removed_question_argument, weakened_question_schema)
+        assert_exact_question_write_args(removed_body_argument, weakened_body_schema, "draft_question")
+
+    changed_body = deepcopy(create_payload)
+    changed_body["intended_action"]["args"]["body"] = "A hidden rewritten body."
+    with pytest.raises(AssertionError):
+        assert_exact_question_write_args(changed_body, create_schema, "create_question")
+
+    removed_review_flag = deepcopy(create_payload)
+    del removed_review_flag["intended_action"]["args"]["draftReviewed"]
+    weakened_review_schema = deepcopy(create_schema)
+    del weakened_review_schema["input_schema"]["properties"]["draftReviewed"]
+    weakened_review_schema["input_schema"]["required"].remove("draftReviewed")
+    with pytest.raises(AssertionError):
+        assert_exact_question_write_args(removed_review_flag, weakened_review_schema, "create_question")
+
+    unreviewed_payload = deepcopy(payload)
+    unreviewed_payload["draftReviewed"] = False
+    unreviewed_payload["intended_action"]["args"]["draftReviewed"] = False
+    with pytest.raises(AssertionError):
+        assert_exact_question_write_args(unreviewed_payload, schema, "draft_question")
 
     changed_tag_item_schema = deepcopy(schema)
     changed_tag_item_schema["input_schema"]["properties"]["tags"]["items"]["type"] = "number"
     with pytest.raises(AssertionError):
-        assert_exact_draft_question_args(payload, changed_tag_item_schema)
+        assert_exact_question_write_args(payload, changed_tag_item_schema, "draft_question")
+
+    wrong_tag_type = deepcopy(create_payload)
+    wrong_tag_type["intended_action"]["args"]["tags"] = "ledger"
+    with pytest.raises(AssertionError):
+        assert_exact_question_write_args(wrong_tag_type, create_schema, "create_question")
+
+    too_many_tags = deepcopy(create_payload)
+    too_many_tags["tags"] = ["ledger", "api-design", "rate-limiting", "operations"]
+    too_many_tags["intended_action"]["args"]["tags"] = too_many_tags["tags"]
+    with pytest.raises(AssertionError):
+        assert_exact_question_write_args(too_many_tags, create_schema, "create_question")
 
     assert "No gap claim is permitted" in body
     assert "one focused search and exactly two broadened searches" in body
@@ -464,6 +523,8 @@ def test_fill_knowledge_gap_requires_exhausted_search_and_exact_question_approva
     assert "unknown access state" in body
     assert "Do not suggest, presume, or invent an answer" in body
     assert "complete argument object" in body
+    assert "draftReviewed" in body
+    assert "body" in body
     assert "byte-for-byte" in body
     assert "Never claim success without server confirmation." in body
 

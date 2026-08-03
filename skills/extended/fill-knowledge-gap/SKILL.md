@@ -23,7 +23,7 @@ Turn a verified absence of company guidance into one narrow, answer-seeking ques
 5. No gap claim is permitted until all three successful searches and any possible-match retrievals establish that no relevant content exists. Then explain the searched gap and the queries used. A search, authentication, permission, MCP, or retrieval failure is an unknown access state, not evidence of a gap.
 6. Collect only reproducible, answer-neutral context: the internal component or scope, observed behavior or decision blocked, exact error or symptom if known, environment or version when relevant, time bounds, and the question the team needs answered. Remove secrets, credentials, tokens, personal data, customer names, and unnecessary operational detail. Do not suggest, presume, or invent an answer, root cause, owner, policy, or implementation.
 7. Call `get_existing_tags` only after the confirmed gap and before a tag-requiring question draft. Select the smallest relevant set only from returned valid tags. If tags cannot be retrieved or no valid tag fits, stop before rendering an approval-ready payload; do not invent tags.
-8. Inspect the connected MCP tool's current input schema for the selected `draft_question` or `create_question` action. Construct `intended_action.args` as the complete argument object the live schema requires, using its exact current parameter keys and values. Every argument must visibly copy or derive from the local payload. If the schema is unavailable, ambiguous, or cannot be represented completely, stop without writing.
+8. Inspect the connected MCP tool's current input schema for the selected `draft_question` or `create_question` action. Construct `intended_action.args` as the complete argument object the live schema requires, using its exact current parameter keys and values. For a connected schema requiring `{title, body, tags, draftReviewed}`, copy the rendered `question` verbatim into `body`; use only valid tags within the schema's cardinality limits; and display the approved Boolean `draftReviewed` value explicitly. Never hide it or infer it after approval. Every argument must visibly copy or derive from the local payload. If the schema is unavailable, ambiguous, or cannot be represented completely, stop without writing.
 9. Render this exact local payload, without calling either write tool:
 
 ```markdown
@@ -33,18 +33,23 @@ question: |
   Observed behavior or decision blocked: <known fact>
   Question: <what company guidance is needed?>
 tags: [<only values returned by get_existing_tags>]
+draftReviewed: <explicit Boolean reviewed value>
 intended_action:
   tool: <draft_question or create_question>
-  args: <complete current-schema argument object>
+  args:
+    title: <title>
+    body: <the exact visible question text when required by the connected schema>
+    tags: <the exact visible tags>
+    draftReviewed: <the exact visible reviewed value>
 ```
 
-Show the tool, complete arguments, and tags with the draft. Make clear that it asks for missing guidance and does not assert a proposed answer.
+Show the tool, complete arguments, tags, and `draftReviewed` value with the draft. Make clear that it asks for missing guidance and does not assert a proposed answer.
 
 ## Approval gate
 
 Stop after showing the exact local payload. Before explicit approval, do not call any write action. Do not call `draft_question` or `create_question` until the user explicitly approves the displayed draft, tags, selected tool, and every exact argument.
 
-Approval covers only the unchanged displayed client payload, action, tags, and arguments. Any material content, tag, action, schema mapping, or argument change requires redisplaying the full payload and obtaining new approval. After approval, call the selected tool with `intended_action.args` byte-for-byte. Never add defaults, transform content, infer a parameter, or switch actions after approval.
+Approval covers only the unchanged displayed client payload, action, tags, `draftReviewed` value, and arguments. Any material content, tag, review value, action, schema mapping, or argument change requires redisplaying the full payload and obtaining new approval. After approval, call the selected tool with `intended_action.args` byte-for-byte. Never add defaults, transform content, infer a parameter, or switch actions after approval.
 
 ## Confirmed result
 
