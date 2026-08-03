@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 
-EXPECTED_SKILLS = {"efficient-search"}
+EXPECTED_SKILLS = {"efficient-search", "company-debugging"}
 
 
 @pytest.fixture
