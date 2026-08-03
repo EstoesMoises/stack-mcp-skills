@@ -1,0 +1,63 @@
+{
+  "cases": [
+    {
+      "id": "new-backend-engineer-path",
+      "prompt": "I am a new backend engineer joining the Orders service. Build a first-week onboarding path so I can run the service locally, understand its boundaries, and choose a safe first task.",
+      "simulated_mcp": {
+        "search": {
+          "setup": [{"id": "a-101", "type": "article", "title": "Orders service local development", "snippet": "Install dependencies and run the development stack."}],
+          "architecture": [{"id": "q-102", "type": "question", "title": "Which systems own Orders state?", "snippet": "Service ownership boundaries."}],
+          "workflows": [{"id": "a-103", "type": "article", "title": "Orders service pull request workflow", "snippet": "Review and test expectations."}],
+          "first-tasks": [{"id": "q-104", "type": "question", "title": "Good first tasks in Orders", "snippet": "Low-risk starter work."}]
+        },
+        "get_article": [
+          {"id": "a-101", "title": "Orders service local development", "body": "Install the documented dependencies and start the local development stack."},
+          {"id": "a-103", "title": "Orders service pull request workflow", "body": "Run the Orders test suite and request review from the service team."}
+        ],
+        "get_question": [
+          {"id": "q-102", "title": "Which systems own Orders state?", "body": "Orders owns order lifecycle state; Payments owns payment authorization."},
+          {"id": "q-104", "title": "Good first tasks in Orders", "body": "Start with a documented test-only issue labeled good-first-task."}
+        ]
+      },
+      "expected_tool_sequence": ["search:setup", "get_article:a-101", "search:architecture", "get_question:q-102", "search:workflows", "get_article:a-103", "search:first-tasks", "get_question:q-104"],
+      "expected": "Identify the learner, first-week goal, and time horizon. Use focused search and strongest-first full retrieval before relying on each source. Produce all five template sections, citing Orders service local development (ID: a-101), Which systems own Orders state? (ID: q-102), Orders service pull request workflow (ID: a-103), and Good first tasks in Orders (ID: q-104) for their supported items. Mark prerequisites as Missing coverage when no retrieved source supports one; do not invent one. Inference: None.",
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
+    },
+    {
+      "id": "payments-team-transfer-path",
+      "prompt": "I am transferring from the Web Platform team to Payments. I have two weeks to learn the payment authorization flow, its release process, and the first support rotation task.",
+      "simulated_mcp": {
+        "search": {
+          "architecture": [{"id": "a-201", "type": "article", "title": "Payments authorization architecture", "snippet": "Authorization boundaries and dependencies."}],
+          "workflows": [{"id": "q-202", "type": "question", "title": "How does Payments release authorization changes?", "snippet": "Release process."}],
+          "first-tasks": [{"id": "a-203", "type": "article", "title": "Payments support rotation handbook", "snippet": "First rotation responsibilities."}]
+        },
+        "get_article": [
+          {"id": "a-201", "title": "Payments authorization architecture", "body": "Payments owns authorization orchestration and calls the gateway adapter."},
+          {"id": "a-203", "title": "Payments support rotation handbook", "body": "Begin rotation by triaging the authorization queue with the on-call runbook."}
+        ],
+        "get_question": [{"id": "q-202", "title": "How does Payments release authorization changes?", "body": "Authorization changes require the staged Payments release checklist."}]
+      },
+      "expected_tool_sequence": ["search:architecture", "get_article:a-201", "search:workflows", "get_question:q-202", "search:first-tasks", "get_article:a-203"],
+      "expected": "State the transferring engineer, authorization-and-rotation goal, and two-week horizon. Cite Payments authorization architecture (ID: a-201), How does Payments release authorization changes? (ID: q-202), and Payments support rotation handbook (ID: a-203) only after full retrieval. Keep prerequisites and setup as clearly labeled Missing coverage when no source establishes them; do not fill them from public payments knowledge. Inference: None.",
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
+    },
+    {
+      "id": "incomplete-onboarding-coverage",
+      "prompt": "Create a two-day onboarding path for a new engineer joining the Ledger reconciliation workflow. We need local setup, architecture, deployment workflow, and a first task.",
+      "simulated_mcp": {
+        "search": {
+          "setup": [{"id": "a-301", "type": "article", "title": "Ledger reconciliation local setup", "snippet": "Start the local reconciler."}],
+          "architecture": [{"id": "q-302", "type": "question", "title": "Ledger reconciliation ownership boundary", "snippet": "Ownership guidance."}],
+          "workflows": [],
+          "workflows-broadened": []
+        },
+        "get_article": [{"id": "a-301", "title": "Ledger reconciliation local setup", "body": "Use the local reconciler configuration and sandbox ledger."}],
+        "get_question": [{"id": "q-302", "title": "Ledger reconciliation ownership boundary", "body": "Ledger owns reconciliation state; Accounting owns settlement reporting."}]
+      },
+      "expected_tool_sequence": ["search:setup", "get_article:a-301", "search:architecture", "get_question:q-302", "search:workflows", "search:workflows-broadened"],
+      "expected": "Identify the new engineer, two-day goal, and time horizon. Retrieve Ledger reconciliation local setup (ID: a-301) and Ledger reconciliation ownership boundary (ID: q-302) before using them. After weak workflow results, broaden once and then record Missing coverage for workflows and first tasks rather than fabricating deployment or task steps. Do not exceed three searches for a major topic. Inference: None.",
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
+    }
+  ]
+}

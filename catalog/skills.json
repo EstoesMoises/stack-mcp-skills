@@ -51,6 +51,23 @@
         "cursor": "experimental",
         "github-copilot": "experimental"
       }
+    },
+    {
+      "id": "onboarding",
+      "name": "Stack Internal Onboarding Paths",
+      "version": "0.1.0",
+      "tier": "extended",
+      "summary": "Build role- and goal-specific onboarding paths from bounded, fully retrieved company knowledge.",
+      "path": "skills/extended/onboarding",
+      "tags": ["onboarding", "learning", "company-knowledge"],
+      "required_tools": ["search", "get_question", "get_article"],
+      "write_actions": [],
+      "adapters": {
+        "codex": "experimental",
+        "claude-code": "experimental",
+        "cursor": "experimental",
+        "github-copilot": "experimental"
+      }
     }
   ]
 }
