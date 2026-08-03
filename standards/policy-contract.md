@@ -10,3 +10,4 @@ Every catalog skill must preserve these global invariants.
 - Before every write, show the exact draft, target, tags, and intended action; obtain explicit approval. A changed payload or action requires new approval.
 - Remove secrets, credentials, tokens, personal data, and unnecessary customer data from proposed content.
 - Report MCP availability, authentication, permission, retrieval, and write failures honestly; never claim a successful MCP action when it failed.
+- Do not mark an adapter `supported` until its tenant-backed smoke tests pass; an adapter intended to work remains `experimental` until then, while `unsupported` remains valid for adapters not yet offered. The validation foundation rejects `supported` because it has no auditable smoke-test evidence mechanism; a later promotion mechanism must record and validate that evidence before permitting `supported`.

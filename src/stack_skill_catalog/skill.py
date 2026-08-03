@@ -13,7 +13,7 @@ from skills_ref import validate as validate_agent_skill
 
 _OPTIONAL_DIRECTORIES = ("references", "scripts", "assets")
 _REQUIRED_SECTIONS = ("## Workflow", "## Failure handling")
-_LINK_PATTERN = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
+_LINK_PATTERN = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 _PLACEHOLDER_PATTERN = re.compile(r"\b(?:TODO|TBD)\b|\{\{|\}\}|<placeholder>|\[insert[^\]]*\]|lorem ipsum", re.IGNORECASE)
 
 
@@ -147,10 +147,16 @@ def validate_skill(root: Path, skill_dir: Path, catalog_entry: dict[str, object]
         errors.append("SKILL.md must not exceed 500 lines")
     if len(content) > 20_000:
         errors.append("SKILL.md must not exceed 20000 characters")
-    errors.extend(f"SKILL.md must contain {section}" for section in _REQUIRED_SECTIONS if section not in body)
+    errors.extend(
+        f"SKILL.md must contain {section}"
+        for section in _REQUIRED_SECTIONS
+        if not re.search(rf"^{re.escape(section)}[ \t]*$", body, re.MULTILINE)
+    )
 
     if "allowed-tools" in metadata:
         errors.append("allowed-tools field is not permitted")
+    if metadata.get("license") != "Apache-2.0":
+        errors.append("license must be Apache-2.0")
     if _PLACEHOLDER_PATTERN.search(content):
         errors.append("SKILL.md must not contain placeholder markers")
 
@@ -158,6 +164,14 @@ def validate_skill(root: Path, skill_dir: Path, catalog_entry: dict[str, object]
     if not isinstance(skill_metadata, dict):
         errors.append("metadata must be an object")
         skill_metadata = {}
+    else:
+        for key, value in skill_metadata.items():
+            if not isinstance(key, str):
+                errors.append("metadata keys must be strings")
+            elif not key.startswith("stack-internal-"):
+                errors.append(f"metadata keys must start with stack-internal-: {key}")
+            if not isinstance(value, str):
+                errors.append(f"metadata values must be strings: {key}")
     required_metadata = {
         "stack-internal-tier": catalog_entry.get("tier"),
         "stack-internal-version": catalog_entry.get("version"),
@@ -170,7 +184,7 @@ def validate_skill(root: Path, skill_dir: Path, catalog_entry: dict[str, object]
     actual_actions = _as_actions(skill_metadata.get("stack-internal-write-actions"))
     if not isinstance(expected_actions, list) or actual_actions is None or sorted(actual_actions) != sorted(expected_actions):
         errors.append("metadata stack-internal-write-actions must match catalog")
-    elif expected_actions and "## Approval gate" not in body:
+    elif expected_actions and not re.search(r"^## Approval gate[ \t]*$", body, re.MULTILINE):
         errors.append("write-capable skill must contain ## Approval gate")
 
     expected_adapters = catalog_entry.get("adapters")

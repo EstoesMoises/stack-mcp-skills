@@ -31,3 +31,71 @@ def test_allowed_tools_is_forbidden(repo_fixture):
     )
 
     assert "allowed-tools field is not permitted" in validate_repository(repo_fixture.root)
+
+
+def test_required_sections_must_use_exact_headings(repo_fixture):
+    repo_fixture.add_skill()
+    skill_file = repo_fixture.root / "skills/core/example-skill/SKILL.md"
+    skill_file.write_text(
+        skill_file.read_text(encoding="utf-8").replace("## Workflow", "## Workflow notes"),
+        encoding="utf-8",
+    )
+
+    assert "SKILL.md must contain ## Workflow" in validate_repository(repo_fixture.root)
+
+
+def test_approval_gate_must_use_exact_heading(repo_fixture):
+    repo_fixture.add_skill(
+        write_actions="create_QA",
+        body="# Skill\n\n## Workflow\nDraft content.\n\n## Failure handling\nReport failures.\n\n## Approval gatekeeping\nAsk first.",
+    )
+
+    assert "write-capable skill must contain ## Approval gate" in validate_repository(repo_fixture.root)
+
+
+def test_license_must_be_apache_2(repo_fixture):
+    repo_fixture.add_skill()
+    skill_file = repo_fixture.root / "skills/core/example-skill/SKILL.md"
+    skill_file.write_text(
+        skill_file.read_text(encoding="utf-8").replace("license: Apache-2.0", "license: MIT"),
+        encoding="utf-8",
+    )
+
+    assert "license must be Apache-2.0" in validate_repository(repo_fixture.root)
+
+
+def test_metadata_keys_must_use_the_project_namespace(repo_fixture):
+    repo_fixture.add_skill()
+    skill_file = repo_fixture.root / "skills/core/example-skill/SKILL.md"
+    skill_file.write_text(
+        skill_file.read_text(encoding="utf-8").replace("metadata:\n", "metadata:\n  unscoped: value\n"),
+        encoding="utf-8",
+    )
+
+    assert "metadata keys must start with stack-internal-: unscoped" in validate_repository(repo_fixture.root)
+
+
+def test_metadata_values_must_be_strings(repo_fixture):
+    repo_fixture.add_skill()
+    skill_file = repo_fixture.root / "skills/core/example-skill/SKILL.md"
+    skill_file.write_text(
+        skill_file.read_text(encoding="utf-8").replace('stack-internal-version: "0.1.0"', "stack-internal-version: 1"),
+        encoding="utf-8",
+    )
+
+    assert "metadata values must be strings: stack-internal-version" in validate_repository(repo_fixture.root)
+
+
+def test_markdown_image_link_counts_as_an_asset_reference(repo_fixture):
+    repo_fixture.add_skill()
+    skill_dir = repo_fixture.root / "skills/core/example-skill"
+    assets_dir = skill_dir / "assets"
+    assets_dir.mkdir()
+    (assets_dir / "diagram.png").write_bytes(b"PNG")
+    skill_file = skill_dir / "SKILL.md"
+    skill_file.write_text(
+        f"{skill_file.read_text(encoding='utf-8')}\n![Workflow diagram](assets/diagram.png)\n",
+        encoding="utf-8",
+    )
+
+    assert validate_repository(repo_fixture.root) == []

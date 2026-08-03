@@ -48,3 +48,13 @@ def test_catalog_rejects_unknown_tools(repo_fixture):
     catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
 
     assert any("not-a-tool" in error for error in validate_repository(repo_fixture.root))
+
+
+def test_adapter_support_requires_tenant_backed_smoke_test_evidence(repo_fixture):
+    repo_fixture.add_skill()
+    catalog_path = repo_fixture.root / "catalog" / "skills.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    catalog["skills"][0]["adapters"]["codex"] = "supported"
+    catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+
+    assert "adapter support requires tenant-backed smoke-test evidence: codex" in validate_repository(repo_fixture.root)

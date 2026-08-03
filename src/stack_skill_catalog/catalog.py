@@ -45,5 +45,10 @@ def validate_catalog(root: Path, catalog: dict[str, object]) -> list[str]:
         path = entry.get("path")
         if isinstance(path, str) and not (root / path).is_dir():
             errors.append(f"catalog skill path does not exist: {path}")
+        adapters = entry.get("adapters")
+        if isinstance(adapters, dict):
+            for adapter, state in adapters.items():
+                if state == "supported":
+                    errors.append(f"adapter support requires tenant-backed smoke-test evidence: {adapter}")
 
     return sorted(errors)
