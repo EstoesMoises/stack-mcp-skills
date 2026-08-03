@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "adapter", "smoke_test", "passed", "redacted", "check_id"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "adapter": {"enum": ["codex", "claude-code", "cursor", "github-copilot"]},
+    "smoke_test": {"type": "integer", "minimum": 1, "maximum": 4},
+    "passed": {"const": true},
+    "redacted": {"const": true},
+    "check_id": {
+      "enum": [
+        "conditional-search-and-full-retrieval",
+        "negative-trigger-no-mcp-call",
+        "write-change-reapproval-and-exact-args",
+        "honest-mcp-failure-reporting"
+      ]
+    }
+  }
+}

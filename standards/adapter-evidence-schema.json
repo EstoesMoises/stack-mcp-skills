@@ -2,9 +2,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "records"],
+  "required": ["schema_version", "release_candidate_commit", "records"],
   "properties": {
     "schema_version": {"const": "1.0.0"},
+    "release_candidate_commit": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      ]
+    },
     "records": {"type": "array", "items": {"$ref": "#/$defs/record"}}
   },
   "$defs": {
@@ -15,7 +21,7 @@
       "properties": {
         "number": {"type": "integer", "minimum": 1, "maximum": 4},
         "passed": {"const": true},
-        "evidence_ref": {"type": "string", "pattern": "^evidence/[a-z0-9][a-z0-9._/-]*$", "maxLength": 512}
+        "evidence_ref": {"type": "string", "pattern": "^compatibility/smoke-evidence/[a-z0-9][a-z0-9._/-]*\\.json$", "maxLength": 512}
       }
     },
     "record": {

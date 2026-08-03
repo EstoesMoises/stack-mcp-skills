@@ -47,13 +47,17 @@ Record the commit SHA, reviewer, review date, changed skills and adapters, pass/
 
 Using an authorized test tenant, run all four adapter smoke tests from each adapter guide for Codex, Claude Code, Cursor, and GitHub Copilot. Test the exact release candidate skill content. Confirm conditional search, the generic negative trigger, the write-approval pause, and honest MCP failure handling from observable tool calls and responses.
 
-Create one evidence record per client and skill version in `compatibility/evidence.json`, validated by `standards/adapter-evidence-schema.json`:
+Create one evidence record per client and skill version in `compatibility/evidence.json`, validated by `standards/adapter-evidence-schema.json`. Set `release_candidate_commit` to the exact tested Git commit. It must be a real ancestor commit in this repository, and every record's `catalog_commit` must match it exactly. Leave the field `null` while the registry is empty.
+
+Each smoke-test entry must reference an existing nonempty JSON artifact below `compatibility/smoke-evidence/`. The artifact must be present unchanged in the release-candidate commit, validate against `standards/smoke-evidence-schema.json`, identify the same adapter and numbered smoke test, use only the fixed redacted check identifier, and contain no raw retrieved content or tenant data. Absolute paths, traversal, dangling references, and unrelated test artifacts fail validation.
 
 | Date | Client | Client version | Skill version | Commit SHA | Tenant purpose | Smoke tests | Pass/fail | Notes | Reviewer |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | YYYY-MM-DD | Codex, Claude Code, Cursor, or GitHub Copilot | Exact tested version | Exact tested catalog/skill version | Tested commit | non-production skill validation | 1-4 with non-sensitive evidence references | Pass or fail | Limitations and failures | Name |
 
 - [ ] Every client has results for smoke tests 1 through 4.
+- [ ] The release-candidate commit exists in this repository, is an ancestor of the validating checkout, and matches every record.
+- [ ] Every numbered smoke reference resolves to the exact redacted structured artifact committed with that release candidate.
 - [ ] Evidence records only the fixed tenant purpose `non-production skill validation`. It must not record a public or private tenant identifier, slug, name, credentials, tokens, raw retrieved content, personal data, or customer data.
 - [ ] Failures and client limitations are documented; no simulated result is substituted for a live run.
 - [ ] The evidence record is reviewed before any compatibility metadata changes.

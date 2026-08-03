@@ -28,7 +28,7 @@ Core skills cover the default search, debugging, and knowledge-capture loop. Ext
 
 Adapter compatibility is experimental until the tenant-backed release gate passes for the exact client and skill versions. See the [release checklist](docs/release-checklist.md) for the distinction between automated validation and live compatibility evidence.
 
-Auditable compatibility records use the versioned [evidence schema](standards/adapter-evidence-schema.json) and [evidence registry](compatibility/evidence.json). The empty registry is the valid pre-gate state; no adapter is promoted without complete passing tenant-backed records, and records never contain tenant identifiers or raw content.
+Auditable compatibility records use the versioned [evidence schema](standards/adapter-evidence-schema.json), [smoke-artifact schema](standards/smoke-evidence-schema.json), and [evidence registry](compatibility/evidence.json). The empty registry with a null release candidate is the valid pre-gate state. Promotion requires a real ancestor release-candidate commit plus exact committed, redacted artifacts for all four numbered smokes; dangling or mismatched references fail closed. Records never contain tenant identifiers or raw content.
 
 ## Ten-minute quickstart
 

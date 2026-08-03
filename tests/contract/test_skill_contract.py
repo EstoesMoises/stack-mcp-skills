@@ -279,7 +279,6 @@ def test_capture_quality_qa_evals_forbid_every_write_before_approval():
     assert duplicate["expected_local_payload"]["target"] == {
         "question_id": 241,
         "answer_id": 1241,
-        "content_type": "answer",
     }
     assert duplicate["expected_local_payload"]["target_id"] == 1241
     assert duplicate["expected_local_payload"]["intended_action"] == {

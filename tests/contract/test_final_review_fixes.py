@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import subprocess
 
 from stack_skill_catalog.validation import validate_repository
 
@@ -36,11 +37,51 @@ def test_all_write_skills_define_response_lost_reconciliation_and_fresh_approval
         case = retry_cases[0]
         assert set(case["forbidden_actions"]) == ALL_WRITES
         assert "reconcile" in str(case["expected"]).lower()
-        assert "fresh explicit approval" in str(case["expected"]).lower()
+        assert "already succeeded" in str(case["expected"]).lower()
+        assert "no retry" in str(case["expected"]).lower()
+        assert case["expected_tool_sequence"][-1] == "confirmed_no_retry"
+        assert "redisplay_payload" not in case["expected_tool_sequence"]
+        assert "fresh_explicit_approval" not in case["expected_tool_sequence"]
+        payload = case["prior_approved_payload"]
+        action = payload["intended_action"]
+        schema = case["simulated_write_tool_schema"]
+        assert action["tool"] == schema["tool"]
+        assert set(action["args"]) == set(schema["input_schema"]["required"])
+        args = action["args"]
+        if action["tool"] == "create_QA":
+            assert args == {name: payload[name] for name in ("title", "question", "answer", "tags")}
+        elif action["tool"] == "create_article":
+            assert args == {name: payload[name] for name in ("title", "body", "tags")}
+        elif action["tool"] == "create_question":
+            assert args == {
+                "title": payload["title"], "body": payload["question"],
+                "tags": payload["tags"], "draftReviewed": payload["draftReviewed"],
+            }
+        elif action["tool"] == "update_answer":
+            assert args == {
+                "questionId": payload["target"]["question_id"],
+                "answerId": payload["target"]["answer_id"],
+                "newBodyContent": payload["proposed_answer"],
+            }
+        else:
+            assert args == {"questionId": payload["target"]["question_id"], "answer": payload["answer"]}
+        assert case["simulated_reconciliation"]["already_succeeded"] is True
 
     policy = (ROOT / "standards/policy-contract.md").read_text(encoding="utf-8").lower()
     assert "ambiguous write outcome" in policy
     assert "fresh explicit approval" in policy
+    shared = json.loads((ROOT / "standards/retry-contract.json").read_text(encoding="utf-8"))
+    inconclusive = shared["cases"][0]
+    assert inconclusive["outcome"] == "inconclusive"
+    assert inconclusive["expected_tool_sequence"] == [
+        "reconcile_read_only", "redisplay_complete_payload", "fresh_explicit_approval"
+    ]
+    assert not set(inconclusive["expected_tool_sequence"]) & ALL_WRITES
+    assert inconclusive["prior_approved_payload"] == inconclusive["redisplayed_payload"]
+    shared_payload = inconclusive["redisplayed_payload"]
+    assert shared_payload["intended_action"]["args"] == {
+        name: shared_payload[name] for name in ("title", "body", "tags")
+    }
 
 
 def test_every_preapproval_eval_forbids_complete_catalog_write_set():
@@ -71,7 +112,7 @@ def test_capture_qa_uses_multi_id_schema_and_redacts_vote_answer_text():
     cases = {case["id"]: case for case in _cases("skills/core/capture-quality-qa")}
     update = cases["duplicate-proposes-existing-answer-update"]
     assert update["expected_local_payload"]["target"] == {
-        "question_id": 241, "answer_id": 1241, "content_type": "answer"
+        "question_id": 241, "answer_id": 1241
     }
     assert update["expected_local_payload"]["intended_action"]["args"] == {
         "questionId": 241,
@@ -137,8 +178,43 @@ def test_catalog_tier_must_match_path(repo_fixture):
     assert "catalog tier does not match skill path: example-skill (extended != core)" in validate_repository(repo_fixture.root)
 
 
+def _git(root: Path, *args: str) -> str:
+    return subprocess.run(
+        ["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "-C", str(root), *args],
+        check=True, capture_output=True, text=True,
+    ).stdout.strip()
+
+
+def _write_smoke_artifacts(root: Path, adapter: str = "codex") -> list[dict[str, object]]:
+    evidence_dir = root / "compatibility/smoke-evidence"
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    smoke_tests = []
+    check_ids = {
+        1: "conditional-search-and-full-retrieval",
+        2: "negative-trigger-no-mcp-call",
+        3: "write-change-reapproval-and-exact-args",
+        4: "honest-mcp-failure-reporting",
+    }
+    for number in range(1, 5):
+        path = evidence_dir / f"{adapter}-{number}.json"
+        path.write_text(json.dumps({
+            "schema_version": "1.0.0", "adapter": adapter, "smoke_test": number,
+            "passed": True, "redacted": True, "check_id": check_ids[number],
+        }), encoding="utf-8")
+        smoke_tests.append({
+            "number": number, "passed": True,
+            "evidence_ref": f"compatibility/smoke-evidence/{adapter}-{number}.json",
+        })
+    return smoke_tests
+
+
 def test_supported_adapter_accepts_only_complete_passing_evidence(repo_fixture):
     repo_fixture.add_skill()
+    smoke_tests = _write_smoke_artifacts(repo_fixture.root)
+    _git(repo_fixture.root, "init", "-q")
+    _git(repo_fixture.root, "add", ".")
+    _git(repo_fixture.root, "commit", "-qm", "release candidate")
+    release_candidate = _git(repo_fixture.root, "rev-parse", "HEAD")
     catalog_path = repo_fixture.root / "catalog/skills.json"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
     catalog["skills"][0]["adapters"]["codex"] = "supported"
@@ -147,21 +223,78 @@ def test_supported_adapter_accepts_only_complete_passing_evidence(repo_fixture):
 
     assert any("tenant-backed smoke-test evidence" in error for error in validate_repository(repo_fixture.root))
     evidence = {
-        "schema_version": "1.0.0",
+        "schema_version": "1.0.0", "release_candidate_commit": release_candidate,
         "records": [{
-            "adapter": "codex", "client_version": "1.2.3", "catalog_commit": "a" * 40,
+            "adapter": "codex", "client_version": "1.2.3", "catalog_commit": release_candidate,
             "skill_id": "example-skill", "skill_version": "0.1.0",
             "tenant_purpose": "non-production skill validation", "reviewer": "Release reviewer",
-            "review_date": "2026-08-03",
-            "smoke_tests": [
-                {"number": number, "passed": True, "evidence_ref": f"evidence/codex-{number}.json"}
-                for number in range(1, 5)
-            ],
+            "review_date": "2026-08-03", "smoke_tests": smoke_tests,
         }],
     }
     evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
     assert validate_repository(repo_fixture.root) == []
 
-    evidence["records"][0]["tenant_identifier"] = "customer-slug"
+    evidence["records"][0]["catalog_commit"] = "b" * 40
     evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
-    assert any("compatibility evidence schema violation" in error for error in validate_repository(repo_fixture.root))
+    assert any("does not match release candidate" in error for error in validate_repository(repo_fixture.root))
+
+
+def test_supported_adapter_rejects_missing_unrelated_or_unsafe_evidence(repo_fixture):
+    repo_fixture.add_skill()
+    smoke_tests = _write_smoke_artifacts(repo_fixture.root)
+    _git(repo_fixture.root, "init", "-q")
+    _git(repo_fixture.root, "add", ".")
+    _git(repo_fixture.root, "commit", "-qm", "release candidate")
+    release_candidate = _git(repo_fixture.root, "rev-parse", "HEAD")
+    catalog_path = repo_fixture.root / "catalog/skills.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    catalog["skills"][0]["adapters"]["codex"] = "supported"
+    catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+    evidence_path = repo_fixture.root / "compatibility/evidence.json"
+    record = {
+        "adapter": "codex", "client_version": "1.2.3", "catalog_commit": release_candidate,
+        "skill_id": "example-skill", "skill_version": "0.1.0",
+        "tenant_purpose": "non-production skill validation", "reviewer": "Release reviewer",
+        "review_date": "2026-08-03", "smoke_tests": smoke_tests,
+    }
+
+    for bad_ref in (
+        "compatibility/smoke-evidence/missing.json",
+        "compatibility/smoke-evidence/../evidence.json",
+        "compatibility/smoke-evidence/codex-2.json",
+    ):
+        changed = json.loads(json.dumps(record))
+        changed["smoke_tests"][0]["evidence_ref"] = bad_ref
+        evidence_path.write_text(json.dumps({
+            "schema_version": "1.0.0", "release_candidate_commit": release_candidate, "records": [changed]
+        }), encoding="utf-8")
+        assert validate_repository(repo_fixture.root)
+
+    evidence_path.write_text(json.dumps({
+        "schema_version": "1.0.0", "release_candidate_commit": "c" * 40, "records": [record]
+    }), encoding="utf-8")
+    errors = validate_repository(repo_fixture.root)
+    assert any("real ancestor commit" in error for error in errors)
+
+
+def test_supported_adapter_fails_closed_without_git_audit_context(repo_fixture):
+    repo_fixture.add_skill()
+    smoke_tests = _write_smoke_artifacts(repo_fixture.root)
+    catalog_path = repo_fixture.root / "catalog/skills.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    catalog["skills"][0]["adapters"]["codex"] = "supported"
+    catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+    candidate = "d" * 40
+    (repo_fixture.root / "compatibility/evidence.json").write_text(json.dumps({
+        "schema_version": "1.0.0", "release_candidate_commit": candidate,
+        "records": [{
+            "adapter": "codex", "client_version": "1.2.3", "catalog_commit": candidate,
+            "skill_id": "example-skill", "skill_version": "0.1.0",
+            "tenant_purpose": "non-production skill validation", "reviewer": "Release reviewer",
+            "review_date": "2026-08-03", "smoke_tests": smoke_tests,
+        }],
+    }), encoding="utf-8")
+
+    errors = validate_repository(repo_fixture.root)
+    assert any("real ancestor commit" in error for error in errors)
+    assert any("tenant-backed smoke-test evidence" in error for error in errors)

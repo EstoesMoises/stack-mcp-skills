@@ -120,7 +120,11 @@ def repo_fixture(tmp_path: Path) -> RepoFixture:
         (Path(__file__).parents[2] / "standards" / "adapter-evidence-schema.json").read_text(encoding="utf-8"),
         encoding="utf-8",
     )
+    (root / "standards" / "smoke-evidence-schema.json").write_text(
+        (Path(__file__).parents[2] / "standards" / "smoke-evidence-schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
     (root / "compatibility" / "evidence.json").write_text(
-        json.dumps({"schema_version": "1.0.0", "records": []}), encoding="utf-8"
+        json.dumps({"schema_version": "1.0.0", "release_candidate_commit": None, "records": []}), encoding="utf-8"
     )
     return RepoFixture(root)

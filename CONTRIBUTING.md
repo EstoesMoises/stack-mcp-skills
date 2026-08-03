@@ -9,7 +9,7 @@ Each contribution should solve one coherent user goal with one independently ins
 - Keep `SKILL.md` under 500 lines and 20,000 characters. Include exact `## Workflow` and `## Failure handling` headings, plus `## Approval gate` for every write-capable skill.
 - Keep the skill self-contained. Add `references/`, `scripts/`, or `assets/` only for a concrete progressive-disclosure need, with no empty optional directories. Link every resource from `SKILL.md`, explain when to load or run it, keep paths inside the skill root without `..`, and allow only one reference hop from `SKILL.md`.
 - Declare exactly one catalog entry in [catalog/skills.json](catalog/skills.json). Its ID, tier, version, adapters, tools, and write actions must agree with the skill metadata and directory. Use only MCP tools and write actions documented by [the catalog schema](standards/catalog-schema.json); do not introduce an undocumented MCP tool.
-- Keep all adapter states `experimental` until the [tenant-backed release gate](docs/release-checklist.md) passes. Promotion to `supported` also requires one complete passing record per exact adapter, client version, skill version, and catalog commit in `compatibility/evidence.json`; do not record tenant identifiers or raw content. An adapter may translate installation paths, but it may not weaken triggers, workflow semantics, or safety rules.
+- Keep all adapter states `experimental` until the [tenant-backed release gate](docs/release-checklist.md) passes. Promotion to `supported` also requires one complete passing record per exact adapter, client version, skill version, and real release-candidate Git commit in `compatibility/evidence.json`. Every numbered evidence reference must resolve below `compatibility/smoke-evidence/` to the exact redacted structured artifact committed in that candidate; dangling, traversing, mismatched, or uncommitted artifacts fail closed. Do not record tenant identifiers or raw content. An adapter may translate installation paths, but it may not weaken triggers, workflow semantics, or safety rules.
 
 ## Behavioral standards
 
@@ -24,7 +24,7 @@ For every write:
 5. Obtain explicit approval of that unchanged payload and action before the MCP call. A changed payload requires new approval.
 6. Send the displayed arguments byte-for-byte, then report only the server-confirmed result.
 
-If a write outcome is ambiguous or its response is lost, reconcile the current server state with read-only retrieval and duplicate checks before considering another call. Rebuild and redisplay the complete payload, action, target, and exact arguments, then obtain fresh explicit approval immediately before every retry, even when nothing changed. Never blindly retry or reuse the earlier approval.
+If a write outcome is ambiguous or its response is lost, reconcile the current server state with read-only retrieval and duplicate checks before considering another call. When reconciliation proves the exact write already succeeded, report that confirmed result and stop without redisplay, approval, or retry. When reconciliation is inconclusive, rebuild and redisplay the complete payload, action, target, and exact arguments, then obtain fresh explicit approval immediately before every possible retry, even when nothing changed. Never blindly retry or reuse the earlier approval. Preserve both paths in the shared [retry contract](standards/retry-contract.json).
 
 Never place secrets, credentials, tokens, personal data, or unnecessary customer data in a proposed or submitted payload.
 
