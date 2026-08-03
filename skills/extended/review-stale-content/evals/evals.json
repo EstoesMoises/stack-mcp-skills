@@ -86,7 +86,7 @@
         "target": {"question_id": 801},
         "target_id": 801,
         "proposed_title": "How do Payments webhooks validate inbound deliveries?",
-        "proposed_body": "Payments webhooks validate inbound deliveries with the signed-delivery verifier. Configure the verifier through the managed webhook secret reference; do not use the removed shared-token setting.",
+        "proposed_body": "Payments webhooks use signed-delivery validation. Do not use the removed legacy shared-token configuration.",
         "proposed_tags": ["payments", "webhooks"],
         "sensitive_data_removed": ["Removed a credential and customer data from the replacement body."],
         "intended_action": {
@@ -94,7 +94,7 @@
           "args": {
             "questionId": 801,
             "newTitle": "How do Payments webhooks validate inbound deliveries?",
-            "newBodyContent": "Payments webhooks validate inbound deliveries with the signed-delivery verifier. Configure the verifier through the managed webhook secret reference; do not use the removed shared-token setting.",
+            "newBodyContent": "Payments webhooks use signed-delivery validation. Do not use the removed legacy shared-token configuration.",
             "newTags": ["payments", "webhooks"]
           }
         }

@@ -659,11 +659,29 @@ def test_review_stale_content_requires_full_retrieval_comments_and_exact_update_
     question_payload = question_update["expected_local_payload"]
     assert question_payload["proposed_title"] == retrieved_question["title"]
     assert question_payload["proposed_tags"] == retrieved_question["tags"]
+
+    def assert_question_replacement_is_evidence_backed(case: dict[str, object]) -> None:
+        evidence = case["current_practice_evidence"]
+        assert isinstance(evidence, dict)
+        fact = evidence["fact"]
+        assert isinstance(fact, str)
+        payload = case["expected_local_payload"]
+        assert isinstance(payload, dict)
+        replacement = payload["proposed_body"]
+        assert replacement == (
+            "Payments webhooks use signed-delivery validation. "
+            "Do not use the removed legacy shared-token configuration."
+        )
+        assert "Payments webhooks use signed-delivery validation" in fact
+        assert "legacy shared-token configuration was removed" in fact
+        assert "managed webhook secret reference" not in replacement
+
+    assert_question_replacement_is_evidence_backed(question_update)
     assert question_payload == {
         "target": {"question_id": 801},
         "target_id": 801,
         "proposed_title": "How do Payments webhooks validate inbound deliveries?",
-        "proposed_body": "Payments webhooks validate inbound deliveries with the signed-delivery verifier. Configure the verifier through the managed webhook secret reference; do not use the removed shared-token setting.",
+        "proposed_body": "Payments webhooks use signed-delivery validation. Do not use the removed legacy shared-token configuration.",
         "proposed_tags": ["payments", "webhooks"],
         "sensitive_data_removed": [
             "Removed a credential and customer data from the replacement body."
@@ -673,7 +691,7 @@ def test_review_stale_content_requires_full_retrieval_comments_and_exact_update_
             "args": {
                 "questionId": 801,
                 "newTitle": "How do Payments webhooks validate inbound deliveries?",
-                "newBodyContent": "Payments webhooks validate inbound deliveries with the signed-delivery verifier. Configure the verifier through the managed webhook secret reference; do not use the removed shared-token setting.",
+                "newBodyContent": "Payments webhooks use signed-delivery validation. Do not use the removed legacy shared-token configuration.",
                 "newTags": ["payments", "webhooks"],
             },
         },
@@ -773,6 +791,14 @@ def test_review_stale_content_requires_full_retrieval_comments_and_exact_update_
     wrong_question_body["expected_local_payload"]["intended_action"]["args"]["newBodyContent"] = "Hidden replacement"
     with pytest.raises(AssertionError):
         assert wrong_question_body["expected_local_payload"] == question_payload
+
+    invented_secret_reference = deepcopy(question_update)
+    invented_secret_reference["expected_local_payload"]["proposed_body"] = (
+        "Payments webhooks use signed-delivery validation. "
+        "Configure the verifier through the managed webhook secret reference."
+    )
+    with pytest.raises(AssertionError):
+        assert_question_replacement_is_evidence_backed(invented_secret_reference)
 
     missing_approval = deepcopy(migration)
     del missing_approval["approval_expected"]
