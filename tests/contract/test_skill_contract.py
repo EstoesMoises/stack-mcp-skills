@@ -422,6 +422,19 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
         "vote",
     ]
 
+    # These literal contracts apply only to deterministic eval schemas. The installed
+    # skill still inspects the connected tenant's live schema at runtime.
+    simulated_action_contracts = {
+        "create_article": {
+            "properties": {"title": "string", "body": "string", "tags": "array"},
+            "visible_fields": ("title", "body", "tags"),
+        },
+        "create_QA": {
+            "properties": {"title": "string", "question": "string", "answer": "string", "tags": "array"},
+            "visible_fields": ("title", "question", "answer", "tags"),
+        },
+    }
+
     def assert_schema_derived_args(case, content_argument, section_headings):
         payload = case["expected_local_payload"]
         action = payload["intended_action"]
@@ -429,21 +442,27 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
         input_schema = schema["input_schema"]
         args = action["args"]
         properties = input_schema["properties"]
+        contract = simulated_action_contracts[action["tool"]]
+        expected_properties = contract["properties"]
 
         assert action["tool"] == schema["tool"]
         assert input_schema["type"] == "object"
-        assert set(args) == set(input_schema["required"]) == set(properties)
-        for name, value in args.items():
-            expected_type = properties[name]["type"]
+        assert input_schema["required"] == list(expected_properties)
+        assert properties == {
+            name: {"type": expected_type}
+            for name, expected_type in expected_properties.items()
+        }
+        assert set(args) == set(expected_properties)
+        for name, expected_type in expected_properties.items():
+            value = args[name]
             assert (expected_type == "string" and isinstance(value, str)) or (
                 expected_type == "array" and isinstance(value, list)
             )
+            if expected_type == "array":
+                assert all(isinstance(item, str) for item in value)
 
-        assert args["title"] == payload["title"]
-        assert args["tags"] == payload["tags"]
-        if "question" in args:
-            assert args["question"] == payload["question"]
-        assert args[content_argument] == payload[content_argument]
+        for name in contract["visible_fields"]:
+            assert args[name] == payload[name]
         content = args[content_argument]
         for heading in section_headings:
             assert heading in content
@@ -463,6 +482,16 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
     def assert_rejects_changed_argument(case, content_argument, changed_value):
         changed = deepcopy(case)
         changed["expected_local_payload"]["intended_action"]["args"][content_argument] = changed_value
+        with pytest.raises(AssertionError):
+            assert_schema_derived_args(changed, content_argument, ("Summary:",))
+
+    def assert_rejects_removed_argument_and_schema_property(case, argument, content_argument):
+        changed = deepcopy(case)
+        args = changed["expected_local_payload"]["intended_action"]["args"]
+        input_schema = changed["simulated_write_tool_schema"]["input_schema"]
+        del args[argument]
+        input_schema["required"].remove(argument)
+        del input_schema["properties"][argument]
         with pytest.raises(AssertionError):
             assert_schema_derived_args(changed, content_argument, ("Summary:",))
 
@@ -497,6 +526,7 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
     wrong_article_tags["expected_local_payload"]["intended_action"]["args"]["tags"] = "wrong type"
     with pytest.raises(AssertionError):
         assert_schema_derived_args(wrong_article_tags, "body", ("Summary:",))
+    assert_rejects_removed_argument_and_schema_property(article, "body", "body")
     article_payload = json.dumps(article["expected_local_payload"])
     assert "Aurora Labs" not in article_payload
     assert "edge-token-should-not-publish" not in article_payload
@@ -524,6 +554,8 @@ def test_incident_to_knowledge_requires_verified_facts_and_exact_preapproval_pay
     wrong_qa_tags["expected_local_payload"]["intended_action"]["args"]["tags"] = ["wrong-tag"]
     with pytest.raises(AssertionError):
         assert_schema_derived_args(wrong_qa_tags, "answer", ("Summary:",))
+    assert_rejects_removed_argument_and_schema_property(related, "question", "answer")
+    assert_rejects_removed_argument_and_schema_property(related, "answer", "answer")
 
     unresolved = cases_by_id["unresolved-incident-must-not-publish"]
     assert "expected_local_payload" not in unresolved
