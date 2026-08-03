@@ -19,4 +19,4 @@ State each conflicting source with title and ID. Explain why one appears stronge
 
 ## Match diagnosis to evidence
 
-Use `established-company-practice` only when direct full content and observed conditions agree. Use `partial-internal-match` when a source is useful but materially different. Use `new-hypothesis` when evidence is absent, incomplete, inaccessible, or contradicted without a stronger applicable source; disclose the gap and test the hypothesis against code and runtime facts.
+Use `established-company-practice` only when direct full content and observed conditions agree. Use `partial-internal-match` when usable internal evidence is incomplete, materially different, or conflicting. Use `new-hypothesis` only when no usable internal evidence exists, including an MCP outage or a bounded search with no relevant result; disclose the gap and test the hypothesis against code and runtime facts.

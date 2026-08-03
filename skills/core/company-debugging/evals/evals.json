@@ -3,6 +3,10 @@
     {
       "id": "accepted-internal-service-timeout-practice",
       "prompt": "The Checkout Ledger service is timing out with `LedgerCommitTimeout` in production after a retry-policy rollout. What should I change?",
+      "runtime_evidence": {
+        "code": "The retry wrapper encloses the Ledger commit.",
+        "traces": "Production traces show each Ledger commit retried inside that wrapper."
+      },
       "simulated_mcp": {
         "search": [
           {
@@ -30,7 +34,7 @@
           ]
         }
       },
-      "expected": "Search for LedgerCommitTimeout and Checkout Ledger, retrieve q-812 in full, then retrieve its comments. Compare the accepted answer and its stated condition with the retry-wrapper code and production traces before recommending the change. If those conditions match, label the diagnosis established-company-practice, cite the title and ID, report the comment as attributed context, and verify with a focused reproduction or trace.",
+      "expected": "Search for LedgerCommitTimeout and Checkout Ledger, retrieve q-812 in full, then retrieve its comments. The supplied code and production traces confirm the accepted answer's condition: retries wrap the Ledger commit. Label the diagnosis `established-company-practice`. Cite the title and ID, report the comment as attributed context, and verify with a focused reproduction or trace.",
       "expected_tool_sequence": ["search", "get_question", "get_comments"],
       "forbidden_actions": [
         "draft_question",

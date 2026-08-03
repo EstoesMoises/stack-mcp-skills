@@ -1,8 +1,22 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from stack_skill_catalog.validation import validate_repository
+
+
+def test_established_company_debugging_eval_requires_matching_runtime_evidence_and_label():
+    """Prevent the established-practice eval from accepting an unsupported label."""
+    eval_path = Path(__file__).parents[2] / "skills/core/company-debugging/evals/evals.json"
+    cases = json.loads(eval_path.read_text(encoding="utf-8"))["cases"]
+    case = next(item for item in cases if item["id"] == "accepted-internal-service-timeout-practice")
+
+    assert case.get("runtime_evidence") == {
+        "code": "The retry wrapper encloses the Ledger commit.",
+        "traces": "Production traces show each Ledger commit retried inside that wrapper.",
+    }
+    assert "Label the diagnosis `established-company-practice`." in case["expected"]
 
 
 def test_write_skill_requires_approval_gate(repo_fixture):
