@@ -102,6 +102,23 @@
         "cursor": "experimental",
         "github-copilot": "experimental"
       }
+    },
+    {
+      "id": "fill-knowledge-gap",
+      "name": "Fill a Stack Internal Knowledge Gap",
+      "version": "0.1.0",
+      "tier": "extended",
+      "summary": "Turn an exhausted, fully retrieved internal search into an approval-gated, answer-neutral question draft.",
+      "path": "skills/extended/fill-knowledge-gap",
+      "tags": ["knowledge-gap", "questions", "knowledge-capture"],
+      "required_tools": ["search", "get_question", "get_article", "get_existing_tags", "draft_question", "create_question"],
+      "write_actions": ["draft_question", "create_question"],
+      "adapters": {
+        "codex": "experimental",
+        "claude-code": "experimental",
+        "cursor": "experimental",
+        "github-copilot": "experimental"
+      }
     }
   ]
 }

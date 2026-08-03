@@ -19,6 +19,17 @@ _QA_WRITE_ACTIONS = (
     "vote",
 )
 
+_KNOWLEDGE_GAP_WRITE_ACTIONS = (
+    "draft_question",
+    "create_question",
+    "create_QA",
+    "create_article",
+    "submit_user_answer",
+    "update_question",
+    "update_answer",
+    "vote",
+)
+
 _ONBOARDING_TOPICS = (
     "prerequisites",
     "setup",
@@ -320,6 +331,141 @@ def test_capture_quality_qa_evals_require_complete_live_schema_arguments():
     body = skill_path.read_text(encoding="utf-8")
     assert "inspect the connected MCP tool's current input schema" in body
     assert "byte-for-byte" in body
+
+
+def test_fill_knowledge_gap_requires_exhausted_search_and_exact_question_approval():
+    """A gap draft follows three empty searches, full duplicate retrieval, and no hidden write."""
+    root = Path(__file__).parents[2]
+    skill_path = root / "skills/extended/fill-knowledge-gap/SKILL.md"
+    eval_path = root / "skills/extended/fill-knowledge-gap/evals/evals.json"
+
+    assert skill_path.is_file()
+    assert eval_path.is_file()
+    body = skill_path.read_text(encoding="utf-8")
+    cases = json.loads(eval_path.read_text(encoding="utf-8"))["cases"]
+    cases_by_id = {case["id"]: case for case in cases}
+    assert {
+        "missing-internal-api-rate-limit-standard",
+        "near-match-prevents-duplicate-question",
+        "authentication-failure-is-not-a-gap",
+    } <= cases_by_id.keys()
+
+    canonical_draft_question_schema = {
+        "type": "object",
+        "required": ["title", "question", "tags"],
+        "properties": {
+            "title": {"type": "string"},
+            "question": {"type": "string"},
+            "tags": {"type": "array", "items": {"type": "string"}},
+        },
+    }
+
+    def assert_missing_gap_case(case: dict[str, object]) -> None:
+        assert case["expected_tool_sequence"] == [
+            "search:focused",
+            "search:broadened-1",
+            "search:broadened-2",
+            "get_existing_tags",
+        ]
+        assert case["search_attempts"] == [
+            {"query_kind": "focused", "result_key": "focused"},
+            {"query_kind": "broadened", "result_key": "broadened-1"},
+            {"query_kind": "broadened", "result_key": "broadened-2"},
+        ]
+        simulated_mcp = case["simulated_mcp"]
+        assert isinstance(simulated_mcp, dict)
+        searches = simulated_mcp["search"]
+        assert isinstance(searches, dict)
+        assert set(searches) == {"focused", "broadened-1", "broadened-2"}
+        assert all(results == [] for results in searches.values())
+
+    def assert_exact_draft_question_args(
+        payload: dict[str, object], schema: dict[str, object]
+    ) -> None:
+        assert schema == {"tool": "draft_question", "input_schema": canonical_draft_question_schema}
+        action = payload["intended_action"]
+        assert isinstance(action, dict)
+        assert action["tool"] == "draft_question"
+        args = action["args"]
+        assert isinstance(args, dict)
+        assert set(args) == {"title", "question", "tags"}
+        assert args["title"] == payload["title"]
+        assert args["question"] == payload["question"]
+        assert args["tags"] == payload["tags"]
+
+    def assert_near_match_halts(case: dict[str, object]) -> None:
+        assert case["expected_tool_sequence"] == ["search:focused", "get_question"]
+        simulated_mcp = case["simulated_mcp"]
+        assert isinstance(simulated_mcp, dict)
+        retrieved = simulated_mcp["get_question"]
+        assert retrieved == {
+            "id": "q-913",
+            "title": "What retention period applies to Billing exports?",
+            "question": "What retention period applies to Billing exports?",
+            "answer": "Billing exports are retained for 30 days in the managed export store.",
+        }
+        assert "expected_local_payload" not in case
+
+    def assert_auth_failure_halts(case: dict[str, object]) -> None:
+        assert case["expected_tool_sequence"] == ["search:focused"]
+        assert case["simulated_mcp"] == {"search": {"error": "authentication_failed"}}
+        assert "access is unknown" in case["expected"]
+        assert "expected_local_payload" not in case
+
+    for case in cases:
+        assert case["forbidden_actions"] == list(_KNOWLEDGE_GAP_WRITE_ACTIONS)
+        assert not set(case["expected_tool_sequence"]) & set(_KNOWLEDGE_GAP_WRITE_ACTIONS)
+        assert "Before explicit approval, do not call any write action." in case["expected"]
+
+    missing = cases_by_id["missing-internal-api-rate-limit-standard"]
+    assert_missing_gap_case(missing)
+    payload = missing["expected_local_payload"]
+    schema = missing["simulated_write_tool_schema"]
+    assert_exact_draft_question_args(payload, schema)
+
+    near_match = cases_by_id["near-match-prevents-duplicate-question"]
+    assert_near_match_halts(near_match)
+
+    auth_failure = cases_by_id["authentication-failure-is-not-a-gap"]
+    assert_auth_failure_halts(auth_failure)
+
+    changed_search_budget = deepcopy(missing)
+    changed_search_budget["expected_tool_sequence"].pop(2)
+    with pytest.raises(AssertionError):
+        assert_missing_gap_case(changed_search_budget)
+
+    removed_retrieval_content = deepcopy(near_match)
+    del removed_retrieval_content["simulated_mcp"]["get_question"]["answer"]
+    with pytest.raises(AssertionError):
+        assert_near_match_halts(removed_retrieval_content)
+
+    changed_auth_failure = deepcopy(auth_failure)
+    changed_auth_failure["simulated_mcp"]["search"]["error"] = "mcp_unavailable"
+    with pytest.raises(AssertionError):
+        assert_auth_failure_halts(changed_auth_failure)
+
+    removed_question_argument = deepcopy(payload)
+    del removed_question_argument["intended_action"]["args"]["question"]
+    weakened_question_schema = deepcopy(schema)
+    del weakened_question_schema["input_schema"]["properties"]["question"]
+    weakened_question_schema["input_schema"]["required"].remove("question")
+    with pytest.raises(AssertionError):
+        assert_exact_draft_question_args(removed_question_argument, weakened_question_schema)
+
+    changed_tag_item_schema = deepcopy(schema)
+    changed_tag_item_schema["input_schema"]["properties"]["tags"]["items"]["type"] = "number"
+    with pytest.raises(AssertionError):
+        assert_exact_draft_question_args(payload, changed_tag_item_schema)
+
+    assert "No gap claim is permitted" in body
+    assert "one focused search and exactly two broadened searches" in body
+    assert "get_question" in body and "get_article" in body
+    assert "get_existing_tags" in body
+    assert "unknown access state" in body
+    assert "Do not suggest, presume, or invent an answer" in body
+    assert "complete argument object" in body
+    assert "byte-for-byte" in body
+    assert "Never claim success without server confirmation." in body
 
 
 def test_established_company_debugging_eval_requires_matching_runtime_evidence_and_label():
