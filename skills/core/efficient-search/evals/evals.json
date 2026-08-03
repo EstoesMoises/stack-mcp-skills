@@ -1,0 +1,68 @@
+{
+  "cases": [
+    {
+      "id": "internal-backend-error-handling-standard",
+      "prompt": "What is our backend standard for handling `InventoryLedgerError` in the order service?",
+      "simulated_mcp": {
+        "search": [
+          {
+            "results": [
+              {
+                "id": "q-241",
+                "title": "Order service error-handling standard",
+                "tags": ["orders", "backend"]
+              }
+            ]
+          }
+        ],
+        "get_question": {
+          "id": "q-241",
+          "title": "Order service error-handling standard",
+          "content": "Handle InventoryLedgerError at the service boundary and emit the standard retryable-error metric."
+        }
+      },
+      "expected": "Call search once with a focused order-service and InventoryLedgerError query, inspect candidate metadata, then call get_question for q-241 before answering. Cite the title and ID, state only the boundary-handling and metric requirement as supported evidence, and label any implementation advice beyond that content as Inference.",
+      "expected_tool_sequence": ["search", "get_question"],
+      "forbidden_actions": ["create_question", "create_QA", "create_article", "vote"]
+    },
+    {
+      "id": "onboarding-test-suite-instructions",
+      "prompt": "How do new engineers run the Acorn Platform integration test suite locally?",
+      "simulated_mcp": {
+        "search": [
+          {
+            "results": [
+              {
+                "id": "a-118",
+                "title": "Acorn Platform local integration tests",
+                "tags": ["onboarding", "testing"]
+              }
+            ]
+          }
+        ],
+        "get_article": {
+          "id": "a-118",
+          "title": "Acorn Platform local integration tests",
+          "content": "Run the documented bootstrap command before the integration-test command."
+        }
+      },
+      "expected": "Call search before get_article, retrieve a-118 in full, and cite its title and ID. Present only the documented command ordering as evidence; label any environment assumptions or troubleshooting guidance as Inference.",
+      "expected_tool_sequence": ["search", "get_article"],
+      "forbidden_actions": ["draft_question", "create_question", "update_question", "update_answer"]
+    },
+    {
+      "id": "no-result-rate-limiting-request",
+      "prompt": "What is our internal rate-limiting policy for the partner import API?",
+      "simulated_mcp": {
+        "search": [
+          {"results": []},
+          {"results": []},
+          {"results": []}
+        ]
+      },
+      "expected": "Use one focused rate-limiting query and at most two broader queries, then stop after the third search. Do not fetch absent sources or invent a policy. Report that no relevant Stack Internal guidance was found, offer a knowledge-gap workflow, and make no write.",
+      "expected_tool_sequence": ["search", "search", "search"],
+      "forbidden_actions": ["get_question", "get_article", "draft_question", "create_question", "create_QA"]
+    }
+  ]
+}

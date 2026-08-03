@@ -1,4 +1,22 @@
 {
   "catalog_version": "1.0.0",
-  "skills": []
+  "skills": [
+    {
+      "id": "efficient-search",
+      "name": "Efficient Stack Internal Search",
+      "version": "0.1.0",
+      "tier": "core",
+      "summary": "Find company-specific guidance with focused, bounded, evidence-backed retrieval.",
+      "path": "skills/core/efficient-search",
+      "tags": ["search", "grounding", "company-knowledge"],
+      "required_tools": ["search", "get_question", "get_article"],
+      "write_actions": [],
+      "adapters": {
+        "codex": "experimental",
+        "claude-code": "experimental",
+        "cursor": "experimental",
+        "github-copilot": "experimental"
+      }
+    }
+  ]
 }
