@@ -1,0 +1,24 @@
+[project]
+name = "stack-skill-catalog"
+version = "0.1.0"
+description = "Validation tools for the Stack Internal Agent Skills catalog."
+requires-python = ">=3.11"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[dependency-groups]
+dev = [
+  "jsonschema>=4.23,<5",
+  "pytest>=8,<9",
+  "PyYAML>=6,<7",
+  "skills-ref @ git+https://github.com/agentskills/agentskills.git@38a2ff82958afee88dadf4831509e6f7e9d8ef4e#subdirectory=skills-ref",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

@@ -1,0 +1,49 @@
+"""Catalog loading and schema validation."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+from jsonschema import Draft202012Validator
+
+
+def load_catalog(path: Path) -> dict[str, object]:
+    """Load a catalog JSON object from *path*."""
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError("catalog must be a JSON object")
+    return value
+
+
+def validate_catalog(root: Path, catalog: dict[str, object]) -> list[str]:
+    """Return deterministic structural and repository errors for *catalog*."""
+    errors: list[str] = []
+    schema_path = root / "standards" / "catalog-schema.json"
+    try:
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        return [f"catalog schema could not be loaded: {error}"]
+
+    validator = Draft202012Validator(schema)
+    for error in sorted(validator.iter_errors(catalog), key=lambda item: (list(item.absolute_path), item.message)):
+        location = ".".join(str(part) for part in error.absolute_path) or "root"
+        errors.append(f"catalog schema violation at {location}: {error.message}")
+
+    skills = catalog.get("skills")
+    if not isinstance(skills, list):
+        return sorted(errors)
+
+    entries = [entry for entry in skills if isinstance(entry, dict)]
+    for field in ("id", "path"):
+        values = [entry.get(field) for entry in entries]
+        duplicates = sorted({value for value in values if values.count(value) > 1 and isinstance(value, str)})
+        errors.extend(f"catalog contains duplicate {field}: {value}" for value in duplicates)
+
+    for entry in entries:
+        path = entry.get("path")
+        if isinstance(path, str) and not (root / path).is_dir():
+            errors.append(f"catalog skill path does not exist: {path}")
+
+    return sorted(errors)
