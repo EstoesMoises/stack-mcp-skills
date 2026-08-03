@@ -36,6 +36,10 @@ def _assert_onboarding_search_contract(
     """Validate explicit topic metadata, result mapping, and hard search guards."""
     search_steps = [step for step in sequence if step.startswith("search:")]
     assert len(search_steps) == len(attempts)
+    result_keys = [attempt.get("result_key") for attempt in attempts]
+    assert all(isinstance(result_key, str) for result_key in result_keys)
+    assert len(set(result_keys)) == len(result_keys)
+    assert set(result_keys) == set(responses)
 
     searches_by_topic: dict[str, int] = {}
     for step, attempt in zip(search_steps, attempts, strict=True):
@@ -205,6 +209,31 @@ def test_onboarding_early_confirmation_cannot_bypass_ninth_search_gate():
                 "disclosure_step": "disclose_whole_path_budget",
                 "confirmation_step": "user_confirms_continue",
             },
+        )
+
+
+def test_onboarding_duplicate_result_key_is_rejected():
+    """Two search calls may not share one simulated response key."""
+    with pytest.raises(AssertionError):
+        _assert_onboarding_search_contract(
+            ["search:shared-result", "search:shared-result"],
+            [
+                {"topic": "setup", "query_kind": "focused", "result_key": "shared-result"},
+                {"topic": "architecture", "query_kind": "focused", "result_key": "shared-result"},
+            ],
+            {"shared-result": []},
+            None,
+        )
+
+
+def test_onboarding_unused_simulated_response_is_rejected():
+    """The simulated search map must not contain a response without an attempt."""
+    with pytest.raises(AssertionError):
+        _assert_onboarding_search_contract(
+            ["search:setup-focused"],
+            [{"topic": "setup", "query_kind": "focused", "result_key": "setup-focused"}],
+            {"setup-focused": [], "unused-response": []},
+            None,
         )
 
 
