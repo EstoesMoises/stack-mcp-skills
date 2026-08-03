@@ -136,6 +136,23 @@
         "cursor": "experimental",
         "github-copilot": "experimental"
       }
+    },
+    {
+      "id": "triage-unanswered",
+      "name": "Triage Unanswered Stack Internal Questions",
+      "version": "0.1.0",
+      "tier": "extended",
+      "summary": "Prioritize questions without accepted answers and prepare only fully retrieved, evidence-based answer or vote actions for approval.",
+      "path": "skills/extended/triage-unanswered",
+      "tags": ["curation", "unanswered", "answers"],
+      "required_tools": ["search", "get_questions_to_answer", "get_question", "submit_user_answer", "vote"],
+      "write_actions": ["submit_user_answer", "vote"],
+      "adapters": {
+        "codex": "experimental",
+        "claude-code": "experimental",
+        "cursor": "experimental",
+        "github-copilot": "experimental"
+      }
     }
   ]
 }
