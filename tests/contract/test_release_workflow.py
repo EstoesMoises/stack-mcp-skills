@@ -14,11 +14,11 @@ REQUIRED_AUTOMATED_COMMANDS = (
     "uv run python scripts/validate_catalog.py .",
 )
 PINNED_ACTIONS = (
-    "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+    "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
     "astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b",
 )
 PINNED_ACTION_LINES = (
-    "- uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0",
+    "- uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
     "- uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0",
 )
 
