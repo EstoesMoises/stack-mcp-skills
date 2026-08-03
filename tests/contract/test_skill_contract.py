@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from stack_skill_catalog.validation import validate_repository
 
 
@@ -25,6 +27,32 @@ _ONBOARDING_TOPICS = (
 )
 
 
+def _assert_onboarding_search_guards(sequence: list[str]) -> None:
+    """Validate per-topic and whole-path search limits in an eval sequence."""
+    searches_by_topic: dict[str, int] = {}
+    total_searches = 0
+    checkpoint_seen = False
+    confirmation_seen = False
+
+    for step in sequence:
+        if step == "disclose_whole_path_budget":
+            checkpoint_seen = True
+            continue
+        if step == "user_confirms_continue":
+            assert checkpoint_seen
+            confirmation_seen = True
+            continue
+        if not step.startswith("search:"):
+            continue
+
+        total_searches += 1
+        topic = step.removeprefix("search:").split("-broadened-", 1)[0]
+        searches_by_topic[topic] = searches_by_topic.get(topic, 0) + 1
+        assert searches_by_topic[topic] <= 3
+        if total_searches >= 9:
+            assert checkpoint_seen and confirmation_seen
+
+
 def test_onboarding_evals_search_every_topic_and_exhaust_missing_coverage():
     """A rendered gap is evidence of three empty topic searches, never an assumption."""
     eval_path = Path(__file__).parents[2] / "skills/extended/onboarding/evals/evals.json"
@@ -33,6 +61,7 @@ def test_onboarding_evals_search_every_topic_and_exhaust_missing_coverage():
     for case in cases:
         sequence = case["expected_tool_sequence"]
         responses = case["simulated_mcp"]["search"]
+        _assert_onboarding_search_guards(sequence)
         for topic in _ONBOARDING_TOPICS:
             assert f"search:{topic}" in sequence
             assert topic in responses
@@ -49,7 +78,7 @@ def test_onboarding_evals_search_every_topic_and_exhaust_missing_coverage():
 
 
 def test_onboarding_eval_exposes_whole_path_search_budget_guard():
-    """More than eight path searches must pause before another broadening."""
+    """Every ninth path search needs a checkpoint, whatever kind of query it is."""
     eval_path = Path(__file__).parents[2] / "skills/extended/onboarding/evals/evals.json"
     cases = json.loads(eval_path.read_text(encoding="utf-8"))["cases"]
     case = next(item for item in cases if item["id"] == "payments-team-transfer-path")
@@ -61,6 +90,37 @@ def test_onboarding_eval_exposes_whole_path_search_budget_guard():
     assert any(step.startswith("search:") for step in sequence[checkpoint + 2:])
     assert "completed searches" in case["expected"]
     assert "remaining topics" in case["expected"]
+
+    skill_path = Path(__file__).parents[2] / "skills/extended/onboarding/SKILL.md"
+    body = skill_path.read_text(encoding="utf-8")
+    assert "including focused" in body
+    assert "before call 9 of any kind" in body
+
+
+def test_onboarding_continuation_cannot_permit_a_fourth_topic_search():
+    """Confirmation may resume the path, but it cannot reopen an exhausted topic."""
+    skill_path = Path(__file__).parents[2] / "skills/extended/onboarding/SKILL.md"
+    body = skill_path.read_text(encoding="utf-8")
+
+    assert "even if the user asks to continue" in body
+    assert "separately scoped follow-up" in body
+    with pytest.raises(AssertionError):
+        _assert_onboarding_search_guards(
+            [
+                "search:architecture",
+                "search:architecture-broadened-1",
+                "search:architecture-broadened-2",
+                "disclose_whole_path_budget",
+                "user_confirms_continue",
+                "search:architecture-broadened-3",
+            ]
+        )
+
+
+def test_onboarding_ninth_focused_search_cannot_bypass_confirmation():
+    """The whole-path guard counts focused searches as well as broadenings."""
+    with pytest.raises(AssertionError):
+        _assert_onboarding_search_guards([f"search:focused-topic-{number}" for number in range(1, 10)])
 
 
 def test_capture_quality_qa_evals_forbid_every_write_before_approval():
