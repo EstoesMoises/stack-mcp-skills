@@ -18,11 +18,20 @@ _SMOKE_CHECKS = {
 }
 
 
-def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+def _git_text(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["git", "-C", str(root), *args],
         capture_output=True,
         text=True,
+        check=False,
+    )
+
+
+def _git_bytes(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
+    return subprocess.run(
+        ["git", "-C", str(root), *args],
+        capture_output=True,
+        text=False,
         check=False,
     )
 
@@ -79,8 +88,8 @@ def validate_catalog(root: Path, catalog: dict[str, object]) -> list[str]:
         if not isinstance(release_commit, str):
             errors.append("compatibility evidence records require a release-candidate commit")
         else:
-            commit_check = _git(root, "cat-file", "-e", f"{release_commit}^{{commit}}")
-            ancestor_check = _git(root, "merge-base", "--is-ancestor", release_commit, "HEAD")
+            commit_check = _git_text(root, "cat-file", "-e", f"{release_commit}^{{commit}}")
+            ancestor_check = _git_text(root, "merge-base", "--is-ancestor", release_commit, "HEAD")
             git_commit_valid = commit_check.returncode == 0 and ancestor_check.returncode == 0
             if not git_commit_valid:
                 errors.append(
@@ -136,8 +145,12 @@ def validate_catalog(root: Path, catalog: dict[str, object]) -> list[str]:
                 errors.append(f"smoke evidence artifact could not be loaded: {reference}: {error}")
                 record_valid = False
                 continue
-            committed = _git(root, "show", f"{release_commit}:{relative.as_posix()}") if git_commit_valid else None
-            if committed is None or committed.returncode != 0 or committed.stdout.encode() != artifact_bytes:
+            committed = (
+                _git_bytes(root, "show", f"{release_commit}:{relative.as_posix()}")
+                if git_commit_valid
+                else None
+            )
+            if committed is None or committed.returncode != 0 or committed.stdout != artifact_bytes:
                 errors.append(f"smoke evidence artifact is not exact release-candidate content: {reference}")
                 record_valid = False
             if smoke_validator is None:

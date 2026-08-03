@@ -66,9 +66,9 @@
       "id": "response-lost-after-success",
       "prompt": "The answer submission response was lost and may already have succeeded. Retry the answer.",
       "prior_approved_payload": {"target": {"question_id": 1101}, "target_id": 1101, "answer": "Use a 90-second grace period for the verified worker drain behavior.", "intended_action": {"tool": "submit_user_answer", "args": {"questionId": 1101, "answer": "Use a 90-second grace period for the verified worker drain behavior."}}},
-      "simulated_write_tool_schema": {"tool": "submit_user_answer", "input_schema": {"required": ["questionId", "answer"]}},
-      "simulated_mcp": {"get_questions_to_answer": [{"id": 1101, "title": "What grace period is required?"}], "get_question": {"1101": {"id": 1101, "title": "What grace period is required?", "accepted_answer_id": null, "answers": [{"id": 3301, "body": "The approved answer is already present."}]}}},
-      "simulated_reconciliation": {"already_succeeded": true, "confirmed_content_id": 3301},
+      "simulated_write_tool_schema": {"tool": "submit_user_answer", "input_schema": {"type": "object", "required": ["questionId", "answer"], "properties": {"questionId": {"type": "number"}, "answer": {"type": "string"}}, "additionalProperties": false}},
+      "simulated_mcp": {"get_questions_to_answer": [{"id": 1101, "title": "What grace period is required?"}], "get_question": {"1101": {"id": 1101, "title": "What grace period is required?", "accepted_answer_id": null, "answers": [{"id": 3301, "body": "Use a 90-second grace period for the verified worker drain behavior."}]}}},
+      "simulated_reconciliation": {"observations": {"question": {"id": 1101, "title": "What grace period is required?"}, "answer": {"id": 3301, "body": "Use a 90-second grace period for the verified worker drain behavior."}}},
       "expected_tool_sequence": ["get_questions_to_answer:kubernetes", "get_question:1101", "confirmed_no_retry"],
       "expected": "Reconcile the complete question and existing-answer state read-only. The exact approved answer already succeeded as answer 3301, so report it confirmed and make no retry, redisplay, approval request, or write call.",
       "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]

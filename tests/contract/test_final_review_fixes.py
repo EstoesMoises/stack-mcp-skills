@@ -46,8 +46,24 @@ def test_all_write_skills_define_response_lost_reconciliation_and_fresh_approval
         action = payload["intended_action"]
         schema = case["simulated_write_tool_schema"]
         assert action["tool"] == schema["tool"]
-        assert set(action["args"]) == set(schema["input_schema"]["required"])
+        input_schema = schema["input_schema"]
+        assert input_schema["type"] == "object"
+        assert input_schema["additionalProperties"] is False
+        assert set(action["args"]) == set(input_schema["required"])
+        assert set(input_schema["properties"]) == set(input_schema["required"])
         args = action["args"]
+        for name, value in args.items():
+            property_schema = input_schema["properties"][name]
+            expected_type = property_schema["type"]
+            assert (
+                expected_type == "string" and isinstance(value, str)
+                or expected_type == "number" and isinstance(value, (int, float)) and not isinstance(value, bool)
+                or expected_type == "boolean" and isinstance(value, bool)
+                or expected_type == "array" and isinstance(value, list)
+            )
+            if expected_type == "array":
+                assert property_schema["items"] == {"type": "string"}
+                assert all(isinstance(item, str) for item in value)
         if action["tool"] == "create_QA":
             assert args == {name: payload[name] for name in ("title", "question", "answer", "tags")}
         elif action["tool"] == "create_article":
@@ -65,7 +81,32 @@ def test_all_write_skills_define_response_lost_reconciliation_and_fresh_approval
             }
         else:
             assert args == {"questionId": payload["target"]["question_id"], "answer": payload["answer"]}
-        assert case["simulated_reconciliation"]["already_succeeded"] is True
+        observations = case["simulated_reconciliation"]["observations"]
+        if action["tool"] in {"create_QA", "create_article", "create_question"}:
+            observed = observations["created_content"]
+            retrieval_key = "get_article" if action["tool"] == "create_article" else "get_question"
+            assert observed == case["simulated_mcp"][retrieval_key]
+            assert observed["title"] == args["title"]
+            if action["tool"] == "create_QA":
+                assert observed["question"] == args["question"]
+                assert observed["answer"] == args["answer"]
+            else:
+                assert observed["body"] == args["body"]
+            assert observed["tags"] == args["tags"]
+            if action["tool"] == "create_question":
+                assert observed["draftReviewed"] == args["draftReviewed"]
+        else:
+            retrieved = case["simulated_mcp"]["get_question"]
+            if action["tool"] == "submit_user_answer":
+                retrieved = retrieved[str(args["questionId"])]
+            assert observations["question"]["id"] == args["questionId"]
+            assert observations["question"]["id"] == retrieved["id"]
+            assert observations["answer"] in retrieved["answers"]
+            assert observations["answer"]["body"] == (
+                args["newBodyContent"] if action["tool"] == "update_answer" else args["answer"]
+            )
+            if action["tool"] == "update_answer":
+                assert observations["answer"]["id"] == args["answerId"]
 
     policy = (ROOT / "standards/policy-contract.md").read_text(encoding="utf-8").lower()
     assert "ambiguous write outcome" in policy
@@ -180,7 +221,10 @@ def test_catalog_tier_must_match_path(repo_fixture):
 
 def _git(root: Path, *args: str) -> str:
     return subprocess.run(
-        ["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "-C", str(root), *args],
+        [
+            "git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid",
+            "-c", "core.autocrlf=false", "-C", str(root), *args,
+        ],
         check=True, capture_output=True, text=True,
     ).stdout.strip()
 
@@ -297,4 +341,36 @@ def test_supported_adapter_fails_closed_without_git_audit_context(repo_fixture):
 
     errors = validate_repository(repo_fixture.root)
     assert any("real ancestor commit" in error for error in errors)
+    assert any("tenant-backed smoke-test evidence" in error for error in errors)
+
+
+def test_supported_adapter_compares_candidate_artifact_as_raw_bytes(repo_fixture):
+    repo_fixture.add_skill()
+    smoke_tests = _write_smoke_artifacts(repo_fixture.root)
+    artifact_path = repo_fixture.root / smoke_tests[0]["evidence_ref"]
+    candidate_artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+    crlf_bytes = (json.dumps(candidate_artifact, indent=2) + "\n").replace("\n", "\r\n").encode()
+    artifact_path.write_bytes(crlf_bytes)
+    _git(repo_fixture.root, "init", "-q")
+    _git(repo_fixture.root, "add", ".")
+    _git(repo_fixture.root, "commit", "-qm", "release candidate")
+    release_candidate = _git(repo_fixture.root, "rev-parse", "HEAD")
+
+    artifact_path.write_bytes(crlf_bytes.replace(b"\r\n", b"\n"))
+    catalog_path = repo_fixture.root / "catalog/skills.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    catalog["skills"][0]["adapters"]["codex"] = "supported"
+    catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+    (repo_fixture.root / "compatibility/evidence.json").write_text(json.dumps({
+        "schema_version": "1.0.0", "release_candidate_commit": release_candidate,
+        "records": [{
+            "adapter": "codex", "client_version": "1.2.3", "catalog_commit": release_candidate,
+            "skill_id": "example-skill", "skill_version": "0.1.0",
+            "tenant_purpose": "non-production skill validation", "reviewer": "Release reviewer",
+            "review_date": "2026-08-03", "smoke_tests": smoke_tests,
+        }],
+    }), encoding="utf-8")
+
+    errors = validate_repository(repo_fixture.root)
+    assert any("not exact release-candidate content" in error for error in errors)
     assert any("tenant-backed smoke-test evidence" in error for error in errors)
