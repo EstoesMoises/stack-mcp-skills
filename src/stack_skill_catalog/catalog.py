@@ -45,6 +45,21 @@ def validate_catalog(root: Path, catalog: dict[str, object]) -> list[str]:
         path = entry.get("path")
         if isinstance(path, str) and not (root / path).is_dir():
             errors.append(f"catalog skill path does not exist: {path}")
+        required_tools = entry.get("required_tools")
+        write_actions = entry.get("write_actions")
+        if isinstance(required_tools, list) and isinstance(write_actions, list):
+            missing_actions = sorted(
+                {
+                    action
+                    for action in write_actions
+                    if isinstance(action, str) and action not in required_tools
+                }
+            )
+            if missing_actions:
+                errors.append(
+                    "catalog write actions must be included in required_tools: "
+                    f"{entry.get('id')} (missing: {', '.join(missing_actions)})"
+                )
         adapters = entry.get("adapters")
         if isinstance(adapters, dict):
             for adapter, state in adapters.items():

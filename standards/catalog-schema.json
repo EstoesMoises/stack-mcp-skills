@@ -81,9 +81,9 @@
         "tier": {"enum": ["core", "extended"]},
         "summary": {"type": "string", "minLength": 1},
         "path": {"type": "string", "pattern": "^skills/(core|extended)/[a-z0-9]+(?:-[a-z0-9]+)*$"},
-        "tags": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
-        "required_tools": {"type": "array", "items": {"$ref": "#/$defs/tool"}},
-        "write_actions": {"type": "array", "items": {"$ref": "#/$defs/write_action"}},
+        "tags": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "required_tools": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/tool"}},
+        "write_actions": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/write_action"}},
         "adapters": {"$ref": "#/$defs/adapters"}
       }
     }

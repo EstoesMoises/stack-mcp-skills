@@ -21,11 +21,46 @@ def test_capture_quality_qa_evals_forbid_every_write_before_approval():
     """Keep every capture scenario safely paused at its approval gate."""
     eval_path = Path(__file__).parents[2] / "skills/core/capture-quality-qa/evals/evals.json"
     cases = json.loads(eval_path.read_text(encoding="utf-8"))["cases"]
+    cases_by_id = {case["id"]: case for case in cases}
+
+    assert {
+        "validated-connection-timeout-fix",
+        "duplicate-proposes-existing-answer-update",
+        "sensitive-draft-is-sanitized-before-display",
+        "preapproval-upvote",
+        "preapproval-downvote",
+    } <= cases_by_id.keys()
 
     required_guard = "Before explicit approval, do not call any write action."
     for case in cases:
         assert case["forbidden_actions"] == list(_QA_WRITE_ACTIONS)
         assert required_guard in case["expected"]
+        assert not set(case["expected_tool_sequence"]) & set(_QA_WRITE_ACTIONS)
+
+    duplicate = cases_by_id["duplicate-proposes-existing-answer-update"]
+    assert duplicate["simulated_mcp"]["get_question"]["answers"] == [
+        {"id": "a-241", "body": "Retry the migration manually after lock contention."}
+    ]
+    assert duplicate["expected_local_payload"]["target_id"] == "a-241"
+    assert duplicate["expected_local_payload"]["intended_action"] == {
+        "tool": "update_answer",
+        "args": {"target_type": "answer"},
+    }
+
+    for case_id, operation in (("preapproval-upvote", "upvote"), ("preapproval-downvote", "downvote")):
+        assert cases_by_id[case_id]["expected_local_payload"]["intended_action"] == {
+            "tool": "vote",
+            "args": {"operation": operation, "target_type": "answer"},
+        }
+
+
+def test_capture_quality_qa_reports_only_confirmed_write_results():
+    """A Q&A write is not successful until the server confirms it."""
+    skill_path = Path(__file__).parents[2] / "skills/core/capture-quality-qa/SKILL.md"
+    body = skill_path.read_text(encoding="utf-8")
+
+    assert "Report the confirmed result and returned created or updated content ID when available." in body
+    assert "Never claim success without server confirmation." in body
 
 
 def test_established_company_debugging_eval_requires_matching_runtime_evidence_and_label():

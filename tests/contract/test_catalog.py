@@ -58,3 +58,30 @@ def test_adapter_support_requires_tenant_backed_smoke_test_evidence(repo_fixture
     catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
 
     assert "adapter support requires tenant-backed smoke-test evidence: codex" in validate_repository(repo_fixture.root)
+
+
+def test_catalog_rejects_duplicate_array_items(repo_fixture):
+    """A repeated capability should not create an ambiguous catalog contract."""
+    repo_fixture.add_skill()
+    catalog_path = repo_fixture.root / "catalog" / "skills.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    catalog["skills"][0]["required_tools"] = ["search", "search"]
+    catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+
+    errors = validate_repository(repo_fixture.root)
+
+    assert any("required_tools" in error and "non-unique" in error for error in errors)
+
+
+def test_catalog_requires_write_actions_to_be_required_tools(repo_fixture):
+    """A declared write cannot be permitted without being a required capability."""
+    repo_fixture.add_skill()
+    catalog_path = repo_fixture.root / "catalog" / "skills.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    catalog["skills"][0]["write_actions"] = ["create_QA"]
+    catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+
+    assert (
+        "catalog write actions must be included in required_tools: example-skill "
+        "(missing: create_QA)"
+    ) in validate_repository(repo_fixture.root)

@@ -8,11 +8,29 @@ Render this complete object locally before the approval gate. Fill it with sanit
   "question": "Problem: concise question that can stand alone",
   "answer": "Problem: verified problem\n\nResolution: direct fix and why it works",
   "tags": ["valid-tag"],
-  "intended_action": "create_QA"
+  "intended_action": {
+    "tool": "create_QA",
+    "args": {}
+  }
 }
 ```
 
-For an existing target, add a `target_id` field to that same object. Omit `target_id` for a new question or Q&A.
+For an existing target, add a `target_id` field and the exact target type in `intended_action.args` to that same object. Omit `target_id` for a new question or Q&A. For a vote, preserve the retrieved target's title, question, answer, and tags in the display payload, then use this exact action shape:
+
+```json
+{
+  "intended_action": {
+    "tool": "vote",
+    "args": {
+      "operation": "upvote",
+      "target_type": "answer"
+    }
+  },
+  "target_id": "retrieved-answer-id"
+}
+```
+
+Set `operation` to the exact supported `upvote`, `downvote`, or `remove` operation selected by the user; do not choose a default or add an argument after approval. Do not use an operation the documented vote tool contract does not support.
 
 Build `question` and `answer` from these sections:
 

@@ -10,6 +10,14 @@
       },
       "expected_tool_sequence": ["search", "get_question", "get_existing_tags"],
       "expected": "Retrieve q-117 before treating it as evidence, explain that it is not a duplicate, select only returned tags, and render a concise local create_QA payload with problem, root cause, resolution, and validation. Before explicit approval, do not call any write action.",
+      "expected_local_payload": {
+        "title": "How do we prevent Payments API TLS connect timeouts during regional failover?",
+        "question": "Problem: Payments API TLS handshakes exceed the former 250 ms upstream connect timeout during regional failover.",
+        "answer": "Root cause: regional failover can make TLS handshakes exceed 250 ms.\n\nResolution: set the upstream connect timeout to 1 s.\n\nValidation: the canary and load test passed.",
+        "tags": ["payments", "networking", "timeouts"],
+        "intended_action": {"tool": "create_QA", "args": {}}
+      },
+      "after_approval_expected": "Call only create_QA with the approved payload, then report the confirmed created content ID when the server returns one; never claim success without confirmation.",
       "forbidden_actions": ["draft_question", "create_question", "create_QA", "submit_user_answer", "update_question", "update_answer", "vote"]
     },
     {
@@ -17,11 +25,20 @@
       "prompt": "Capture the verified migration workaround: set the orders schema lock timeout to 30 seconds before the backfill. An existing Stack Internal answer is outdated and tells people to retry the migration manually.",
       "simulated_mcp": {
         "search": [{"id": "q-241", "title": "Orders migration blocks during backfill", "snippet": "Manual retry workaround."}],
-        "get_question": {"id": "q-241", "title": "Orders migration blocks during backfill", "answer": "Retry the migration manually after lock contention."},
+        "get_question": {"id": "q-241", "title": "Orders migration blocks during backfill", "answers": [{"id": "a-241", "body": "Retry the migration manually after lock contention."}]},
         "get_existing_tags": ["migrations", "orders", "databases"]
       },
       "expected_tool_sequence": ["search", "get_question", "get_existing_tags"],
-      "expected": "Prefer updating the retrieved existing answer rather than creating a duplicate, render a sanitized local update_answer payload with target_id q-241 and valid tags, and explain why the existing item is the target. Before explicit approval, do not call any write action.",
+      "expected": "Prefer updating the retrieved existing answer rather than creating a duplicate, render a sanitized local update_answer payload with target_id a-241 and valid tags, and explain why the existing answer is the target. Before explicit approval, do not call any write action.",
+      "expected_local_payload": {
+        "title": "How do we prevent Orders migration backfill lock contention?",
+        "question": "Problem: Orders migration backfill can block on the schema lock.",
+        "answer": "Resolution: set the orders schema lock timeout to 30 seconds before the backfill instead of manually retrying the migration.",
+        "tags": ["migrations", "orders", "databases"],
+        "intended_action": {"tool": "update_answer", "args": {"target_type": "answer"}},
+        "target_id": "a-241"
+      },
+      "after_approval_expected": "Call only update_answer for a-241 with the approved payload, then report the confirmed updated content ID when the server returns one; never claim success without confirmation.",
       "forbidden_actions": ["draft_question", "create_question", "create_QA", "submit_user_answer", "update_question", "update_answer", "vote"]
     },
     {
@@ -33,6 +50,53 @@
       },
       "expected_tool_sequence": ["search", "get_existing_tags"],
       "expected": "Remove the customer name and token before any local payload is displayed, retain only the verified signing-key rotation and signature-validation facts, use returned tags, and render a concise local create_QA payload. Before explicit approval, do not call any write action.",
+      "expected_local_payload": {
+        "title": "How do we safely replay webhook events after a signing-key rotation?",
+        "question": "Problem: Webhook events need safe replay after a callback signing-key rotation.",
+        "answer": "Resolution: rotate the callback signing key and replay only events whose signatures validate.",
+        "tags": ["webhooks", "security", "event-processing"],
+        "intended_action": {"tool": "create_QA", "args": {}}
+      },
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "submit_user_answer", "update_question", "update_answer", "vote"]
+    },
+    {
+      "id": "preapproval-upvote",
+      "prompt": "I used answer a-512 on the internal OAuth question and want to upvote it. Show me exactly what will be sent first.",
+      "simulated_mcp": {
+        "search": [{"id": "q-512", "title": "How should the OAuth callback be configured?", "snippet": "Accepted configuration guidance."}],
+        "get_question": {"id": "q-512", "title": "How should the OAuth callback be configured?", "tags": ["oauth", "authentication"], "answers": [{"id": "a-512", "body": "Use the registered callback URI and validate state."}]},
+        "get_existing_tags": ["oauth", "authentication"]
+      },
+      "expected_tool_sequence": ["search", "get_question", "get_existing_tags"],
+      "expected": "Retrieve the target before displaying a local vote payload whose intended_action is exactly vote with operation upvote and target_type answer for target_id a-512. Before explicit approval, do not call any write action.",
+      "expected_local_payload": {
+        "title": "How should the OAuth callback be configured?",
+        "question": "How should the OAuth callback be configured?",
+        "answer": "Use the registered callback URI and validate state.",
+        "tags": ["oauth", "authentication"],
+        "intended_action": {"tool": "vote", "args": {"operation": "upvote", "target_type": "answer"}},
+        "target_id": "a-512"
+      },
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "submit_user_answer", "update_question", "update_answer", "vote"]
+    },
+    {
+      "id": "preapproval-downvote",
+      "prompt": "The answer a-513 on the internal OAuth question is dangerous and I want to downvote it. Show the exact action for approval.",
+      "simulated_mcp": {
+        "search": [{"id": "q-512", "title": "How should the OAuth callback be configured?", "snippet": "Accepted configuration guidance."}],
+        "get_question": {"id": "q-512", "title": "How should the OAuth callback be configured?", "tags": ["oauth", "authentication"], "answers": [{"id": "a-513", "body": "Disable callback state validation."}]},
+        "get_existing_tags": ["oauth", "authentication"]
+      },
+      "expected_tool_sequence": ["search", "get_question", "get_existing_tags"],
+      "expected": "Retrieve the target before displaying a local vote payload whose intended_action is exactly vote with operation downvote and target_type answer for target_id a-513. Before explicit approval, do not call any write action.",
+      "expected_local_payload": {
+        "title": "How should the OAuth callback be configured?",
+        "question": "How should the OAuth callback be configured?",
+        "answer": "Disable callback state validation.",
+        "tags": ["oauth", "authentication"],
+        "intended_action": {"tool": "vote", "args": {"operation": "downvote", "target_type": "answer"}},
+        "target_id": "a-513"
+      },
       "forbidden_actions": ["draft_question", "create_question", "create_QA", "submit_user_answer", "update_question", "update_answer", "vote"]
     }
   ]
