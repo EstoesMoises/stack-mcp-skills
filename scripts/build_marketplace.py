@@ -8,12 +8,14 @@ import os
 from pathlib import Path
 import shutil
 
+import yaml
+
 from stack_skill_catalog.marketplace_distribution import distribution_diff, write_distribution
 from stack_skill_catalog.marketplace_config import load_marketplace_config
 from stack_skill_catalog.site import write_site
 
 
-_OPERATIONAL_ERRORS = (OSError, ValueError, KeyError, TypeError, shutil.Error)
+_OPERATIONAL_ERRORS = (OSError, ValueError, KeyError, TypeError, shutil.Error, yaml.YAMLError)
 
 
 def build_parser() -> argparse.ArgumentParser:

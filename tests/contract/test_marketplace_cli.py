@@ -114,6 +114,21 @@ def test_site_command_sanitizes_a_malformed_catalog_entry(tmp_path, capsys):
     assert str(root) not in output
 
 
+def test_site_command_sanitizes_malformed_skill_frontmatter(tmp_path, capsys):
+    """Malformed SKILL.md YAML must fail without exposing a traceback or source path."""
+    root = _source_root(tmp_path)
+    catalog = json.loads((root / "catalog" / "skills.json").read_text(encoding="utf-8"))
+    skill_path = root / catalog["skills"][0]["path"] / "SKILL.md"
+    skill_path.write_text("---\nname: [unterminated\n---\n# Skill\n", encoding="utf-8")
+
+    assert main(["site", "--root", str(root), "--output", str(tmp_path / "dist"), "--source-commit", "a" * 40]) == 1
+
+    output = capsys.readouterr().out
+    assert output == '{"error": "site build failed", "valid": false}\n'
+    assert "Traceback" not in output
+    assert str(root) not in output
+
+
 @pytest.mark.parametrize(
     ("mode", "expected"),
     [
