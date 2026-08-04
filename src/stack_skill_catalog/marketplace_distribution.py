@@ -210,20 +210,20 @@ def write_distribution(root: Path) -> None:
         with TemporaryDirectory(prefix=f".{root.name}-marketplace-backup-", dir=root.parent) as backup_temp:
             backup_root = Path(backup_temp)
             created_parents: list[Path] = []
-            for surface in SURFACES:
-                destination = safe_join(root, surface)
-                missing: list[Path] = []
-                parent = destination.parent
-                while parent != root and not parent.exists():
-                    missing.append(parent)
-                    parent = parent.parent
-                for directory in reversed(missing):
-                    directory.mkdir()
-                    created_parents.append(directory)
-
             moved_live: list[tuple[Path, Path]] = []
             installed: list[Path] = []
             try:
+                for surface in SURFACES:
+                    destination = safe_join(root, surface)
+                    missing: list[Path] = []
+                    parent = destination.parent
+                    while parent != root and not parent.exists():
+                        missing.append(parent)
+                        parent = parent.parent
+                    for directory in reversed(missing):
+                        directory.mkdir()
+                        created_parents.append(directory)
+
                 for surface in SURFACES:
                     destination = safe_join(root, surface)
                     if destination.exists() or destination.is_symlink():

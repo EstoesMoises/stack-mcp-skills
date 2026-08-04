@@ -12,6 +12,9 @@ Install the selected plugin explicitly at project scope, then reload its plugin 
 
 ```bash
 claude plugin install efficient-search@stack-internal --scope project
+```
+
+```text
 /reload-plugins
 ```
 

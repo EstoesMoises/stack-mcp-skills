@@ -25,6 +25,24 @@ def test_claude_install_guides_never_publish_an_unscoped_install_command():
         assert "/plugin install " not in body
 
 
+def test_claude_install_guides_keep_slash_commands_out_of_shell_blocks():
+    """Catch a copyable shell block that includes a Claude Code slash command."""
+    offenders = {}
+    for path in (ROOT / "README.md", ROOT / "adapters/claude-code/README.md"):
+        body = path.read_text(encoding="utf-8")
+        bash_blocks = re.findall(r"```bash\n(.*?)```", body, flags=re.DOTALL)
+        slash_commands = [
+            line
+            for block in bash_blocks
+            for line in block.splitlines()
+            if line.startswith("/")
+        ]
+        if slash_commands:
+            offenders[path.relative_to(ROOT).as_posix()] = slash_commands
+
+    assert offenders == {}
+
+
 def test_codex_docs_do_not_claim_a_project_scope_flag():
     body = (ROOT / "adapters/codex/README.md").read_text(encoding="utf-8").lower()
     assert "client-managed" in body

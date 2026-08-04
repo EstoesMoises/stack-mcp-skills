@@ -528,3 +528,34 @@ def test_write_rolls_back_every_surface_when_any_transaction_rename_fails(
         for path in root.parent.iterdir()
         if path.name.startswith(f".{root.name}-marketplace-")
     ]
+
+
+@pytest.mark.parametrize("failed_parent", (".agents", ".agents/plugins", ".claude-plugin"))
+def test_write_removes_only_transaction_created_parents_when_setup_fails(
+    tmp_path, capsys, monkeypatch, failed_parent
+):
+    """A parent-creation failure must restore the exact initially absent distribution state."""
+    root = _source_root(tmp_path)
+    before = _distribution_state(root)
+    failed_path = root / failed_parent
+    original_mkdir = Path.mkdir
+
+    def mkdir_with_failure(path: Path, *args, **kwargs) -> None:
+        if path == failed_path:
+            raise OSError("injected parent creation failure")
+        original_mkdir(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "mkdir", mkdir_with_failure)
+
+    assert main(["packages", "--mode", "write", "--root", str(root)]) == 1
+
+    assert json.loads(capsys.readouterr().out) == {
+        "error": "package write failed",
+        "generated": False,
+    }
+    assert _distribution_state(root) == before
+    assert not [
+        path
+        for path in root.parent.iterdir()
+        if path.name.startswith(f".{root.name}-marketplace-")
+    ]

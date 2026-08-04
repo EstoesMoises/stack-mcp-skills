@@ -49,6 +49,9 @@ claude plugin marketplace add EstoesMoises/stack-mcp-skills --scope project
 
 ```bash
 claude plugin install efficient-search@stack-internal --scope project
+```
+
+```text
 /reload-plugins
 ```
 
