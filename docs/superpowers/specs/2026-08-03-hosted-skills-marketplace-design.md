@@ -72,7 +72,7 @@ A focused Python builder uses the repository's existing Python runtime and catal
 4. Create normalized static site data.
 5. Render the framework-free GitHub Pages site into `dist/`.
 
-The builder has a write mode for maintainers and a check mode for CI. Check mode generates into a temporary directory and compares the result with committed generated files. Any difference blocks the release.
+The builder has a package-write mode for maintainers and a package-check mode for CI. Package-check mode generates plugin wrappers and native marketplace manifests into a temporary directory and compares them with their committed counterparts. Any difference blocks the release. Static site data and `dist/` are post-commit CI artifacts rather than committed files: the site build receives the already-existing release commit as an explicit input, runs twice, and must produce identical trees.
 
 ### Generated plugin wrappers
 
@@ -190,7 +190,7 @@ The site never asks the user to submit a tenant slug. It shows local setup comma
 
 Skill versions remain independent semantic versions in `catalog/skills.json` and `SKILL.md` metadata. Any installable behavior or packaged resource change requires that skill's version to increase. Documentation-only changes outside an installed package do not require a skill version bump.
 
-The marketplace has its own version because entry ordering, presentation metadata, and the core selection can change without changing a skill. The generated static data records the marketplace version and source commit. It does not embed the current clock time, so repeated builds from the same commit remain identical.
+The marketplace has its own version because entry ordering, presentation metadata, and the core selection can change without changing a skill. The generated static data records the marketplace version and the explicit source commit supplied by the post-commit CI job. It does not embed the current clock time, so repeated builds from the same commit remain identical. This avoids an impossible self-reference in which a committed generated file would need to contain the SHA of the commit that contains it.
 
 A release follows this sequence:
 
@@ -280,8 +280,9 @@ The repository does not mutate a consumer project through a custom program and d
 - Marketplace entries are unique, ordered deterministically, and resolve within the repository.
 - Each manifest version agrees with `catalog/skills.json` and `SKILL.md` metadata.
 - The core selection contains exactly the three catalog entries whose tier is `core`.
-- Two generator runs from the same commit produce identical output.
-- Generator check mode reports no diff after committed output is refreshed.
+- Two package-generator runs from the same canonical source produce identical output.
+- Package-check mode reports no diff after committed plugin wrappers and marketplace manifests are refreshed.
+- Two static site builds given the same explicit source commit produce byte-identical `dist/` trees.
 
 ### Static-site checks
 
