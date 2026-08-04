@@ -46,6 +46,10 @@ Record evidence for each gate. Automated and manual no-tenant checks validate re
 
 Record the commit SHA, CI run URL, result, and reviewer for these gates.
 
+## GitHub Pages publication guard
+
+- [ ] In GitHub repository settings, configure and verify the `github-pages` environment allows deployments only from the `main` branch. This externally managed setting is not configured or verified by this repository.
+
 ## Manual no-tenant review
 
 - [ ] Read every changed description and confirm it states what and when, triggers on high-signal company context, and avoids routine generic work.

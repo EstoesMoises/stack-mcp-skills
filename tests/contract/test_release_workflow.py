@@ -128,6 +128,18 @@ def test_release_checklist_covers_exact_pages_and_native_marketplace_review():
     assert re.search(r"Claude Code native flow: marketplace add", body, flags=re.IGNORECASE)
 
 
+def test_release_checklist_requires_main_only_github_pages_environment():
+    """The externally managed Pages environment must be checked before release."""
+    body = (ROOT / "docs/release-checklist.md").read_text(encoding="utf-8")
+
+    assert re.search(
+        r"- \[ \].*`github-pages` environment.*only.*`main`",
+        body,
+        flags=re.IGNORECASE,
+    )
+    assert "not configured or verified by this repository" in body
+
+
 def test_ci_triggers_on_pull_requests_and_main_pushes():
     """Validation must run for proposed changes and every update to the release branch."""
     workflow_text = (ROOT / ".github/workflows/validate.yml").read_text(encoding="utf-8")
