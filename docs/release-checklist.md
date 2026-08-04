@@ -59,9 +59,10 @@ Record the commit SHA, reviewer, review date, changed skills and adapters, pass/
 
 ## Native marketplace manual gates
 
-- [ ] In clean projects using the exact Codex and Claude Code versions recorded in [the marketplace testing matrix](marketplace-testing.md), test native marketplace add, plugin list, individual install, three-plugin core install, explicit invocation, update, disablement, and removal.
+- [ ] In a clean project using the exact Codex version recorded in [the marketplace testing matrix](marketplace-testing.md), test the Codex native flow: marketplace add, plugin list, individual install, three-plugin core install, explicit invocation, update, disablement, and removal.
+- [ ] In a clean project using the exact Claude Code version recorded in [the marketplace testing matrix](marketplace-testing.md), test the Claude Code native flow: marketplace add, plugin list, individual install, three-plugin core install, explicit invocation, update, disablement, and removal.
 - [ ] Record the observed project-scope behavior separately for Codex and Claude Code. Codex command-driven marketplace registration is client-managed; do not claim a Codex project-scope flag. Claude marketplace add uses `--scope project` and its interactive install flow chooses project scope.
-- [ ] Navigate the deployed GitHub Pages catalog and confirm its install instructions and linked skill pages resolve.
+- [ ] Navigate the public GitHub Pages URL `https://estoesmoises.github.io/stack-mcp-skills/`; confirm it presents the exact source commit deployed by Pages, lists exactly nine plugin entries, and its install instructions and linked skill pages resolve.
 - [ ] Run all four tenant-backed smokes for the exact Codex and Claude Code client, plugin, and skill versions; record only redacted results under the fixed tenant purpose `non-production skill validation`.
 
 Exact client versions and pass/fail results are manual evidence fields. Do not record raw tenant data, tenant identifiers, slugs, credentials, tokens, personal data, customer data, or raw retrieved content.

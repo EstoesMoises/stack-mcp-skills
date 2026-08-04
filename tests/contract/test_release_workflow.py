@@ -13,8 +13,14 @@ REQUIRED_AUTOMATED_COMMANDS = (
     "uv run pytest -q",
     "uv run python scripts/validate_catalog.py .",
     "uv run python scripts/build_marketplace.py packages --mode check --root .",
-    "scripts/build_marketplace.py site --root . --output dist-a",
-    "scripts/build_marketplace.py site --root . --output dist-b",
+)
+REQUIRED_WORKFLOW_SITE_COMMANDS = (
+    'uv run python scripts/build_marketplace.py site --root . --output dist-a --source-commit "$GITHUB_SHA"',
+    'uv run python scripts/build_marketplace.py site --root . --output dist-b --source-commit "$GITHUB_SHA"',
+)
+REQUIRED_CHECKLIST_SITE_COMMANDS = (
+    'uv run python scripts/build_marketplace.py site --root . --output dist-a --source-commit "$(git rev-parse HEAD)"',
+    'uv run python scripts/build_marketplace.py site --root . --output dist-b --source-commit "$(git rev-parse HEAD)"',
 )
 PINNED_ACTIONS = (
     "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
@@ -97,10 +103,10 @@ def test_ci_runs_every_automated_release_gate():
 
     assert used_actions == list(PINNED_ACTIONS)
     assert all(line in workflow_text for line in PINNED_ACTION_LINES)
-    assert all(
-        any(command in step for step in run_steps) for command in REQUIRED_AUTOMATED_COMMANDS
-    )
+    assert all(command in run_steps for command in REQUIRED_AUTOMATED_COMMANDS)
+    assert all(command in run_steps for command in REQUIRED_WORKFLOW_SITE_COMMANDS)
     assert all(command in release_checklist for command in REQUIRED_AUTOMATED_COMMANDS)
+    assert all(command in release_checklist for command in REQUIRED_CHECKLIST_SITE_COMMANDS)
     assert any(
         "skills/core/* skills/extended/*" in command
         and 'uv run skills-ref validate "$skill"' in command
@@ -109,14 +115,17 @@ def test_ci_runs_every_automated_release_gate():
     assert 'uv run skills-ref validate "$skill"' in release_checklist
 
 
-def test_release_checklist_covers_native_marketplace_publication_review():
-    """A release review must inspect the deployed catalog and both native clients."""
+def test_release_checklist_covers_exact_pages_and_native_marketplace_review():
+    """A release review must inspect the exact public Pages catalog and each native flow."""
     body = (ROOT / "docs/release-checklist.md").read_text(encoding="utf-8")
 
-    assert "GitHub Pages catalog" in body
-    assert "exact current commit" in body
-    assert "plugin list" in body
-    assert "Codex and Claude Code" in body
+    assert re.search(
+        r"https://estoesmoises\.github\.io/stack-mcp-skills/.*exact source commit.*exactly nine plugin entries",
+        body,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    assert re.search(r"Codex native flow: marketplace add", body, flags=re.IGNORECASE)
+    assert re.search(r"Claude Code native flow: marketplace add", body, flags=re.IGNORECASE)
 
 
 def test_ci_triggers_on_pull_requests_and_main_pushes():
