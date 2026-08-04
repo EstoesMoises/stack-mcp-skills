@@ -22,6 +22,7 @@ main = MODULE.main
 def _source_root(tmp_path: Path) -> Path:
     root = tmp_path / "repo"
     shutil.copytree(ROOT / "catalog", root / "catalog")
+    shutil.copytree(ROOT / "marketplace_web", root / "marketplace_web")
     shutil.copytree(ROOT / "standards", root / "standards")
     shutil.copytree(ROOT / "skills", root / "skills")
     shutil.copyfile(ROOT / "LICENSE", root / "LICENSE")
@@ -41,6 +42,151 @@ def _distribution_state(root: Path) -> dict[str, tuple[str, bytes]]:
             key = path.relative_to(root).as_posix()
             state[key] = ("file", path.read_bytes()) if path.is_file() else ("directory", b"")
     return state
+
+
+def _site_files(root: Path) -> dict[str, bytes]:
+    """Return the relative file tree for a generated site."""
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+
+
+def _catalog_entries(root: Path) -> list[dict[str, object]]:
+    """Load the catalog entries used to determine expected skill pages."""
+    return json.loads((root / "catalog" / "skills.json").read_text(encoding="utf-8"))["skills"]
+
+
+def test_site_command_requires_explicit_commit(tmp_path, capsys):
+    """Site builds must name the exact source commit they publish."""
+    with pytest.raises(SystemExit) as error:
+        main(["site", "--root", str(ROOT), "--output", str(tmp_path)])
+
+    assert error.value.code == 2
+    assert "--source-commit" in capsys.readouterr().err
+
+
+def test_site_command_builds_dist_from_explicit_commit(tmp_path, capsys):
+    """The site command writes a deterministic site and a relative result path."""
+    root = _source_root(tmp_path)
+    output = root / "dist"
+    source_commit = "b" * 40
+
+    assert main(
+        [
+            "site",
+            "--root",
+            str(root),
+            "--output",
+            str(output),
+            "--source-commit",
+            source_commit,
+        ]
+    ) == 0
+
+    assert (output / "index.html").is_file()
+    assert json.loads(capsys.readouterr().out) == {
+        "output": "dist",
+        "source_commit": source_commit,
+        "valid": True,
+    }
+
+
+def test_version_command_prints_only_semver(capsys):
+    """Version output stays directly usable by release workflows."""
+    assert main(["version", "--root", str(ROOT)]) == 0
+
+    assert capsys.readouterr().out == "0.1.0\n"
+
+
+@pytest.mark.parametrize("output", (".", ".."))
+def test_site_command_refuses_repository_or_ancestor_outputs_without_deleting(repo_fixture, output, monkeypatch, capsys):
+    """A site build must never replace its source repository or one of its parents."""
+    root = repo_fixture.root
+    marker = root / "preserve.txt"
+    marker.write_text("keep this source tree\n", encoding="utf-8")
+    monkeypatch.chdir(root)
+
+    assert main(["site", "--root", str(root), "--output", output, "--source-commit", "c" * 40]) == 1
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["valid"] is False
+    assert marker.read_text(encoding="utf-8") == "keep this source tree\n"
+    assert (root / "catalog" / "marketplace.json").is_file()
+
+
+def test_site_command_refuses_repository_root_without_deleting(repo_fixture, capsys):
+    """An explicit repository-root output must leave every source file intact."""
+    root = repo_fixture.root
+    marker = root / "preserve.txt"
+    marker.write_text("keep this source tree\n", encoding="utf-8")
+
+    assert main(["site", "--root", str(root), "--output", str(root), "--source-commit", "c" * 40]) == 1
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["valid"] is False
+    assert marker.read_text(encoding="utf-8") == "keep this source tree\n"
+    assert (root / "catalog" / "marketplace.json").is_file()
+
+
+def test_site_command_refuses_symlinked_output_without_touching_target(repo_fixture, tmp_path, capsys):
+    """A symlinked output cannot redirect a build outside its validated destination."""
+    root = repo_fixture.root
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    marker = outside / "preserve.txt"
+    marker.write_text("keep this external tree\n", encoding="utf-8")
+    output = root / "dist"
+    output.symlink_to(outside, target_is_directory=True)
+
+    assert main(["site", "--root", str(root), "--output", str(output), "--source-commit", "c" * 40]) == 1
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["valid"] is False
+    assert marker.read_text(encoding="utf-8") == "keep this external tree\n"
+    assert list(outside.iterdir()) == [marker]
+
+
+def test_site_command_is_byte_deterministic_for_a_source_commit(tmp_path, capsys):
+    """The same source SHA must produce identical paths and bytes in separate outputs."""
+    root = _source_root(tmp_path)
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    source_commit = "a" * 40
+
+    assert main(["site", "--root", str(root), "--output", str(first), "--source-commit", source_commit]) == 0
+    capsys.readouterr()
+    assert main(["site", "--root", str(root), "--output", str(second), "--source-commit", source_commit]) == 0
+    capsys.readouterr()
+
+    assert _site_files(first) == _site_files(second)
+
+
+def test_site_command_changes_only_release_references_for_a_different_commit(tmp_path, capsys):
+    """Changing the SHA may alter catalog data and HTML source/release references only."""
+    root = _source_root(tmp_path)
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first_commit = "a" * 40
+    second_commit = "b" * 40
+
+    assert main(["site", "--root", str(root), "--output", str(first), "--source-commit", first_commit]) == 0
+    capsys.readouterr()
+    assert main(["site", "--root", str(root), "--output", str(second), "--source-commit", second_commit]) == 0
+    capsys.readouterr()
+
+    first_files = _site_files(first)
+    second_files = _site_files(second)
+    assert set(first_files) == set(second_files)
+    changed = {path for path in first_files if first_files[path] != second_files[path]}
+    assert changed == {
+        "catalog.json",
+        "index.html",
+        *(f"skills/{entry['id']}/index.html" for entry in _catalog_entries(root)),
+    }
+    for path in changed:
+        assert first_files[path].replace(first_commit.encode(), second_commit.encode()) == second_files[path]
 
 
 def test_check_reports_relative_missing_surfaces_before_generation(tmp_path, capsys):
