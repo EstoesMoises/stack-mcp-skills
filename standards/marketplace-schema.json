@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "marketplace_version",
+    "name",
+    "display_name",
+    "repository",
+    "site_url",
+    "publisher_name",
+    "category"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "marketplace_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "name": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "display_name": {"type": "string", "minLength": 1},
+    "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "site_url": {"type": "string", "pattern": "^https://[^\\s/]+(?:/[^\\s]*)?/$"},
+    "publisher_name": {"type": "string", "minLength": 1},
+    "category": {"type": "string", "minLength": 1}
+  }
+}
