@@ -1,10 +1,19 @@
 # Codex adapter
 
-## Install the skills
+## Install from the marketplace
 
-For a repository, copy each complete, self-contained skill directory into `.agents/skills/<skill-name>/`. For your user scope, copy it into `~/.agents/skills/<skill-name>/`. Preserve each directory’s `SKILL.md`, `evals/`, and referenced local resources; do not copy only the markdown file or flatten the folders. Select any of the nine directories listed in the [common adapter guide](../README.md).
+Add the public marketplace, install one plugin, and verify both the marketplace and installed plugin list:
 
-Codex can select a skill automatically when the request matches its description. To invoke one explicitly, type `$skill-name` or use `/skills` to select it.
+```bash
+codex plugin marketplace add EstoesMoises/stack-mcp-skills
+codex plugin add efficient-search@stack-internal
+codex plugin marketplace list
+codex plugin list --json
+```
+
+Invoke the installed skill explicitly as `$efficient-search:efficient-search`; Codex can also select it automatically when the request matches its description.
+
+Codex command-driven marketplace registration is client-managed. The current marketplace-add command has no explicit project-scope flag. For a repository-shared setup, use the repo-scoped `.agents/plugins/marketplace.json` manifest option shown in the [public catalog](https://estoesmoises.github.io/stack-mcp-skills/); do not present that manifest as a CLI scope flag.
 
 ## Connect Stack Internal MCP
 
@@ -41,3 +50,9 @@ Use a verified non-sensitive resolution in a deterministic multi-turn test. Ask 
 ### Smoke test 4 — MCP failure
 
 Disconnect or deny access, then ask an internal-policy question. Expect an honest access failure and an offer to continue with clearly labeled general knowledge.
+
+## Filesystem fallback
+
+For a repository, copy each complete, self-contained skill directory into `.agents/skills/<skill-name>/`. For your user scope, copy it into `~/.agents/skills/<skill-name>/`. Preserve each directory’s `SKILL.md`, `evals/`, and referenced local resources; do not copy only the markdown file or flatten the folders. Select any of the nine directories listed in the [common adapter guide](../README.md).
+
+Codex can select a skill automatically when the request matches its description. To invoke one explicitly, type `$skill-name` or use `/skills` to select it.

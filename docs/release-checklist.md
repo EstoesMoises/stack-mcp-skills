@@ -30,6 +30,20 @@ Record evidence for each gate. Automated and manual no-tenant checks validate re
   done
   ```
 
+- [ ] Confirm generated packages and native manifests match their canonical sources:
+
+  ```bash
+  uv run python scripts/build_marketplace.py packages --mode check --root .
+  ```
+
+- [ ] Confirm two site builds from the exact current commit are byte-identical:
+
+  ```bash
+  uv run python scripts/build_marketplace.py site --root . --output dist-a --source-commit "$(git rev-parse HEAD)"
+  uv run python scripts/build_marketplace.py site --root . --output dist-b --source-commit "$(git rev-parse HEAD)"
+  diff -ru dist-a dist-b
+  ```
+
 Record the commit SHA, CI run URL, result, and reviewer for these gates.
 
 ## Manual no-tenant review
@@ -42,6 +56,15 @@ Record the commit SHA, CI run URL, result, and reviewer for these gates.
 - [ ] Confirm all adapter states remain `experimental`; simulated checks and a manual no-tenant review do not justify `supported`.
 
 Record the commit SHA, reviewer, review date, changed skills and adapters, pass/fail result, and notes.
+
+## Native marketplace manual gates
+
+- [ ] In clean projects using the exact Codex and Claude Code versions recorded in [the marketplace testing matrix](marketplace-testing.md), test native marketplace add, plugin list, individual install, three-plugin core install, explicit invocation, update, disablement, and removal.
+- [ ] Record the observed project-scope behavior separately for Codex and Claude Code. Codex command-driven marketplace registration is client-managed; do not claim a Codex project-scope flag. Claude marketplace add uses `--scope project` and its interactive install flow chooses project scope.
+- [ ] Navigate the deployed GitHub Pages catalog and confirm its install instructions and linked skill pages resolve.
+- [ ] Run all four tenant-backed smokes for the exact Codex and Claude Code client, plugin, and skill versions; record only redacted results under the fixed tenant purpose `non-production skill validation`.
+
+Exact client versions and pass/fail results are manual evidence fields. Do not record raw tenant data, tenant identifiers, slugs, credentials, tokens, personal data, customer data, or raw retrieved content.
 
 ## Tenant-backed release gate
 

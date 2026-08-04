@@ -30,7 +30,31 @@ Adapter compatibility is experimental until the tenant-backed release gate passe
 
 Auditable compatibility records use the versioned [evidence schema](standards/adapter-evidence-schema.json), [smoke-artifact schema](standards/smoke-evidence-schema.json), and [evidence registry](compatibility/evidence.json). The empty registry with a null release candidate is the valid pre-gate state. Promotion requires a real ancestor release-candidate commit plus exact committed, redacted artifacts for all four numbered smokes; dangling or mismatched references fail closed. Records never contain tenant identifiers or raw content.
 
-## Ten-minute quickstart
+## Install from the public marketplace
+
+Browse the [Stack Internal Skills catalog](https://estoesmoises.github.io/stack-mcp-skills/) to choose a skill and see its client-specific installation guidance. The native marketplace is the primary installation path for Codex and Claude Code; it keeps each installed plugin independently updatable, disableable, and removable.
+
+For Codex, add the marketplace and install an individual plugin:
+
+```bash
+codex plugin marketplace add EstoesMoises/stack-mcp-skills
+codex plugin add efficient-search@stack-internal
+```
+
+For Claude Code, add the marketplace at project scope, then use its interactive installer and reload the plugin list:
+
+```bash
+claude plugin marketplace add EstoesMoises/stack-mcp-skills --scope project
+```
+
+```text
+/plugin install efficient-search@stack-internal
+/reload-plugins
+```
+
+The catalog's core action expands to three independent plugin installs: `efficient-search`, `company-debugging`, and `capture-quality-qa`. It is a convenience action, not a bundle plugin, so each core workflow remains independently manageable.
+
+## Filesystem fallback: ten-minute quickstart
 
 1. Ask your Stack Internal administrator to enable MCP, then connect your client to `https://[slug].stackenterprise.co/mcp` and complete OAuth with your authorized tenant account. Use your customer-specific slug.
 2. Choose the appropriate [adapter guide](adapters/README.md) and its project or user installation scope.
@@ -69,4 +93,4 @@ The complete cross-skill rules live in the [policy contract](standards/policy-co
 
 ## Beyond v1
 
-Generated agent packs, an installer, organization-specific bundles, compatibility automation, and a hosted marketplace may consume this canonical catalog later. Packaging and a hosted marketplace are explicitly outside v1; `catalog/skills.json` and each skill's `SKILL.md` remain the sources of truth.
+Organization-specific bundles and additional compatibility automation may consume this canonical catalog later. `catalog/skills.json` and each skill's `SKILL.md` remain the sources of truth.

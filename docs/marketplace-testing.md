@@ -1,0 +1,12 @@
+# Marketplace testing record
+
+Use this matrix for a clean-client test of the public marketplace. Record observed evidence only: do not fabricate a pass, a client version, or a result. The exact client version and every result are manual evidence fields to be completed by the reviewer after the native client run.
+
+The fixed tenant purpose for every tenant-backed smoke is `non-production skill validation`. Raw tenant data is forbidden: do not record tenant identifiers, slugs, names, credentials, tokens, personal data, customer data, or raw retrieved content.
+
+| Client | Exact client version | Marketplace add | Plugin list | Individual install | Core install | Explicit invocation | Update | Disable/remove | Project-scope observation | Smoke 1-4 | Result | Reviewer |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Codex | Record exact observed version | Record native marketplace-add observation | Record available and installed plugin lists | Record one installed plugin and version | Record three independent core installs | Record observed namespaced invocation | Record native marketplace refresh and plugin update | Record native disable/remove observation | Record that command-driven marketplace registration is client-managed; do not claim a project-scope flag | Record redacted observations for all four smokes | Not recorded | Name |
+| Claude Code | Record exact observed version | Record project-scoped marketplace-add observation | Record native plugin list observation | Record one interactive project-scope install | Record three independent core installs | Record observed namespaced invocation | Record native marketplace update observation | Record native disable/remove observation | Record observed project-scope behavior | Record redacted observations for all four smokes | Not recorded | Name |
+
+For each client, test the public GitHub marketplace add path, plugin listing, one individual install, the three-plugin core convenience flow, explicit invocation, native update, disablement and removal, and its actual project-scope behavior. Navigate the deployed GitHub Pages catalog during the same review. Run all four tenant-backed smokes only against the exact generated plugin and skill versions, preserving the existing changed-payload reapproval and byte-for-byte approval semantics. A missing or failed observation keeps compatibility `experimental`.
