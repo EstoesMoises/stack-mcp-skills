@@ -1,0 +1,16 @@
+{
+  "author": {
+    "name": "Stack Internal Skills"
+  },
+  "description": "Compare existing company guidance with current verified evidence and propose only approval-gated, targeted updates.",
+  "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/review-stale-content/",
+  "keywords": [
+    "curation",
+    "stale-content",
+    "updates"
+  ],
+  "license": "Apache-2.0",
+  "name": "review-stale-content",
+  "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
+  "version": "0.1.0"
+}

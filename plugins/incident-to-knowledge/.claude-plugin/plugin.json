@@ -1,0 +1,16 @@
+{
+  "author": {
+    "name": "Stack Internal Skills"
+  },
+  "description": "Turn verified internal incidents into sourced, approval-gated articles or Q&A with objective incident records.",
+  "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/incident-to-knowledge/",
+  "keywords": [
+    "incident",
+    "postmortem",
+    "knowledge-capture"
+  ],
+  "license": "Apache-2.0",
+  "name": "incident-to-knowledge",
+  "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
+  "version": "0.1.0"
+}

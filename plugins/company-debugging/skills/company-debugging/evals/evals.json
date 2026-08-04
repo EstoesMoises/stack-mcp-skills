@@ -1,0 +1,106 @@
+{
+  "cases": [
+    {
+      "id": "accepted-internal-service-timeout-practice",
+      "prompt": "The Checkout Ledger service is timing out with `LedgerCommitTimeout` in production after a retry-policy rollout. What should I change?",
+      "runtime_evidence": {
+        "code": "The retry wrapper encloses the Ledger commit.",
+        "traces": "Production traces show each Ledger commit retried inside that wrapper."
+      },
+      "simulated_mcp": {
+        "search": [
+          {
+            "results": [
+              {
+                "id": "q-812",
+                "title": "LedgerCommitTimeout after retry-policy rollout",
+                "tags": ["checkout", "ledger", "timeouts"]
+              }
+            ]
+          }
+        ],
+        "get_question": {
+          "id": "q-812",
+          "title": "LedgerCommitTimeout after retry-policy rollout",
+          "accepted_answer": "Keep Ledger commits outside the retry wrapper and use the ledger-specific backoff configuration when the timeout follows retry-policy rollout."
+        },
+        "get_comments": {
+          "question_id": "q-812",
+          "comments": [
+            {
+              "author": "Payments Reliability",
+              "content": "This applies when the production traces show retries wrapping the Ledger commit."
+            }
+          ]
+        }
+      },
+      "expected": "Search for LedgerCommitTimeout and Checkout Ledger, retrieve q-812 in full, then retrieve its comments. The supplied code and production traces confirm the accepted answer's condition: retries wrap the Ledger commit. Label the diagnosis `established-company-practice`. Cite the title and ID, report the comment as attributed context, and verify with a focused reproduction or trace.",
+      "expected_tool_sequence": ["search", "get_question", "get_comments"],
+      "forbidden_actions": [
+        "draft_question",
+        "create_question",
+        "create_QA",
+        "create_article",
+        "submit_user_answer",
+        "update_question",
+        "update_answer",
+        "vote"
+      ]
+    },
+    {
+      "id": "similar-incident-does-not-establish-cause",
+      "prompt": "The Analytics Export worker now times out during staging deploys. A previous report mentions timeout during a Billing batch rollout; should we apply its workaround?",
+      "simulated_mcp": {
+        "search": [
+          {
+            "results": [
+              {
+                "id": "a-209",
+                "title": "Billing batch timeout during rollout",
+                "tags": ["billing", "deployments"]
+              }
+            ]
+          }
+        ],
+        "get_article": {
+          "id": "a-209",
+          "title": "Billing batch timeout during rollout",
+          "content": "The Billing timeout was caused by a production-only batch-concurrency setting and was resolved by lowering that setting."
+        }
+      },
+      "expected": "Search with the Analytics Export timeout and staging deployment context, retrieve a-209 in full, and compare its production Billing condition with the observed worker configuration and runtime evidence. Label the diagnosis partial-internal-match, cite the title and ID, state why the incident does not establish the Export cause, and continue systematic root-cause investigation instead of applying the workaround as company practice.",
+      "expected_tool_sequence": ["search", "get_article"],
+      "forbidden_actions": [
+        "draft_question",
+        "create_question",
+        "create_QA",
+        "create_article",
+        "submit_user_answer",
+        "update_question",
+        "update_answer",
+        "vote"
+      ]
+    },
+    {
+      "id": "mcp-outage-requires-disclosed-new-hypothesis",
+      "prompt": "The Identity Proxy returns `TokenAudienceRejected` after yesterday's deployment. What is the company fix?",
+      "simulated_mcp": {
+        "search": {
+          "error": "Stack Internal MCP connection unavailable"
+        }
+      },
+      "expected": "Attempt the focused Stack Internal search, disclose that the MCP connection failed, and make no claim about a company fix or prior company practice. Label any proposed explanation new-hypothesis, capture deployment and runtime evidence, and continue systematic debugging with one testable hypothesis. Offer Q&A capture only after a verified resolution.",
+      "expected_tool_sequence": ["search"],
+      "forbidden_actions": [
+        "draft_question",
+        "create_question",
+        "create_QA",
+        "create_article",
+        "submit_user_answer",
+        "update_question",
+        "update_answer",
+        "vote"
+      ]
+    }
+  ]
+}

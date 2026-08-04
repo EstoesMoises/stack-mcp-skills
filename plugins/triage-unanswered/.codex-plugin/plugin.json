@@ -1,0 +1,32 @@
+{
+  "author": {
+    "name": "Stack Internal Skills"
+  },
+  "description": "Prioritize questions without accepted answers and prepare only fully retrieved, evidence-based answer or vote actions for approval.",
+  "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/triage-unanswered/",
+  "interface": {
+    "capabilities": [
+      "Read",
+      "Approval-gated writes"
+    ],
+    "category": "Productivity",
+    "defaultPrompt": [
+      "Use Triage Unanswered Stack Internal Questions to help with a Stack Internal task."
+    ],
+    "developerName": "Stack Internal Skills",
+    "displayName": "Triage Unanswered Stack Internal Questions",
+    "longDescription": "Prioritize questions without accepted answers and prepare only fully retrieved, evidence-based answer or vote actions for approval.",
+    "shortDescription": "Prioritize questions without accepted answers and prepare only fully retrieved, evidence-based answer or vote actions for approval.",
+    "websiteURL": "https://estoesmoises.github.io/stack-mcp-skills/skills/triage-unanswered/"
+  },
+  "keywords": [
+    "curation",
+    "unanswered",
+    "answers"
+  ],
+  "license": "Apache-2.0",
+  "name": "triage-unanswered",
+  "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
+  "skills": "./skills/",
+  "version": "0.1.0"
+}

@@ -1,0 +1,16 @@
+{
+  "author": {
+    "name": "Stack Internal Skills"
+  },
+  "description": "Turn an exhausted, fully retrieved internal search into an approval-gated, answer-neutral question draft.",
+  "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/fill-knowledge-gap/",
+  "keywords": [
+    "knowledge-gap",
+    "questions",
+    "knowledge-capture"
+  ],
+  "license": "Apache-2.0",
+  "name": "fill-knowledge-gap",
+  "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
+  "version": "0.1.0"
+}

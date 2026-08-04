@@ -1,0 +1,16 @@
+{
+  "author": {
+    "name": "Stack Internal Skills"
+  },
+  "description": "Prioritize questions without accepted answers and prepare only fully retrieved, evidence-based answer or vote actions for approval.",
+  "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/triage-unanswered/",
+  "keywords": [
+    "curation",
+    "unanswered",
+    "answers"
+  ],
+  "license": "Apache-2.0",
+  "name": "triage-unanswered",
+  "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
+  "version": "0.1.0"
+}
