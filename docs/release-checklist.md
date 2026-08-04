@@ -67,6 +67,23 @@ Record the commit SHA, reviewer, review date, changed skills and adapters, pass/
 
 Exact client versions and pass/fail results are manual evidence fields. Do not record raw tenant data, tenant identifiers, slugs, credentials, tokens, personal data, customer data, or raw retrieved content.
 
+## Task 8 pre-evidence rehearsal status — 2026-08-04
+
+The exercised pre-evidence rehearsal candidate was `46c91c8200b78abbbde83b39f80e42c8f91b7da0` (marketplace version `0.1.0`), not a tenant-evidence candidate. `claude plugin validate .` and all nine generated plugin directories passed with Claude Code `2.1.220`; Codex `0.142.5` completed the local isolated-profile add/list/install/remove rehearsal for `efficient-search@stack-internal` version `0.1.0`. This verifies only local structural/native validation and the limited isolated Codex lifecycle.
+
+The corresponding Claude project-scoped local add was blocked before configuration when the client attempted to open its personal known-marketplace cache and received `EPERM`. No personal client state was changed, and no global or user scope was used. The Codex and Claude public GitHub-source rehearsals are pending because this candidate has not been published to public `main`. No tenant was authorized; no tenant data was accessed, no smoke artifacts were created, and `compatibility/evidence.json` remains empty.
+
+### Outstanding publication and evidence gates
+
+- [ ] Publish the exact candidate to public `main`, then run the public GitHub-source add/list/install rehearsal for both native clients. Do not substitute the local rehearsal for this gate.
+- [ ] Deploy and inspect the public Pages catalog at `https://estoesmoises.github.io/stack-mcp-skills/`; confirm its displayed source commit, nine plugin entries, installation instructions, and linked skill pages.
+- [ ] In a clean authorized Codex profile, complete the remaining native lifecycle checks: the three independent core installs, explicit invocation, marketplace refresh/update, and any supported disable/remove behavior. Codex registration is client-managed; do not claim a project-scope flag.
+- [ ] In a clean Claude Code environment that does not touch personal state, complete the project-scoped marketplace add/list/install/update/disable/remove checks. Resolve the blocked personal-cache behavior before treating that lifecycle as exercised.
+- [ ] With an authorized non-production tenant and the fixed purpose `non-production skill validation`, run all four redacted smokes for each required adapter/client and exact plugin/skill versions.
+- [ ] Create and validate the required redacted smoke artifacts and compatibility records only after the authorized smokes pass on their exact evidence-bearing candidate.
+
+Until every applicable publication, native lifecycle, and authorized tenant gate above has passed, every adapter remains `experimental`.
+
 ## Tenant-backed release gate
 
 Using an authorized test tenant, run all four adapter smoke tests from each adapter guide for Codex, Claude Code, Cursor, and GitHub Copilot. Test the exact release candidate skill content. Confirm conditional search, the generic negative trigger, the write-approval pause, and honest MCP failure handling from observable tool calls and responses.
