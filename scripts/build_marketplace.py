@@ -6,10 +6,14 @@ import argparse
 import json
 import os
 from pathlib import Path
+import shutil
 
 from stack_skill_catalog.marketplace_distribution import distribution_diff, write_distribution
 from stack_skill_catalog.marketplace_config import load_marketplace_config
 from stack_skill_catalog.site import write_site
+
+
+_OPERATIONAL_ERRORS = (OSError, ValueError, KeyError, TypeError, shutil.Error)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -36,37 +40,48 @@ def _display_output(root: Path, output: Path) -> str:
         return Path(os.path.relpath(output, root)).as_posix()
 
 
+def _resolve_root(root: Path) -> Path:
+    """Resolve a repository root while normalizing platform symlink-loop errors."""
+    try:
+        return root.resolve()
+    except RuntimeError as error:
+        raise OSError("could not resolve repository root") from error
+
+
 def main(argv: list[str] | None = None) -> int:
     """Run the requested package operation and emit stable JSON."""
     parser = build_parser()
     args = parser.parse_args(argv)
-    root = args.root.resolve()
     if args.command == "packages" and args.mode == "check":
-        differences = distribution_diff(root)
+        try:
+            differences = distribution_diff(_resolve_root(args.root))
+        except _OPERATIONAL_ERRORS:
+            print(json.dumps({"error": "package check failed", "valid": False}, sort_keys=True))
+            return 1
         print(json.dumps({"differences": differences, "valid": not differences}, sort_keys=True))
         return 0 if not differences else 1
     if args.command == "packages" and args.mode == "write":
         try:
+            root = _resolve_root(args.root)
             write_distribution(root)
-        except (OSError, ValueError) as error:
-            print(json.dumps({"error": str(error), "generated": False}, sort_keys=True))
+        except _OPERATIONAL_ERRORS:
+            print(json.dumps({"error": "package write failed", "generated": False}, sort_keys=True))
             return 1
         print(json.dumps({"generated": True, "root": str(root)}, sort_keys=True))
         return 0
     if args.command == "site":
-        output = Path(os.path.abspath(args.output))
         try:
+            root = _resolve_root(args.root)
+            output = Path(os.path.abspath(args.output))
             write_site(root, output, args.source_commit)
-        except ValueError as error:
-            print(json.dumps({"error": str(error), "valid": False}, sort_keys=True))
-            return 1
-        except OSError:
+            displayed_output = _display_output(root, output)
+        except _OPERATIONAL_ERRORS:
             print(json.dumps({"error": "site build failed", "valid": False}, sort_keys=True))
             return 1
         print(
             json.dumps(
                 {
-                    "output": _display_output(root, output),
+                    "output": displayed_output,
                     "source_commit": args.source_commit,
                     "valid": True,
                 },
@@ -75,7 +90,13 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
     if args.command == "version":
-        print(load_marketplace_config(root / "catalog" / "marketplace.json").marketplace_version)
+        try:
+            root = _resolve_root(args.root)
+            version = load_marketplace_config(root / "catalog" / "marketplace.json").marketplace_version
+        except _OPERATIONAL_ERRORS:
+            print("marketplace version unavailable")
+            return 1
+        print(version)
         return 0
     parser.error("unsupported command")
 

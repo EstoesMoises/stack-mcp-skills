@@ -86,11 +86,9 @@ def test_site_command_builds_dist_from_explicit_commit(tmp_path, capsys):
     ) == 0
 
     assert (output / "index.html").is_file()
-    assert json.loads(capsys.readouterr().out) == {
-        "output": "dist",
-        "source_commit": source_commit,
-        "valid": True,
-    }
+    assert capsys.readouterr().out == (
+        '{"output": "dist", "source_commit": "' + source_commit + '", "valid": true}\n'
+    )
 
 
 def test_version_command_prints_only_semver(capsys):
@@ -98,6 +96,79 @@ def test_version_command_prints_only_semver(capsys):
     assert main(["version", "--root", str(ROOT)]) == 0
 
     assert capsys.readouterr().out == "0.1.0\n"
+
+
+def test_site_command_sanitizes_a_malformed_catalog_entry(tmp_path, capsys):
+    """Malformed source data must fail without leaking a traceback or repository path."""
+    root = _source_root(tmp_path)
+    catalog_path = root / "catalog" / "skills.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    catalog["skills"] = [{}]
+    catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+
+    assert main(["site", "--root", str(root), "--output", str(tmp_path / "dist"), "--source-commit", "a" * 40]) == 1
+
+    output = capsys.readouterr().out
+    assert output == '{"error": "site build failed", "valid": false}\n'
+    assert "Traceback" not in output
+    assert str(root) not in output
+
+
+@pytest.mark.parametrize(
+    ("mode", "expected"),
+    [
+        ("check", '{"error": "package check failed", "valid": false}\n'),
+        ("write", '{"error": "package write failed", "generated": false}\n'),
+    ],
+)
+def test_packages_command_sanitizes_an_invalid_root(tmp_path, capsys, mode, expected):
+    """Package operations must not disclose missing-root paths in their failure output."""
+    root = tmp_path / "missing-root"
+
+    assert main(["packages", "--mode", mode, "--root", str(root)]) == 1
+
+    output = capsys.readouterr().out
+    assert output == expected
+    assert "Traceback" not in output
+    assert str(root) not in output
+
+
+def test_version_command_sanitizes_an_invalid_root(tmp_path, capsys):
+    """Version lookup must not expose a missing configuration path."""
+    root = tmp_path / "missing-root"
+
+    assert main(["version", "--root", str(root)]) == 1
+
+    output = capsys.readouterr().out
+    assert output == "marketplace version unavailable\n"
+    assert "Traceback" not in output
+    assert str(root) not in output
+
+
+def test_version_command_sanitizes_a_symlink_loop_root(tmp_path, capsys):
+    """A self-referential root cannot leak a filesystem path through version lookup."""
+    root = tmp_path / "loop"
+    root.symlink_to(root.name)
+
+    assert main(["version", "--root", str(root)]) == 1
+
+    output = capsys.readouterr().out
+    assert output == "marketplace version unavailable\n"
+    assert "Traceback" not in output
+    assert str(root) not in output
+
+
+def test_version_command_sanitizes_a_malformed_marketplace_config(tmp_path, capsys):
+    """Malformed marketplace data cannot expose parser details or a repository path."""
+    root = _source_root(tmp_path)
+    (root / "catalog" / "marketplace.json").write_text("{}", encoding="utf-8")
+
+    assert main(["version", "--root", str(root)]) == 1
+
+    output = capsys.readouterr().out
+    assert output == "marketplace version unavailable\n"
+    assert "Traceback" not in output
+    assert str(root) not in output
 
 
 @pytest.mark.parametrize("output", (".", ".."))
