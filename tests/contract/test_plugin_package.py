@@ -30,9 +30,34 @@ def test_plugin_contains_exact_canonical_skill_and_both_manifests(tmp_path):
     canonical = ROOT / entry["path"]
     packaged = plugin / "skills" / entry["id"]
     assert _files(packaged) == _files(canonical)
-    assert json.loads((plugin / ".codex-plugin/plugin.json").read_text())["version"] == entry["version"]
-    assert json.loads((plugin / ".claude-plugin/plugin.json").read_text())["version"] == entry["version"]
+    codex = json.loads((plugin / ".codex-plugin/plugin.json").read_text())
+    claude = json.loads((plugin / ".claude-plugin/plugin.json").read_text())
+    assert codex["version"] == entry["version"]
+    assert claude == {
+        "name": entry["id"],
+        "version": entry["version"],
+        "description": entry["summary"],
+        "author": {"name": config.publisher_name},
+        "homepage": f"{config.site_url}skills/{entry['id']}/",
+        "repository": f"https://github.com/{config.repository}",
+        "license": "Apache-2.0",
+        "keywords": entry["tags"],
+    }
     assert (plugin / "LICENSE").read_bytes() == (ROOT / "LICENSE").read_bytes()
+    readme = (plugin / "README.md").read_text(encoding="utf-8")
+    for expected in (
+        f"Plugin ID: `{entry['id']}`",
+        f"Skill ID: `{entry['id']}`",
+        f"Version: `{entry['version']}`",
+        f"Canonical source: {config.site_url}skills/{entry['id']}/",
+        f"Required MCP tools: {', '.join(entry['required_tools'])}",
+        f"Declared write actions: {', '.join(entry['write_actions']) or 'None'}",
+        "separate Stack Internal MCP connection and OAuth authentication",
+        f"Codex: `${entry['id']}:{entry['id']}`",
+        f"Claude Code: `/{entry['id']}:{entry['id']}`",
+        "Compatibility: experimental for Codex and Claude Code.",
+    ):
+        assert expected in readme
 
 
 def test_plugin_contains_no_executable_or_mcp_surface(tmp_path):
@@ -86,6 +111,65 @@ def test_plugin_rejects_catalog_version_that_differs_from_canonical_skill(tmp_pa
     destination = tmp_path / "packages"
 
     with pytest.raises(ValueError, match="catalog and skill versions differ"):
+        build_plugin_package(tmp_path, entry, config, destination)
+
+    assert not destination.exists()
+
+
+def test_plugin_refuses_an_existing_package_root(tmp_path):
+    """Pre-existing package contents must never survive in a returned package."""
+    entry = load_catalog(ROOT / "catalog/skills.json")["skills"][0]
+    config = load_marketplace_config(ROOT / "catalog/marketplace.json")
+    plugin_root = tmp_path / entry["id"]
+    plugin_root.mkdir()
+    (plugin_root / ".mcp.json").write_text('{"untrusted": true}\n', encoding="utf-8")
+
+    with pytest.raises(ValueError, match="package root already exists"):
+        build_plugin_package(ROOT, entry, config, tmp_path)
+
+    assert (plugin_root / ".mcp.json").is_file()
+
+
+def test_plugin_rejects_a_symlinked_canonical_skill_directory(tmp_path):
+    """A catalog path must not dereference a directory outside its canonical tree."""
+    entry = load_catalog(ROOT / "catalog/skills.json")["skills"][0]
+    config = load_marketplace_config(ROOT / "catalog/marketplace.json")
+    root = tmp_path / "root"
+    external_skill = tmp_path / "external-skill"
+    shutil.copytree(ROOT / entry["path"], external_skill)
+    (root / "skills" / "core").mkdir(parents=True)
+    (root / entry["path"]).symlink_to(external_skill, target_is_directory=True)
+    shutil.copyfile(ROOT / "LICENSE", root / "LICENSE")
+
+    with pytest.raises(ValueError, match="may not contain symlinks"):
+        build_plugin_package(root, entry, config, root / "packages")
+
+    assert not (root / "packages").exists()
+
+
+@pytest.mark.parametrize("kind", ["mcp", "app", "hooks", "executable"])
+def test_plugin_rejects_forbidden_canonical_content_before_writing(kind, tmp_path):
+    """A canonical skill cannot smuggle plugin surfaces or executable content into a package."""
+    entry = load_catalog(ROOT / "catalog/skills.json")["skills"][0]
+    config = load_marketplace_config(ROOT / "catalog/marketplace.json")
+    skill_root = tmp_path / entry["path"]
+    shutil.copytree(ROOT / entry["path"], skill_root)
+    shutil.copyfile(ROOT / "LICENSE", tmp_path / "LICENSE")
+    nested = skill_root / "nested"
+    nested.mkdir()
+    if kind == "mcp":
+        (nested / ".mcp.json").write_text("{}\n", encoding="utf-8")
+    elif kind == "app":
+        (nested / ".app.json").write_text("{}\n", encoding="utf-8")
+    elif kind == "hooks":
+        (nested / "hooks").mkdir()
+    else:
+        executable = nested / "server"
+        executable.write_text("#!/bin/sh\n", encoding="utf-8")
+        executable.chmod(0o755)
+    destination = tmp_path / "packages"
+
+    with pytest.raises(ValueError, match="forbidden plugin content"):
         build_plugin_package(tmp_path, entry, config, destination)
 
     assert not destination.exists()

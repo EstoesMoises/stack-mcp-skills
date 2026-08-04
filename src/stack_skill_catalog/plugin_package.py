@@ -10,6 +10,9 @@ from .marketplace_config import MarketplaceConfig
 from .skill import load_frontmatter
 
 
+_FORBIDDEN_CONTENT_NAMES = {".app.json", ".mcp.json", "hooks"}
+
+
 def _write_json(path: Path, value: object) -> None:
     """Write stable, human-readable JSON."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -89,9 +92,15 @@ def build_plugin_package(
     """Create one self-contained plugin without executable or MCP configuration."""
     plugin_root = destination / str(entry["id"])
     source = root / str(entry["path"])
+    if plugin_root.exists() or plugin_root.is_symlink():
+        raise ValueError(f"package root already exists: {plugin_root}")
+    if source.is_symlink():
+        raise ValueError(f"canonical skills may not contain symlinks: {source.relative_to(root)}")
     for path in source.rglob("*"):
         if path.is_symlink():
             raise ValueError(f"canonical skills may not contain symlinks: {path.relative_to(root)}")
+        if path.name in _FORBIDDEN_CONTENT_NAMES or (path.is_file() and path.stat().st_mode & 0o111):
+            raise ValueError(f"canonical skills may not contain forbidden plugin content: {path.relative_to(root)}")
     metadata, _ = load_frontmatter(source)
     if metadata.get("metadata", {}).get("stack-internal-version") != entry["version"]:
         raise ValueError("catalog and skill versions differ")
