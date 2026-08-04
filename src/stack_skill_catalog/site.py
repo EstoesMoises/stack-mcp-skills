@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
+import tempfile
 from dataclasses import asdict
 from html import escape
 from pathlib import Path
@@ -160,7 +162,7 @@ def _head(title: str, asset_prefix: str) -> str:
     return f"""<head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
   <meta http-equiv="Content-Security-Policy" content="{escape(_CSP, quote=True)}">
   <title>{escape(title)}</title>
   <link rel="stylesheet" href="{asset_prefix}assets/styles.css">
@@ -450,11 +452,30 @@ def _render_skill(model: Mapping[str, object], skill: Mapping[str, object]) -> s
 """
 
 
-def write_site(root: Path, output_root: Path, source_commit: str) -> None:
-    """Write deterministic marketplace site files beneath *output_root*."""
-    root = Path(root)
-    output_root = Path(output_root)
-    model = build_site_model(root, source_commit)
+def _safe_output_root(root: Path, output_root: Path) -> Path:
+    """Return an absolute output path after refusing dangerous redirects."""
+    root = root.resolve()
+    output_root = Path(os.path.abspath(output_root))
+    if output_root == output_root.parent:
+        raise ValueError("site output directory must not be a filesystem root")
+    if any(path.is_symlink() for path in (output_root, *output_root.parents)):
+        raise ValueError("site output path must not contain a symlink")
+    if output_root.exists() and not output_root.is_dir():
+        raise ValueError("site output target must be a directory")
+    try:
+        output_root.parent.mkdir(parents=True, exist_ok=True)
+    except (FileExistsError, NotADirectoryError) as error:
+        raise ValueError("site output parent must be a directory") from error
+    if not output_root.parent.is_dir():
+        raise ValueError("site output parent must be a directory")
+    resolved_output = output_root.resolve(strict=False)
+    if resolved_output == root or root.is_relative_to(resolved_output):
+        raise ValueError("site output directory must not contain the source repository")
+    return output_root
+
+
+def _write_site_tree(root: Path, output_root: Path, model: dict[str, object]) -> None:
+    """Write a complete site into an empty staging directory."""
     assets = output_root / "assets"
     assets.mkdir(parents=True, exist_ok=True)
 
@@ -470,3 +491,32 @@ def write_site(root: Path, output_root: Path, source_commit: str) -> None:
         destination = output_root / "skills" / str(skill["id"])
         destination.mkdir(parents=True, exist_ok=True)
         (destination / "index.html").write_text(_render_skill(model, skill), encoding="utf-8")
+
+
+def write_site(root: Path, output_root: Path, source_commit: str) -> None:
+    """Atomically replace *output_root* with the exact deterministic site tree."""
+    root = Path(root).resolve()
+    output_root = _safe_output_root(root, output_root)
+    model = build_site_model(root, source_commit)
+    staging = Path(tempfile.mkdtemp(prefix=f".{output_root.name}.build-", dir=output_root.parent))
+    backup: Path | None = None
+    try:
+        _write_site_tree(root, staging, model)
+        if output_root.exists():
+            backup = Path(tempfile.mkdtemp(prefix=f".{output_root.name}.previous-", dir=output_root.parent))
+            backup.rmdir()
+            output_root.replace(backup)
+        try:
+            staging.replace(output_root)
+        except OSError:
+            if backup is not None and backup.exists() and not output_root.exists():
+                backup.replace(output_root)
+            raise
+        if backup is not None:
+            shutil.rmtree(backup)
+            backup = None
+    finally:
+        if staging.exists():
+            shutil.rmtree(staging)
+        if backup is not None and backup.exists() and not output_root.exists():
+            backup.replace(output_root)

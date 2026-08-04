@@ -1,5 +1,5 @@
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
   --paper: #f4f7fb;
   --paper-raised: #ffffff;
   --paper-blue: #e5eefb;
@@ -733,6 +733,34 @@ footer {
   color: var(--ink-muted);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #101b2a;
+    --paper-raised: #18263a;
+    --paper-blue: #172c49;
+    --ink: #eef5ff;
+    --ink-muted: #b9c7da;
+    --rule: #52647d;
+    --rule-strong: #8092aa;
+    --blue: #69aaf9;
+    --blue-deep: #9bc6ff;
+    --blue-text: #0c1d32;
+    --amber: #ffd18a;
+    --amber-paper: #4b3214;
+    --read: #9ce5c8;
+    --read-paper: #193a31;
+    --focus: #8bc1ff;
+  }
+
+  .skill-record {
+    background: color-mix(in srgb, var(--paper) 94%, var(--paper-raised));
+  }
+
+  .command-specimen {
+    background: #09121f;
+  }
+}
+
 @media (max-width: 900px) {
   .opening-field,
   .record-layout {
@@ -783,13 +811,15 @@ footer {
 
   .site-header nav {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr;
     border-top: 1px solid var(--rule);
   }
 
   .site-header nav a {
     justify-content: center;
     padding-inline: 0.5rem;
+    border-top: 1px solid var(--rule);
+    border-left: 0;
     text-align: center;
   }
 
@@ -817,7 +847,7 @@ footer {
   }
 
   .truth-ledger {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
 
   .truth-ledger div {
@@ -831,6 +861,14 @@ footer {
 
   .truth-ledger dd {
     font-size: 0.82rem;
+  }
+
+  .record-index {
+    grid-template-columns: 1fr;
+  }
+
+  .record-index a:nth-of-type(odd) {
+    border-right: 0;
   }
 
   .core-ledger {

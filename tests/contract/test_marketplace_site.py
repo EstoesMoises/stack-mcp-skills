@@ -1,5 +1,6 @@
 import json
 import re
+import shutil
 from pathlib import Path
 
 import pytest
@@ -36,6 +37,20 @@ def _catalog_entries() -> list[dict[str, object]]:
     return json.loads((ROOT / "catalog/skills.json").read_text(encoding="utf-8"))["skills"]
 
 
+def _css_at_rule(css: str, header: str) -> str:
+    start = css.index(header)
+    opening = css.index("{", start)
+    depth = 0
+    for index in range(opening, len(css)):
+        if css[index] == "{":
+            depth += 1
+        elif css[index] == "}":
+            depth -= 1
+            if depth == 0:
+                return css[opening + 1:index]
+    raise AssertionError(f"unclosed CSS at-rule: {header}")
+
+
 def test_site_model_has_nine_skills_and_exact_core_selection():
     model = build_site_model(ROOT, SHA)
 
@@ -61,6 +76,62 @@ def test_site_build_is_byte_deterministic(tmp_path):
     write_site(ROOT, second, SHA)
 
     assert _files(first) == _files(second)
+
+
+def test_reused_site_output_is_replaced_with_the_exact_owned_tree(tmp_path):
+    output = tmp_path / "dist"
+    (output / "skills" / "removed-skill").mkdir(parents=True)
+    (output / "skills" / "removed-skill" / "index.html").write_text("obsolete", encoding="utf-8")
+    (output / "arbitrary-stale.txt").write_text("obsolete", encoding="utf-8")
+
+    write_site(ROOT, output, SHA)
+
+    assert set(_files(output)) == {
+        "assets/app.js",
+        "assets/styles.css",
+        "catalog.json",
+        "index.html",
+        *(f"skills/{entry['id']}/index.html" for entry in _catalog_entries()),
+    }
+
+
+def test_site_output_refuses_symlink_redirects_without_touching_target(tmp_path):
+    redirected = tmp_path / "redirected"
+    redirected.mkdir()
+    marker = redirected / "marker.txt"
+    marker.write_text("preserve", encoding="utf-8")
+    output = tmp_path / "dist"
+    output.symlink_to(redirected, target_is_directory=True)
+
+    with pytest.raises(ValueError, match="symlink"):
+        write_site(ROOT, output, SHA)
+
+    assert _files(redirected) == {"marker.txt": b"preserve"}
+
+
+def test_site_output_refuses_a_non_directory_target(tmp_path):
+    output = tmp_path / "dist"
+    output.write_text("preserve", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="directory"):
+        write_site(ROOT, output, SHA)
+
+    assert output.read_text(encoding="utf-8") == "preserve"
+
+
+def test_replacing_stale_tree_does_not_follow_an_internal_symlink(tmp_path):
+    output = tmp_path / "dist"
+    output.mkdir()
+    redirected = tmp_path / "outside"
+    redirected.mkdir()
+    marker = redirected / "marker.txt"
+    marker.write_text("preserve", encoding="utf-8")
+    (output / "stale-link").symlink_to(redirected, target_is_directory=True)
+
+    write_site(ROOT, output, SHA)
+
+    assert marker.read_text(encoding="utf-8") == "preserve"
+    assert not (output / "stale-link").exists()
 
 
 def test_site_build_has_complete_normalized_catalog(tmp_path):
@@ -220,3 +291,64 @@ def test_local_assets_have_accessible_responsive_behavior(tmp_path):
     assert "ArrowLeft" in js and "ArrowRight" in js
     assert "navigator.clipboard.writeText" in js
     assert "fetch(" not in js and "XMLHttpRequest" not in js
+
+
+def test_assets_define_automatic_dark_mode_and_true_narrow_single_column_layout(tmp_path):
+    output = tmp_path / "dist"
+    write_site(ROOT, output, SHA)
+    css = (output / "assets/styles.css").read_text(encoding="utf-8")
+    html = (output / "index.html").read_text(encoding="utf-8")
+    dark = _css_at_rule(css, "@media (prefers-color-scheme: dark)")
+    narrow = _css_at_rule(css, "@media (max-width: 720px)")
+
+    assert '<meta name="color-scheme" content="light dark">' in html
+    for token in ("--paper", "--paper-raised", "--ink", "--ink-muted", "--rule", "--blue", "--amber"):
+        assert token in dark
+    for selector in (r"\.site-header nav", r"\.truth-ledger", r"\.record-index"):
+        assert re.search(rf"{selector}\s*\{{[^}}]*grid-template-columns:\s*1fr\s*;", narrow, re.DOTALL)
+    assert re.search(r"\.record-index a:nth-of-type\(odd\)\s*\{[^}]*border-right:\s*0\s*;", narrow, re.DOTALL)
+
+
+def test_catalog_and_frontmatter_values_are_html_escaped(repo_fixture, tmp_path):
+    repo_fixture.add_skill(path="skills/core/hostile-skill", name="hostile-skill")
+    catalog_path = repo_fixture.root / "catalog" / "skills.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    catalog["skills"][0].update(
+        {
+            "name": '<img src=x onerror="alert(1)">',
+            "summary": "<script>alert('summary')</script> & evidence",
+            "tags": ["<unsafe&tag>"],
+        }
+    )
+    catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+    skill_path = repo_fixture.root / "skills" / "core" / "hostile-skill" / "SKILL.md"
+    skill_path.write_text(
+        skill_path.read_text(encoding="utf-8").replace(
+            "description: Find company-specific guidance when an internal answer may help.",
+            "description: '<b>unsafe & \"quoted\" description</b>'",
+        ),
+        encoding="utf-8",
+    )
+    marketplace_path = repo_fixture.root / "catalog" / "marketplace.json"
+    marketplace = json.loads(marketplace_path.read_text(encoding="utf-8"))
+    marketplace["category"] = "</script><script>alert('category')</script>"
+    marketplace_path.write_text(json.dumps(marketplace), encoding="utf-8")
+    shutil.copytree(ROOT / "marketplace_web", repo_fixture.root / "marketplace_web")
+
+    output = tmp_path / "dist"
+    write_site(repo_fixture.root, output, SHA)
+    index = (output / "index.html").read_text(encoding="utf-8")
+    detail = (output / "skills" / "hostile-skill" / "index.html").read_text(encoding="utf-8")
+
+    assert '<img src=x onerror="alert(1)">' not in index
+    assert "<script>alert('summary')</script>" not in index
+    assert "<b>unsafe" not in detail
+    assert "</script><script>alert('category')</script>" not in detail
+    assert "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;" in index
+    assert "&lt;script&gt;alert(&#x27;summary&#x27;)&lt;/script&gt; &amp; evidence" in index
+    assert "&lt;b&gt;unsafe &amp; &quot;quoted&quot; description&lt;/b&gt;" in detail
+    manifest_match = re.search(
+        r'<script type="application/json" data-codex-project-manifest>(.*?)</script>', detail, re.DOTALL
+    )
+    assert manifest_match
+    assert json.loads(manifest_match.group(1))["plugins"][0]["category"] == marketplace["category"]
