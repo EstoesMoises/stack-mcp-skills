@@ -165,7 +165,12 @@ def test_index_has_field_manual_controls_core_ledger_and_accessibility(tmp_path)
     assert body.count("data-skill-card") == 9
     assert all(attribute in body for attribute in ("data-tier=", "data-tags=", "data-clients=", "data-write-capable="))
     assert body.count("codex plugin add ") == 3
-    assert body.count("/plugin install ") == 3
+    assert body.count("claude plugin install ") == 3
+    assert "/plugin install " not in body
+    assert all(
+        command.endswith(" --scope project")
+        for command in re.findall(r"claude plugin install [^<\n]+", body)
+    )
     assert "aria-selected" in body
     assert "aria-controls" in body
     assert 'aria-live="polite"' in body
@@ -194,7 +199,12 @@ def test_every_skill_page_has_native_commands_smokes_and_required_sections(tmp_p
         body = (output / "skills" / entry["id"] / "index.html").read_text(encoding="utf-8")
         assert body.count("<h1") == 1
         assert f"codex plugin add {entry['id']}@stack-internal" in body
-        assert f"/plugin install {entry['id']}@stack-internal" in body
+        assert f"claude plugin install {entry['id']}@stack-internal --scope project" in body
+        assert "/plugin install " not in body
+        assert all(
+            command.endswith(" --scope project")
+            for command in re.findall(r"claude plugin install [^<\n]+", body)
+        )
         assert "How should I structure logging in this service?" in body
         assert "Write a Python function that reverses a string." in body
         assert all(f">{heading}</h2>" in body for heading in SECTION_HEADINGS)

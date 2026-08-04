@@ -8,10 +8,10 @@ Add the public marketplace at project scope:
 claude plugin marketplace add EstoesMoises/stack-mcp-skills --scope project
 ```
 
-Install the selected plugin through Claude Code's interactive flow, choose project scope, then reload its plugin discovery:
+Install the selected plugin explicitly at project scope, then reload its plugin discovery:
 
-```text
-/plugin install efficient-search@stack-internal
+```bash
+claude plugin install efficient-search@stack-internal --scope project
 /reload-plugins
 ```
 

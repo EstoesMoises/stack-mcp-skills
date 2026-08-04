@@ -41,14 +41,14 @@ codex plugin marketplace add EstoesMoises/stack-mcp-skills
 codex plugin add efficient-search@stack-internal
 ```
 
-For Claude Code, add the marketplace at project scope, then use its interactive installer and reload the plugin list:
+For Claude Code, add the marketplace and install the plugin explicitly at project scope, then reload the plugin list:
 
 ```bash
 claude plugin marketplace add EstoesMoises/stack-mcp-skills --scope project
 ```
 
-```text
-/plugin install efficient-search@stack-internal
+```bash
+claude plugin install efficient-search@stack-internal --scope project
 /reload-plugins
 ```
 

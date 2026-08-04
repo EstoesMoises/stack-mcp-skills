@@ -135,7 +135,7 @@ def build_site_model(root: Path, source_commit: str) -> dict[str, object]:
         skills.append(
             {
                 **entry,
-                "claude_install": f"/plugin install {skill_id}@{config.name}",
+                "claude_install": f"claude plugin install {skill_id}@{config.name} --scope project",
                 "claude_invoke": f"/{skill_id}:{skill_id}",
                 "codex_install": f"codex plugin add {skill_id}@{config.name}",
                 "codex_invoke": f"${skill_id}:{skill_id}",
@@ -411,7 +411,7 @@ def _render_skill(model: Mapping[str, object], skill: Mapping[str, object]) -> s
           <script type="application/json" data-codex-project-manifest>{manifest}</script>
         </section>
         <section id="claude"><h2>Install in Claude Code</h2>
-          <p>Add the repository marketplace at project scope, install the plugin interactively, then reload Claude Code if discovery is stale.</p>
+          <p>Add the repository marketplace at project scope, then install this plugin explicitly at project scope. Reload Claude Code if discovery is stale.</p>
           {_copy_block(f"claude plugin marketplace add {marketplace['repository']} --scope project", f'{skill_id}-claude-marketplace')}
           {_copy_block(str(skill['claude_install']), f'{skill_id}-claude-install')}
           <p>Invoke explicitly with <code>{escape(str(skill['claude_invoke']))}</code>.</p>

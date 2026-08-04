@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 
@@ -9,7 +10,19 @@ def test_readme_has_native_marketplace_quickstart():
     assert "codex plugin marketplace add EstoesMoises/stack-mcp-skills" in body
     assert "codex plugin add efficient-search@stack-internal" in body
     assert "claude plugin marketplace add EstoesMoises/stack-mcp-skills --scope project" in body
-    assert "/plugin install efficient-search@stack-internal" in body
+    assert "claude plugin install efficient-search@stack-internal --scope project" in body
+    assert "/plugin install " not in body
+
+
+def test_claude_install_guides_never_publish_an_unscoped_install_command():
+    """Catch a project-scope claim paired with a user-scope Claude install command."""
+    for path in (ROOT / "README.md", ROOT / "adapters/claude-code/README.md"):
+        body = path.read_text(encoding="utf-8")
+        commands = re.findall(r"^claude plugin install .+$", body, flags=re.MULTILINE)
+
+        assert commands
+        assert all(command.endswith(" --scope project") for command in commands)
+        assert "/plugin install " not in body
 
 
 def test_codex_docs_do_not_claim_a_project_scope_flag():
