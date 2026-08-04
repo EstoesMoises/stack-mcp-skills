@@ -7,6 +7,7 @@ from stack_skill_catalog.marketplace_config import (
     load_marketplace_config,
     validate_marketplace,
 )
+from stack_skill_catalog.validation import validate_repository
 
 
 ROOT = Path(__file__).parents[2]
@@ -46,3 +47,25 @@ def test_repository_validation_reports_missing_marketplace_config(repo_fixture):
     assert validate_marketplace(repo_fixture.root) == [
         "marketplace config could not be loaded: catalog/marketplace.json"
     ]
+
+
+def test_marketplace_validation_reports_missing_schema_with_its_relative_path(repo_fixture):
+    (repo_fixture.root / "standards/marketplace-schema.json").unlink()
+
+    assert validate_marketplace(repo_fixture.root) == [
+        "marketplace config could not be loaded: standards/marketplace-schema.json"
+    ]
+
+
+def test_repository_validation_sanitizes_invalid_marketplace_values(repo_fixture):
+    path = repo_fixture.root / "catalog/marketplace.json"
+    config = path.read_text(encoding="utf-8").replace(
+        "https://estoesmoises.github.io/stack-mcp-skills/",
+        "https://customer.example.invalid/credential=secret",
+    )
+    path.write_text(config, encoding="utf-8")
+
+    errors = validate_repository(repo_fixture.root)
+
+    assert errors == ["marketplace config is invalid"]
+    assert "credential=secret" not in "\n".join(errors)

@@ -39,11 +39,15 @@ def load_marketplace_config(path: Path) -> MarketplaceConfig:
 
 def validate_marketplace(root: Path) -> list[str]:
     """Return deterministic marketplace configuration validation errors."""
+    root = Path(root).resolve()
     path = root / "catalog" / "marketplace.json"
     try:
         load_marketplace_config(path)
-    except FileNotFoundError:
-        return ["marketplace config could not be loaded: catalog/marketplace.json"]
-    except (OSError, ValueError, json.JSONDecodeError) as error:
-        return [f"marketplace config could not be loaded: {error}"]
+    except FileNotFoundError as error:
+        missing_path = Path(error.filename).relative_to(root).as_posix()
+        return [f"marketplace config could not be loaded: {missing_path}"]
+    except OSError:
+        return ["marketplace config could not be loaded"]
+    except ValueError:
+        return ["marketplace config is invalid"]
     return []
