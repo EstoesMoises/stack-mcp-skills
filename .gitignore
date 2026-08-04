@@ -1,4 +1,5 @@
 .worktrees/
+/dist/
 .superpowers/
 .venv/
 .pytest_cache/

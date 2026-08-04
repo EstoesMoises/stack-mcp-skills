@@ -2,6 +2,27 @@
 
 Each contribution should solve one coherent user goal with one independently installable Agent Skill. New skills enter the extended tier by default; propose the core tier only for a broadly required foundation used by multiple workflows.
 
+## Canonical sources and generated marketplace surfaces
+
+Edit `catalog/skills.json`, `catalog/marketplace.json`, and the canonical `skills/` directories. Do not edit `plugins/` directly: plugin wrappers and the native manifests `.agents/plugins/marketplace.json` and `.claude-plugin/marketplace.json` are generated.
+
+Regenerate committed marketplace packages after changing their canonical inputs, then verify that the committed generated output is exact:
+
+```bash
+uv run python scripts/build_marketplace.py packages --mode write --root .
+uv run python scripts/build_marketplace.py packages --mode check --root .
+```
+
+Build the static catalog with the exact source commit supplied explicitly:
+
+```bash
+uv run python scripts/build_marketplace.py site --root . --output dist --source-commit "$(git rev-parse HEAD)"
+```
+
+Skill versions are independent semantic versions in `catalog/skills.json` and each canonical `SKILL.md` metadata block. Increase every affected skill version for an installable behavior or packaged-resource change; documentation-only changes outside an installed package do not require a skill version bump. Increase the marketplace version when marketplace entry ordering, presentation metadata, or the core selection changes.
+
+This MVP has no frontend package manager. If JavaScript dependencies are introduced later, pnpm is the only permitted package manager; do not add package-manager files or dependencies now.
+
 ## Skill contract
 
 - Follow the [Agent Skills specification](https://agentskills.io/specification). The directory name and frontmatter `name` must match, use lowercase letters, numbers, and single hyphens, and stay within 64 characters. Write a non-empty `description` of no more than 1024 characters that states what the skill does and when it should activate.

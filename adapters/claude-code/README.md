@@ -1,10 +1,24 @@
 # Claude Code adapter
 
-## Install the skills
+## Install from the marketplace
 
-For a repository, copy each complete, self-contained skill directory into `.claude/skills/<skill-name>/`. For your user scope, copy it into `~/.claude/skills/<skill-name>/`. Preserve each directory’s `SKILL.md`, `evals/`, and referenced local resources; do not copy only the markdown file or flatten the folders. Select any of the nine directories listed in the [common adapter guide](../README.md).
+Add the public marketplace at project scope:
 
-Claude Code discovers filesystem skills automatically when a request matches their descriptions. Invoke a selected skill directly with `/skill-name`. This guide targets Claude Code filesystem skills only: it deliberately includes no Claude API skill-upload procedure.
+```bash
+claude plugin marketplace add EstoesMoises/stack-mcp-skills --scope project
+```
+
+Install the selected plugin explicitly at project scope, then reload its plugin discovery:
+
+```bash
+claude plugin install efficient-search@stack-internal --scope project
+```
+
+```text
+/reload-plugins
+```
+
+Invoke the installed skill explicitly as `/efficient-search:efficient-search`. Claude Code also discovers installed skills automatically when a request matches their descriptions.
 
 ## Connect Stack Internal MCP
 
@@ -41,3 +55,9 @@ Use a verified non-sensitive resolution in a deterministic multi-turn test. Ask 
 ### Smoke test 4 — MCP failure
 
 Disconnect or deny access, then ask an internal-policy question. Expect an honest access failure and an offer to continue with clearly labeled general knowledge.
+
+## Filesystem fallback
+
+For a repository, copy each complete, self-contained skill directory into `.claude/skills/<skill-name>/`. For your user scope, copy it into `~/.claude/skills/<skill-name>/`. Preserve each directory’s `SKILL.md`, `evals/`, and referenced local resources; do not copy only the markdown file or flatten the folders. Select any of the nine directories listed in the [common adapter guide](../README.md).
+
+Claude Code discovers filesystem skills automatically when a request matches their descriptions. Invoke a selected skill directly with `/skill-name`. This guide targets Claude Code filesystem skills only: it deliberately includes no Claude API skill-upload procedure.

@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0.0",
+  "marketplace_version": "0.1.0",
+  "name": "stack-internal",
+  "display_name": "Stack Internal Skills",
+  "repository": "EstoesMoises/stack-mcp-skills",
+  "site_url": "https://estoesmoises.github.io/stack-mcp-skills/",
+  "publisher_name": "Stack Internal Skills",
+  "category": "Productivity"
+}

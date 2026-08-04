@@ -26,3 +26,7 @@ jobs:
           for skill in skills/core/* skills/extended/*; do
             uv run skills-ref validate "$skill"
           done
+      - run: uv run python scripts/build_marketplace.py packages --mode check --root .
+      - run: uv run python scripts/build_marketplace.py site --root . --output dist-a --source-commit "$GITHUB_SHA"
+      - run: uv run python scripts/build_marketplace.py site --root . --output dist-b --source-commit "$GITHUB_SHA"
+      - run: diff -ru dist-a dist-b

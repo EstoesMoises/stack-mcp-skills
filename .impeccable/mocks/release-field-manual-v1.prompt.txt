@@ -1,0 +1,10 @@
+Use case: ui-mockup
+Asset type: high-fidelity desktop web catalog compositional probe, development review only
+Primary request: Stack Internal Skills public marketplace in the approved “Release Field Manual” direction. Create a designed web surface, not a poster or physical scene.
+Surface structure: slim ruled top navigation; first viewport split asymmetrically with a large title/product-truth field on the left and a visibly dense three-plugin core-install ledger on the right; immediately below, a full-width search and filter index; beginning of a nine-skill directory rendered as ruled field-manual records, not identical floating cards.
+Style/medium: realistic shippable product UI mockup, framework-free technical documentation aesthetic.
+Composition/framing: 1536×1024-style landscape desktop viewport, show first viewport and enough second fold to prove the directory rhythm. Variant 1 emphasizes the split opening field and registry-numbered horizontal skill records.
+Color palette: cool near-white paper, high-contrast navy ink, one decisive registration blue for active tabs/actions, restrained amber only on approval-gated write permissions.
+Materials/textures: flat paper field, hairline rules and dividers, squared tabs, command specimens; no decorative shadows.
+Text (verbatim): “Stack Internal Skills” and “Install company-grounded workflows as native skills.” These are the only legible text; render all other copy as indistinct lines.
+Constraints: system-font character, strong accessible hierarchy, practical browser UI, no external imagery, no gradients, no generic SaaS card grid, no glass, no emoji, no logos, no watermark, no invented product claims.

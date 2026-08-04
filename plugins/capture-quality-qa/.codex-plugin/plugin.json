@@ -1,0 +1,32 @@
+{
+  "author": {
+    "name": "Stack Internal Skills"
+  },
+  "description": "Turn validated technical learnings into sanitized, duplicate-aware Stack Internal Q&A drafts with exact approval before writes.",
+  "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/capture-quality-qa/",
+  "interface": {
+    "capabilities": [
+      "Read",
+      "Approval-gated writes"
+    ],
+    "category": "Productivity",
+    "defaultPrompt": [
+      "Use Capture High-Quality Stack Internal Q&A to help with a Stack Internal task."
+    ],
+    "developerName": "Stack Internal Skills",
+    "displayName": "Capture High-Quality Stack Internal Q&A",
+    "longDescription": "Turn validated technical learnings into sanitized, duplicate-aware Stack Internal Q&A drafts with exact approval before writes.",
+    "shortDescription": "Turn validated technical learnings into sanitized, duplicate-aware Stack Internal Q&A drafts with exact approval before writes.",
+    "websiteURL": "https://estoesmoises.github.io/stack-mcp-skills/skills/capture-quality-qa/"
+  },
+  "keywords": [
+    "knowledge-capture",
+    "qa",
+    "curation"
+  ],
+  "license": "Apache-2.0",
+  "name": "capture-quality-qa",
+  "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
+  "skills": "./skills/",
+  "version": "0.1.0"
+}

@@ -112,8 +112,27 @@ def repo_fixture(tmp_path: Path) -> RepoFixture:
     (root / "catalog" / "skills.json").write_text(
         json.dumps({"catalog_version": "1.0.0", "skills": []}), encoding="utf-8"
     )
+    (root / "catalog" / "marketplace.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0.0",
+                "marketplace_version": "0.1.0",
+                "name": "stack-internal",
+                "display_name": "Stack Internal Skills",
+                "repository": "EstoesMoises/stack-mcp-skills",
+                "site_url": "https://estoesmoises.github.io/stack-mcp-skills/",
+                "publisher_name": "Stack Internal Skills",
+                "category": "Productivity",
+            }
+        ),
+        encoding="utf-8",
+    )
     (root / "standards" / "catalog-schema.json").write_text(
         (Path(__file__).parents[2] / "standards" / "catalog-schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (root / "standards" / "marketplace-schema.json").write_text(
+        (Path(__file__).parents[2] / "standards" / "marketplace-schema.json").read_text(encoding="utf-8"),
         encoding="utf-8",
     )
     (root / "standards" / "adapter-evidence-schema.json").write_text(

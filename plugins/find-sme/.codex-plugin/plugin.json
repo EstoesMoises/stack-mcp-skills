@@ -1,0 +1,31 @@
+{
+  "author": {
+    "name": "Stack Internal Skills"
+  },
+  "description": "Find internal subject-matter experts through read-only topic discovery and exact existing-tag resolution.",
+  "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/find-sme/",
+  "interface": {
+    "capabilities": [
+      "Read"
+    ],
+    "category": "Productivity",
+    "defaultPrompt": [
+      "Use Find Stack Internal Subject-Matter Experts to help with a Stack Internal task."
+    ],
+    "developerName": "Stack Internal Skills",
+    "displayName": "Find Stack Internal Subject-Matter Experts",
+    "longDescription": "Find internal subject-matter experts through read-only topic discovery and exact existing-tag resolution.",
+    "shortDescription": "Find internal subject-matter experts through read-only topic discovery and exact existing-tag resolution.",
+    "websiteURL": "https://estoesmoises.github.io/stack-mcp-skills/skills/find-sme/"
+  },
+  "keywords": [
+    "sme",
+    "experts",
+    "escalation"
+  ],
+  "license": "Apache-2.0",
+  "name": "find-sme",
+  "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
+  "skills": "./skills/",
+  "version": "0.1.0"
+}

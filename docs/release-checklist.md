@@ -30,7 +30,25 @@ Record evidence for each gate. Automated and manual no-tenant checks validate re
   done
   ```
 
+- [ ] Confirm generated packages and native manifests match their canonical sources:
+
+  ```bash
+  uv run python scripts/build_marketplace.py packages --mode check --root .
+  ```
+
+- [ ] Confirm two site builds from the exact current commit are byte-identical:
+
+  ```bash
+  uv run python scripts/build_marketplace.py site --root . --output dist-a --source-commit "$(git rev-parse HEAD)"
+  uv run python scripts/build_marketplace.py site --root . --output dist-b --source-commit "$(git rev-parse HEAD)"
+  diff -ru dist-a dist-b
+  ```
+
 Record the commit SHA, CI run URL, result, and reviewer for these gates.
+
+## GitHub Pages publication guard
+
+- [ ] In GitHub repository settings, configure and verify the `github-pages` environment allows deployments only from the `main` branch. This externally managed setting is not configured or verified by this repository.
 
 ## Manual no-tenant review
 
@@ -42,6 +60,33 @@ Record the commit SHA, CI run URL, result, and reviewer for these gates.
 - [ ] Confirm all adapter states remain `experimental`; simulated checks and a manual no-tenant review do not justify `supported`.
 
 Record the commit SHA, reviewer, review date, changed skills and adapters, pass/fail result, and notes.
+
+## Native marketplace manual gates
+
+- [ ] In a clean project using the exact Codex version recorded in [the marketplace testing matrix](marketplace-testing.md), test the Codex native flow: marketplace add, plugin list, individual install, three-plugin core install, explicit invocation, update, disablement, and removal.
+- [ ] In a clean project using the exact Claude Code version recorded in [the marketplace testing matrix](marketplace-testing.md), test the Claude Code native flow: marketplace add, plugin list, individual install, three-plugin core install, explicit invocation, update, disablement, and removal.
+- [ ] Record the observed project-scope behavior separately for Codex and Claude Code. Codex command-driven marketplace registration is client-managed; do not claim a Codex project-scope flag. Claude marketplace add uses `--scope project` and its interactive install flow chooses project scope.
+- [ ] Navigate the public GitHub Pages URL `https://estoesmoises.github.io/stack-mcp-skills/`; confirm it presents the exact source commit deployed by Pages, lists exactly nine plugin entries, and its install instructions and linked skill pages resolve.
+- [ ] Run all four tenant-backed smokes for the exact Codex and Claude Code client, plugin, and skill versions; record only redacted results under the fixed tenant purpose `non-production skill validation`.
+
+Exact client versions and pass/fail results are manual evidence fields. Do not record raw tenant data, tenant identifiers, slugs, credentials, tokens, personal data, customer data, or raw retrieved content.
+
+## Task 8 pre-evidence rehearsal status — 2026-08-04
+
+The exercised pre-evidence rehearsal candidate was `46c91c8200b78abbbde83b39f80e42c8f91b7da0` (marketplace version `0.1.0`), not a tenant-evidence candidate. `claude plugin validate .` and all nine generated plugin directories passed with Claude Code `2.1.220`; Codex `0.142.5` completed the local isolated-profile add/list/install/remove rehearsal for `efficient-search@stack-internal` version `0.1.0`. This verifies only local structural/native validation and the limited isolated Codex lifecycle.
+
+The corresponding Claude project-scoped local add was blocked before configuration when the client attempted to open its personal known-marketplace cache and received `EPERM`. No personal client state was changed, and no global or user scope was used. The Codex and Claude public GitHub-source rehearsals are pending because this candidate has not been published to public `main`. No tenant was authorized; no tenant data was accessed, no smoke artifacts were created, and `compatibility/evidence.json` remains empty.
+
+### Outstanding publication and evidence gates
+
+- [ ] Publish the exact candidate to public `main`, then run the public GitHub-source add/list/install rehearsal for both native clients. Do not substitute the local rehearsal for this gate.
+- [ ] Deploy and inspect the public Pages catalog at `https://estoesmoises.github.io/stack-mcp-skills/`; confirm its displayed source commit, nine plugin entries, installation instructions, and linked skill pages.
+- [ ] In a clean authorized Codex profile, complete the remaining native lifecycle checks: the three independent core installs, explicit invocation, marketplace refresh/update, and any supported disable/remove behavior. Codex registration is client-managed; do not claim a project-scope flag.
+- [ ] In a clean Claude Code environment that does not touch personal state, complete the project-scoped marketplace add/list/install/update/disable/remove checks. Resolve the blocked personal-cache behavior before treating that lifecycle as exercised.
+- [ ] With an authorized non-production tenant and the fixed purpose `non-production skill validation`, run all four redacted smokes for each required adapter/client and exact plugin/skill versions.
+- [ ] Create and validate the required redacted smoke artifacts and compatibility records only after the authorized smokes pass on their exact evidence-bearing candidate.
+
+Until every applicable publication, native lifecycle, and authorized tenant gate above has passed, every adapter remains `experimental`.
 
 ## Tenant-backed release gate
 

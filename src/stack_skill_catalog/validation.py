@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .catalog import load_catalog, validate_catalog
+from .marketplace_config import validate_marketplace
 from .skill import discover_skill_dirs, validate_skill
 
 
@@ -17,7 +18,8 @@ def validate_repository(root: Path) -> list[str]:
     except (OSError, ValueError) as error:
         return [f"catalog could not be loaded: {error}"]
 
-    errors = validate_catalog(root, catalog)
+    errors = validate_marketplace(root)
+    errors.extend(validate_catalog(root, catalog))
     skills = catalog.get("skills")
     if not isinstance(skills, list):
         return sorted(errors)

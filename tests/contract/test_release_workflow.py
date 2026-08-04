@@ -12,6 +12,15 @@ REQUIRED_AUTOMATED_COMMANDS = (
     "uv sync --locked --dev",
     "uv run pytest -q",
     "uv run python scripts/validate_catalog.py .",
+    "uv run python scripts/build_marketplace.py packages --mode check --root .",
+)
+REQUIRED_WORKFLOW_SITE_COMMANDS = (
+    'uv run python scripts/build_marketplace.py site --root . --output dist-a --source-commit "$GITHUB_SHA"',
+    'uv run python scripts/build_marketplace.py site --root . --output dist-b --source-commit "$GITHUB_SHA"',
+)
+REQUIRED_CHECKLIST_SITE_COMMANDS = (
+    'uv run python scripts/build_marketplace.py site --root . --output dist-a --source-commit "$(git rev-parse HEAD)"',
+    'uv run python scripts/build_marketplace.py site --root . --output dist-b --source-commit "$(git rev-parse HEAD)"',
 )
 PINNED_ACTIONS = (
     "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
@@ -95,13 +104,40 @@ def test_ci_runs_every_automated_release_gate():
     assert used_actions == list(PINNED_ACTIONS)
     assert all(line in workflow_text for line in PINNED_ACTION_LINES)
     assert all(command in run_steps for command in REQUIRED_AUTOMATED_COMMANDS)
+    assert all(command in run_steps for command in REQUIRED_WORKFLOW_SITE_COMMANDS)
     assert all(command in release_checklist for command in REQUIRED_AUTOMATED_COMMANDS)
+    assert all(command in release_checklist for command in REQUIRED_CHECKLIST_SITE_COMMANDS)
     assert any(
         "skills/core/* skills/extended/*" in command
         and 'uv run skills-ref validate "$skill"' in command
         for command in run_steps
     )
     assert 'uv run skills-ref validate "$skill"' in release_checklist
+
+
+def test_release_checklist_covers_exact_pages_and_native_marketplace_review():
+    """A release review must inspect the exact public Pages catalog and each native flow."""
+    body = (ROOT / "docs/release-checklist.md").read_text(encoding="utf-8")
+
+    assert re.search(
+        r"https://estoesmoises\.github\.io/stack-mcp-skills/.*exact source commit.*exactly nine plugin entries",
+        body,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    assert re.search(r"Codex native flow: marketplace add", body, flags=re.IGNORECASE)
+    assert re.search(r"Claude Code native flow: marketplace add", body, flags=re.IGNORECASE)
+
+
+def test_release_checklist_requires_main_only_github_pages_environment():
+    """The externally managed Pages environment must be checked before release."""
+    body = (ROOT / "docs/release-checklist.md").read_text(encoding="utf-8")
+
+    assert re.search(
+        r"- \[ \].*`github-pages` environment.*only.*`main`",
+        body,
+        flags=re.IGNORECASE,
+    )
+    assert "not configured or verified by this repository" in body
 
 
 def test_ci_triggers_on_pull_requests_and_main_pushes():

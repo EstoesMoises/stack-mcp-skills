@@ -1,0 +1,31 @@
+{
+  "author": {
+    "name": "Stack Internal Skills"
+  },
+  "description": "Build role- and goal-specific onboarding paths from bounded, fully retrieved company knowledge.",
+  "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/onboarding/",
+  "interface": {
+    "capabilities": [
+      "Read"
+    ],
+    "category": "Productivity",
+    "defaultPrompt": [
+      "Use Stack Internal Onboarding Paths to help with a Stack Internal task."
+    ],
+    "developerName": "Stack Internal Skills",
+    "displayName": "Stack Internal Onboarding Paths",
+    "longDescription": "Build role- and goal-specific onboarding paths from bounded, fully retrieved company knowledge.",
+    "shortDescription": "Build role- and goal-specific onboarding paths from bounded, fully retrieved company knowledge.",
+    "websiteURL": "https://estoesmoises.github.io/stack-mcp-skills/skills/onboarding/"
+  },
+  "keywords": [
+    "onboarding",
+    "learning",
+    "company-knowledge"
+  ],
+  "license": "Apache-2.0",
+  "name": "onboarding",
+  "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
+  "skills": "./skills/",
+  "version": "0.1.0"
+}
