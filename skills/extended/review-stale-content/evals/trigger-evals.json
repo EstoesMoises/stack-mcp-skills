@@ -1,0 +1,14 @@
+{
+  "positive": [
+    "Our internal Terraform guide refers to a provider that was explicitly deprecated; review the existing answer and propose an evidence-based update if it diverges from current code.",
+    "We migrated Payments deployments from Jenkins to GitHub Actions. Is the existing Stack Internal deployment answer now outdated?",
+    "The SSO service removed the legacy session configuration. Review the related internal Q&A against the verified current implementation.",
+    "Can you check whether the old Data Platform retention article is still current after the policy change?"
+  ],
+  "negative": [
+    "Fix the grammar in this Stack Internal answer.",
+    "This answer has low votes, so update it.",
+    "This internal article is from 2021; mark it stale without checking anything else.",
+    "Create a new Stack Internal post describing our GitHub Actions migration."
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "positive": [
+    "Why is the internal Fulfillment Router returning `RouteLeaseExpired` in production?",
+    "Our deployment regressed after the Atlas Gateway rollout; what company procedure should we check?",
+    "The company SSO callback now rejects users after the auth-flow change.",
+    "Why does the same CI job fail every week in the mobile-release pipeline?",
+    "This TODO says to preserve the Nimbus cleanup path; what does that mean here?",
+    "How do I debug this unfamiliar internal entitlement module?",
+    "Does our policy allow logging this customer authentication payload for diagnosis?",
+    "What replaces the deprecated internal `platform-http-v2` library in this service?"
+  ],
+  "negative": [
+    "Fix this LeetCode two-sum bug.",
+    "Why does Python raise this standard-library ValueError?",
+    "Correct the CSS typo that makes this button blue.",
+    "What is the generic SQL syntax for a LEFT JOIN?",
+    "How do I upgrade this public npm package?",
+    "Correct this paragraph for grammar.",
+    "What is 917 multiplied by 48?",
+    "My standalone toy-app counter does not increment."
+  ]
+}

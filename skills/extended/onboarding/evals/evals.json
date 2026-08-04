@@ -1,0 +1,132 @@
+{
+  "cases": [
+    {
+      "id": "new-backend-engineer-path",
+      "prompt": "I am a new backend engineer joining the Orders service. Build a first-week onboarding path so I can run the service locally, understand its boundaries, and choose a safe first task.",
+      "missing_topics": ["prerequisites"],
+      "search_attempts": [
+        {"topic": "prerequisites", "query_kind": "focused", "result_key": "prerequisites"},
+        {"topic": "setup", "query_kind": "focused", "result_key": "setup"},
+        {"topic": "architecture", "query_kind": "focused", "result_key": "architecture"},
+        {"topic": "architecture", "query_kind": "broadened", "result_key": "architecture-broadened-1"},
+        {"topic": "workflows", "query_kind": "focused", "result_key": "workflows"},
+        {"topic": "first-tasks", "query_kind": "focused", "result_key": "first-tasks"},
+        {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-1"},
+        {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-2"}
+      ],
+      "simulated_mcp": {
+        "search": {
+          "prerequisites": [],
+          "prerequisites-broadened-1": [],
+          "prerequisites-broadened-2": [],
+          "setup": [{"id": "a-101", "type": "article", "title": "Orders service local development", "snippet": "Install dependencies and run the development stack."}],
+          "architecture": [{"id": "q-102", "type": "question", "title": "Orders state ownership", "snippet": "Direct ownership match."}, {"id": "a-109", "type": "article", "title": "Orders event stream", "snippet": "Event history."}],
+          "architecture-broadened-1": [{"id": "a-105", "type": "article", "title": "Orders service architecture and boundaries", "snippet": "Current service boundaries."}],
+          "workflows": [{"id": "a-103", "type": "article", "title": "Orders service pull request workflow", "snippet": "Review and test expectations."}],
+          "first-tasks": [{"id": "q-104", "type": "question", "title": "Good first tasks in Orders", "snippet": "Low-risk starter work."}]
+        },
+        "get_article": [
+          {"id": "a-101", "title": "Orders service local development", "body": "Install the documented dependencies and start the local development stack."},
+          {"id": "a-105", "title": "Orders service architecture and boundaries", "body": "Orders owns order lifecycle state and publishes changes to the event stream; Payments owns payment authorization."},
+          {"id": "a-103", "title": "Orders service pull request workflow", "body": "Run the Orders test suite and request review from the service team."}
+        ],
+        "get_question": [
+          {"id": "q-102", "title": "Orders state ownership", "body": "This archived answer does not describe the current service boundaries."},
+          {"id": "q-104", "title": "Good first tasks in Orders", "body": "Start with a documented test-only issue labeled good-first-task."}
+        ]
+      },
+      "expected_tool_sequence": ["search:prerequisites", "search:setup", "get_article:a-101", "search:architecture", "get_question:q-102", "search:architecture-broadened-1", "get_article:a-105", "search:workflows", "get_article:a-103", "search:first-tasks", "get_question:q-104", "search:prerequisites-broadened-1", "search:prerequisites-broadened-2"],
+      "expected": "Identify the learner, first-week goal, and time horizon. Search all five topics before rendering. Rank the initial architecture candidates strongest-first, retrieve Orders state ownership (ID: q-102), reassess its archived incomplete content, then broaden before retrieving Orders service architecture and boundaries (ID: a-105). Cite Orders service local development (ID: a-101), Orders service architecture and boundaries (ID: a-105), Orders service pull request workflow (ID: a-103), and Good first tasks in Orders (ID: q-104) for their supported items. Only after the three empty prerequisite searches, record Missing coverage: prerequisites. Inference: None.",
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
+    },
+    {
+      "id": "payments-team-transfer-path",
+      "prompt": "I am transferring from the Web Platform team to Payments. I have two weeks to learn the payment authorization flow, its release process, and the first support rotation task.",
+      "missing_topics": ["prerequisites", "setup"],
+      "search_attempts": [
+        {"topic": "prerequisites", "query_kind": "focused", "result_key": "prerequisites"},
+        {"topic": "setup", "query_kind": "focused", "result_key": "setup"},
+        {"topic": "architecture", "query_kind": "focused", "result_key": "architecture"},
+        {"topic": "workflows", "query_kind": "focused", "result_key": "workflows"},
+        {"topic": "first-tasks", "query_kind": "focused", "result_key": "first-tasks"},
+        {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-1"},
+        {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-2"},
+        {"topic": "setup", "query_kind": "broadened", "result_key": "setup-broadened-1"},
+        {"topic": "setup", "query_kind": "broadened", "result_key": "setup-broadened-2"}
+      ],
+      "budget_checkpoint": {
+        "after_search_call": 8,
+        "before_search_call": 9,
+        "disclosure_step": "disclose_whole_path_budget",
+        "confirmation_step": "user_confirms_continue"
+      },
+      "simulated_mcp": {
+        "search": {
+          "prerequisites": [],
+          "prerequisites-broadened-1": [],
+          "prerequisites-broadened-2": [],
+          "setup": [],
+          "setup-broadened-1": [],
+          "setup-broadened-2": [],
+          "architecture": [{"id": "a-201", "type": "article", "title": "Payments authorization architecture", "snippet": "Authorization boundaries and dependencies."}],
+          "workflows": [{"id": "q-202", "type": "question", "title": "How does Payments release authorization changes?", "snippet": "Release process."}],
+          "first-tasks": [{"id": "a-203", "type": "article", "title": "Payments support rotation handbook", "snippet": "First rotation responsibilities."}]
+        },
+        "get_article": [
+          {"id": "a-201", "title": "Payments authorization architecture", "body": "Payments owns authorization orchestration and calls the gateway adapter."},
+          {"id": "a-203", "title": "Payments support rotation handbook", "body": "Begin rotation by triaging the authorization queue with the on-call runbook."}
+        ],
+        "get_question": [{"id": "q-202", "title": "How does Payments release authorization changes?", "body": "Authorization changes require the staged Payments release checklist."}]
+      },
+      "simulated_user_confirmation": "Continue the remaining bounded onboarding searches.",
+      "expected_tool_sequence": ["search:prerequisites", "search:setup", "search:architecture", "get_article:a-201", "search:workflows", "get_question:q-202", "search:first-tasks", "get_article:a-203", "search:prerequisites-broadened-1", "search:prerequisites-broadened-2", "search:setup-broadened-1", "disclose_whole_path_budget", "user_confirms_continue", "search:setup-broadened-2"],
+      "expected": "State the transferring engineer, authorization-and-rotation goal, and two-week horizon. Search all five topics and cite Payments authorization architecture (ID: a-201), How does Payments release authorization changes? (ID: q-202), and Payments support rotation handbook (ID: a-203) only after full retrieval. After eight completed searches of every kind, disclose the completed searches and remaining topics, then ask for confirmation before call 9, the final setup broadening. After confirmation and the final empty search, record Missing coverage: prerequisites and Missing coverage: setup; do not fill either from public payments knowledge. Inference: None.",
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
+    },
+    {
+      "id": "incomplete-onboarding-coverage",
+      "prompt": "Create a two-day onboarding path for a new engineer joining the Ledger reconciliation workflow. We need local setup, architecture, deployment workflow, and a first task.",
+      "missing_topics": ["prerequisites", "workflows", "first-tasks"],
+      "search_attempts": [
+        {"topic": "prerequisites", "query_kind": "focused", "result_key": "prerequisites"},
+        {"topic": "setup", "query_kind": "focused", "result_key": "setup"},
+        {"topic": "architecture", "query_kind": "focused", "result_key": "architecture"},
+        {"topic": "workflows", "query_kind": "focused", "result_key": "workflows"},
+        {"topic": "first-tasks", "query_kind": "focused", "result_key": "first-tasks"},
+        {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-1"},
+        {"topic": "prerequisites", "query_kind": "broadened", "result_key": "prerequisites-broadened-2"},
+        {"topic": "workflows", "query_kind": "broadened", "result_key": "workflows-broadened-1"},
+        {"topic": "workflows", "query_kind": "broadened", "result_key": "workflows-broadened-2"},
+        {"topic": "first-tasks", "query_kind": "broadened", "result_key": "first-tasks-broadened-1"},
+        {"topic": "first-tasks", "query_kind": "broadened", "result_key": "first-tasks-broadened-2"}
+      ],
+      "budget_checkpoint": {
+        "after_search_call": 8,
+        "before_search_call": 9,
+        "disclosure_step": "disclose_whole_path_budget",
+        "confirmation_step": "user_confirms_continue"
+      },
+      "simulated_mcp": {
+        "search": {
+          "prerequisites": [],
+          "prerequisites-broadened-1": [],
+          "prerequisites-broadened-2": [],
+          "setup": [{"id": "a-301", "type": "article", "title": "Ledger reconciliation local setup", "snippet": "Start the local reconciler."}],
+          "architecture": [{"id": "q-302", "type": "question", "title": "Ledger reconciliation ownership boundary", "snippet": "Ownership guidance."}],
+          "workflows": [],
+          "workflows-broadened-1": [],
+          "workflows-broadened-2": [],
+          "first-tasks": [],
+          "first-tasks-broadened-1": [],
+          "first-tasks-broadened-2": []
+        },
+        "get_article": [{"id": "a-301", "title": "Ledger reconciliation local setup", "body": "Use the local reconciler configuration and sandbox ledger."}],
+        "get_question": [{"id": "q-302", "title": "Ledger reconciliation ownership boundary", "body": "Ledger owns reconciliation state; Accounting owns settlement reporting."}]
+      },
+      "simulated_user_confirmation": "Continue the remaining bounded onboarding searches.",
+      "expected_tool_sequence": ["search:prerequisites", "search:setup", "get_article:a-301", "search:architecture", "get_question:q-302", "search:workflows", "search:first-tasks", "search:prerequisites-broadened-1", "search:prerequisites-broadened-2", "search:workflows-broadened-1", "disclose_whole_path_budget", "user_confirms_continue", "search:workflows-broadened-2", "search:first-tasks-broadened-1", "search:first-tasks-broadened-2"],
+      "expected": "Identify the new engineer, two-day goal, and time horizon. Search all five topics, then retrieve Ledger reconciliation local setup (ID: a-301) and Ledger reconciliation ownership boundary (ID: q-302) before using them. After eight completed searches of every kind, disclose the completed searches and remaining topics and obtain confirmation before call 9. Exhaust all three searches for each missing topic before recording Missing coverage: prerequisites, Missing coverage: workflows, and Missing coverage: first-tasks. Do not fabricate deployment or task steps. Inference: None.",
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
+    }
+  ]
+}

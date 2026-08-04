@@ -1,0 +1,14 @@
+{
+  "positive": [
+    "I just joined the Catalog team; build a Stack Internal path for local setup and my first safe change.",
+    "Help me learn the internal architecture of the Identity service before I start on-call next week.",
+    "I need the company deployment workflow for the Notifications service and an onboarding plan for my first release.",
+    "I am transferring to Payments; make a sourced learning path for its authorization flow and team conventions."
+  ],
+  "negative": [
+    "Recommend public tutorials for learning Rust.",
+    "Help me improve my engineering resume.",
+    "Give me general software-engineering interview preparation advice.",
+    "Teach me Python decorators from scratch."
+  ]
+}

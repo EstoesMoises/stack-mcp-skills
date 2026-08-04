@@ -1,0 +1,22 @@
+{
+  "positive": [
+    "What is our internal policy for retaining customer export data?",
+    "Which deployment steps does the Payments Gateway team require before production?",
+    "How should our services authenticate to the internal billing API?",
+    "This TODO says to preserve the Nimbus fallback—what does that mean in our codebase?",
+    "I am joining the Data Platform team; where is the internal local-development onboarding guide?",
+    "Have we had a prior incident involving delayed webhook delivery?",
+    "Is the legacy `edge-auth-v1` pattern deprecated internally, and what replaces it?",
+    "Why does the Atlas event pipeline use a separate reconciliation service?"
+  ],
+  "negative": [
+    "How do I write a Python list comprehension?",
+    "Explain Dijkstra's algorithm.",
+    "Format this JSON with two-space indentation.",
+    "How do I paginate results with the public requests library?",
+    "Rewrite this paragraph to sound more concise.",
+    "Convert 17 miles to kilometers.",
+    "How do I squash the last two Git commits?",
+    "What is a good name for this isolated unit test?"
+  ]
+}
