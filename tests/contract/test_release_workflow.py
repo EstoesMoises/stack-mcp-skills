@@ -12,6 +12,9 @@ REQUIRED_AUTOMATED_COMMANDS = (
     "uv sync --locked --dev",
     "uv run pytest -q",
     "uv run python scripts/validate_catalog.py .",
+    "uv run python scripts/build_marketplace.py packages --mode check --root .",
+    "scripts/build_marketplace.py site --root . --output dist-a",
+    "scripts/build_marketplace.py site --root . --output dist-b",
 )
 PINNED_ACTIONS = (
     "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
@@ -94,7 +97,9 @@ def test_ci_runs_every_automated_release_gate():
 
     assert used_actions == list(PINNED_ACTIONS)
     assert all(line in workflow_text for line in PINNED_ACTION_LINES)
-    assert all(command in run_steps for command in REQUIRED_AUTOMATED_COMMANDS)
+    assert all(
+        any(command in step for step in run_steps) for command in REQUIRED_AUTOMATED_COMMANDS
+    )
     assert all(command in release_checklist for command in REQUIRED_AUTOMATED_COMMANDS)
     assert any(
         "skills/core/* skills/extended/*" in command
@@ -102,6 +107,16 @@ def test_ci_runs_every_automated_release_gate():
         for command in run_steps
     )
     assert 'uv run skills-ref validate "$skill"' in release_checklist
+
+
+def test_release_checklist_covers_native_marketplace_publication_review():
+    """A release review must inspect the deployed catalog and both native clients."""
+    body = (ROOT / "docs/release-checklist.md").read_text(encoding="utf-8")
+
+    assert "GitHub Pages catalog" in body
+    assert "exact current commit" in body
+    assert "plugin list" in body
+    assert "Codex and Claude Code" in body
 
 
 def test_ci_triggers_on_pull_requests_and_main_pushes():
