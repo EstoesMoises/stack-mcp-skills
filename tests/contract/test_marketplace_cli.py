@@ -28,6 +28,21 @@ def _source_root(tmp_path: Path) -> Path:
     return root
 
 
+def _distribution_state(root: Path) -> dict[str, tuple[str, bytes]]:
+    """Capture node types and bytes for all three committed distribution surfaces."""
+    state: dict[str, tuple[str, bytes]] = {}
+    for relative in ("plugins", ".agents", ".claude-plugin"):
+        surface = root / relative
+        if not surface.exists():
+            state[relative] = ("missing", b"")
+            continue
+        paths = [surface] if surface.is_file() else [surface, *sorted(surface.rglob("*"))]
+        for path in paths:
+            key = path.relative_to(root).as_posix()
+            state[key] = ("file", path.read_bytes()) if path.is_file() else ("directory", b"")
+    return state
+
+
 def test_check_reports_relative_missing_surfaces_before_generation(tmp_path, capsys):
     """A clean source tree must report missing outputs without leaking its absolute path."""
     root = _source_root(tmp_path)
@@ -128,3 +143,41 @@ def test_write_refuses_symlinked_manifest_parents(tmp_path, capsys, symlinked_pa
     assert payload["generated"] is False
     assert list(outside.iterdir()) == []
     assert (root / "plugins/.generated-marketplace").is_file()
+
+
+@pytest.mark.parametrize(
+    ("collision_type", "collision_path"),
+    [
+        ("parent-file", ".agents"),
+        ("parent-file", ".agents/plugins"),
+        ("parent-file", ".claude-plugin"),
+        ("manifest-directory", ".agents/plugins/marketplace.json"),
+        ("manifest-directory", ".claude-plugin/marketplace.json"),
+    ],
+)
+def test_write_preflights_manifest_collisions_before_replacing_any_surface(
+    tmp_path, capsys, collision_type, collision_path
+):
+    """An incompatible manifest path must leave every existing distribution byte untouched."""
+    root = _source_root(tmp_path)
+    assert main(["packages", "--mode", "write", "--root", str(root)]) == 0
+    capsys.readouterr()
+    readme = root / "plugins/efficient-search/README.md"
+    readme.write_bytes(readme.read_bytes() + b"preserve this drift\n")
+    collision = root / collision_path
+    if collision.is_dir():
+        shutil.rmtree(collision)
+    else:
+        collision.unlink()
+    if collision_type == "parent-file":
+        collision.write_text("preserve parent file\n", encoding="utf-8")
+    else:
+        collision.mkdir()
+        (collision / "keep.txt").write_text("preserve directory\n", encoding="utf-8")
+    before = _distribution_state(root)
+
+    assert main(["packages", "--mode", "write", "--root", str(root)]) == 1
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["generated"] is False
+    assert _distribution_state(root) == before

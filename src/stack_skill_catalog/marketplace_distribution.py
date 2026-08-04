@@ -27,17 +27,26 @@ def _write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def _reject_symlinked_destinations(root: Path) -> None:
-    """Reject links that could redirect an authorized surface outside *root*."""
-    candidates = [root]
+def _preflight_destinations(root: Path) -> None:
+    """Reject destination nodes that cannot be safely replaced in place."""
+    if root.is_symlink():
+        raise ValueError("refusing to use a symlinked marketplace destination")
+    if root.exists() and not root.is_dir():
+        raise ValueError("refusing to use an incompatible marketplace destination")
+
     for surface in SURFACES:
         candidate = root
-        for part in surface.parts:
+        for index, part in enumerate(surface.parts):
             candidate /= part
-            candidates.append(candidate)
-    for candidate in candidates:
-        if candidate.is_symlink():
-            raise ValueError("refusing to use a symlinked marketplace destination")
+            if candidate.is_symlink():
+                raise ValueError("refusing to use a symlinked marketplace destination")
+            if not candidate.exists():
+                continue
+            expects_directory = index < len(surface.parts) - 1 or surface == Path("plugins")
+            if expects_directory and not candidate.is_dir():
+                raise ValueError("refusing to use an incompatible marketplace destination")
+            if not expects_directory and not candidate.is_file():
+                raise ValueError("refusing to use an incompatible marketplace destination")
 
 
 def _validate_entries(entries: list[dict[str, object]]) -> None:
@@ -108,7 +117,7 @@ def generate_distribution(root: Path, output_root: Path) -> None:
         raise ValueError("catalog skills must be a list of objects")
     _validate_entries(entries)
     config = load_marketplace_config(root / "catalog/marketplace.json")
-    _reject_symlinked_destinations(output_root)
+    _preflight_destinations(output_root)
 
     plugins_root = output_root / "plugins"
     plugins_root.mkdir(parents=True, exist_ok=True)
@@ -178,7 +187,7 @@ def distribution_diff(root: Path) -> list[str]:
 def write_distribution(root: Path) -> None:
     """Safely replace only generated marketplace surfaces under *root*."""
     root = root.resolve()
-    _reject_symlinked_destinations(root)
+    _preflight_destinations(root)
     plugins = root / "plugins"
     marker = plugins / ".generated-marketplace"
     if plugins.exists() or plugins.is_symlink():
