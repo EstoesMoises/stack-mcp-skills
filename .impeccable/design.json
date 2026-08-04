@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-03T00:00:00-04:00",
+  "title": "Design System: Stack Internal Skills",
+  "extensions": {
+    "colorMeta": {
+      "paper": { "role": "neutral", "displayName": "Cool Paper", "canonical": "#f4f7fb", "tonalRamp": ["oklch(15% 0.012 250)", "oklch(27% 0.012 250)", "oklch(39% 0.012 250)", "oklch(51% 0.012 250)", "oklch(63% 0.012 250)", "oklch(75% 0.012 250)", "oklch(87% 0.012 250)", "oklch(96% 0.012 250)"] },
+      "paper-raised": { "role": "neutral", "displayName": "Raised Paper", "canonical": "#ffffff", "tonalRamp": ["oklch(15% 0 0)", "oklch(27% 0 0)", "oklch(39% 0 0)", "oklch(51% 0 0)", "oklch(63% 0 0)", "oklch(75% 0 0)", "oklch(87% 0 0)", "oklch(100% 0 0)"] },
+      "paper-blue": { "role": "neutral", "displayName": "Ledger Blue Paper", "canonical": "#e5eefb", "tonalRamp": ["oklch(15% 0.035 250)", "oklch(27% 0.035 250)", "oklch(39% 0.035 250)", "oklch(51% 0.035 250)", "oklch(63% 0.035 250)", "oklch(75% 0.035 250)", "oklch(87% 0.035 250)", "oklch(95% 0.035 250)"] },
+      "ink": { "role": "neutral", "displayName": "Navy Ink", "canonical": "#13233a", "tonalRamp": ["oklch(15% 0.04 250)", "oklch(27% 0.04 250)", "oklch(39% 0.04 250)", "oklch(51% 0.04 250)", "oklch(63% 0.04 250)", "oklch(75% 0.04 250)", "oklch(87% 0.04 250)", "oklch(95% 0.04 250)"] },
+      "ink-muted": { "role": "neutral", "displayName": "Muted Navy Ink", "canonical": "#53647a", "tonalRamp": ["oklch(15% 0.03 250)", "oklch(27% 0.03 250)", "oklch(39% 0.03 250)", "oklch(51% 0.03 250)", "oklch(63% 0.03 250)", "oklch(75% 0.03 250)", "oklch(87% 0.03 250)", "oklch(95% 0.03 250)"] },
+      "rule": { "role": "neutral", "displayName": "Ledger Rule", "canonical": "#aab8c9", "tonalRamp": ["oklch(15% 0.02 250)", "oklch(27% 0.02 250)", "oklch(39% 0.02 250)", "oklch(51% 0.02 250)", "oklch(63% 0.02 250)", "oklch(75% 0.02 250)", "oklch(87% 0.02 250)", "oklch(95% 0.02 250)"] },
+      "rule-strong": { "role": "neutral", "displayName": "Strong Ledger Rule", "canonical": "#61758e", "tonalRamp": ["oklch(15% 0.03 250)", "oklch(27% 0.03 250)", "oklch(39% 0.03 250)", "oklch(51% 0.03 250)", "oklch(63% 0.03 250)", "oklch(75% 0.03 250)", "oklch(87% 0.03 250)", "oklch(95% 0.03 250)"] },
+      "blue": { "role": "primary", "displayName": "Registration Blue", "canonical": "#075fc9", "tonalRamp": ["oklch(15% 0.16 255)", "oklch(27% 0.16 255)", "oklch(39% 0.16 255)", "oklch(51% 0.16 255)", "oklch(63% 0.16 255)", "oklch(75% 0.16 255)", "oklch(87% 0.16 255)", "oklch(95% 0.16 255)"] },
+      "blue-deep": { "role": "primary", "displayName": "Deep Link Blue", "canonical": "#004898", "tonalRamp": ["oklch(15% 0.14 255)", "oklch(27% 0.14 255)", "oklch(39% 0.14 255)", "oklch(51% 0.14 255)", "oklch(63% 0.14 255)", "oklch(75% 0.14 255)", "oklch(87% 0.14 255)", "oklch(95% 0.14 255)"] },
+      "blue-text": { "role": "neutral", "displayName": "Blue Contrast Text", "canonical": "#f7fbff", "tonalRamp": ["oklch(15% 0.01 250)", "oklch(27% 0.01 250)", "oklch(39% 0.01 250)", "oklch(51% 0.01 250)", "oklch(63% 0.01 250)", "oklch(75% 0.01 250)", "oklch(87% 0.01 250)", "oklch(98% 0.01 250)"] },
+      "amber": { "role": "secondary", "displayName": "Approval Amber", "canonical": "#8a4d00", "tonalRamp": ["oklch(15% 0.09 65)", "oklch(27% 0.09 65)", "oklch(39% 0.09 65)", "oklch(51% 0.09 65)", "oklch(63% 0.09 65)", "oklch(75% 0.09 65)", "oklch(87% 0.09 65)", "oklch(95% 0.09 65)"] },
+      "amber-paper": { "role": "secondary", "displayName": "Approval Paper", "canonical": "#fff0d2", "tonalRamp": ["oklch(15% 0.04 75)", "oklch(27% 0.04 75)", "oklch(39% 0.04 75)", "oklch(51% 0.04 75)", "oklch(63% 0.04 75)", "oklch(75% 0.04 75)", "oklch(87% 0.04 75)", "oklch(95% 0.04 75)"] },
+      "read": { "role": "secondary", "displayName": "Read Green", "canonical": "#20644b", "tonalRamp": ["oklch(15% 0.07 155)", "oklch(27% 0.07 155)", "oklch(39% 0.07 155)", "oklch(51% 0.07 155)", "oklch(63% 0.07 155)", "oklch(75% 0.07 155)", "oklch(87% 0.07 155)", "oklch(95% 0.07 155)"] },
+      "read-paper": { "role": "secondary", "displayName": "Read Paper", "canonical": "#daf1e7", "tonalRamp": ["oklch(15% 0.035 155)", "oklch(27% 0.035 155)", "oklch(39% 0.035 155)", "oklch(51% 0.035 155)", "oklch(63% 0.035 155)", "oklch(75% 0.035 155)", "oklch(87% 0.035 155)", "oklch(95% 0.035 155)"] },
+      "focus": { "role": "primary", "displayName": "Focus Blue", "canonical": "#005bd1", "tonalRamp": ["oklch(15% 0.17 255)", "oklch(27% 0.17 255)", "oklch(39% 0.17 255)", "oklch(51% 0.17 255)", "oklch(63% 0.17 255)", "oklch(75% 0.17 255)", "oklch(87% 0.17 255)", "oklch(95% 0.17 255)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Field Display", "purpose": "Opening statements and record titles." },
+      "headline": { "displayName": "Ledger Headline", "purpose": "Directory and major section headings." },
+      "title": { "displayName": "Record Title", "purpose": "Skill names inside the directory." },
+      "body": { "displayName": "Technical Body", "purpose": "Readable explanatory text." },
+      "label": { "displayName": "Registry Label", "purpose": "Commands, versions, classifications, and metadata." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "status-transition", "value": "opacity 160ms ease-out, transform 160ms ease-out", "purpose": "Copy-status notice enters and exits." },
+      { "name": "reduced-motion", "value": "0.01ms transition duration", "purpose": "Honors reduced-motion preference." }
+    ],
+    "breakpoints": [
+      { "name": "detail-stack", "value": "900px" },
+      { "name": "narrow-register", "value": "720px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Copy Action",
+      "kind": "button",
+      "refersTo": "button-copy",
+      "description": "A command-specimen action that copies the adjacent command.",
+      "html": "<button class=\"ds-copy\" type=\"button\">Copy command</button>",
+      "css": ".ds-copy { min-height: 44px; padding: 0.65rem 0.9rem; border: 0; background: #16395f; color: #f2f7ff; font: 700 0.82rem ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; cursor: pointer; } .ds-copy:hover { background: #075fc9; } .ds-copy:focus-visible { outline: 3px solid #005bd1; outline-offset: 3px; } .ds-copy:active { background: #004898; }"
+    },
+    {
+      "name": "Selected Client Tab",
+      "kind": "nav",
+      "refersTo": "tab-selected",
+      "description": "A squared selection control for switching installation or MCP client instructions.",
+      "html": "<button class=\"ds-tab\" type=\"button\" aria-selected=\"true\">Codex</button>",
+      "css": ".ds-tab { min-height: 44px; padding: 0.65rem 1rem; border: 0; border-right: 1px solid #aab8c9; background: #075fc9; color: #f7fbff; font: 700 1rem ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; cursor: pointer; } .ds-tab:hover { background: #004898; } .ds-tab:focus-visible { outline: 3px solid #005bd1; outline-offset: 3px; } .ds-tab:active { background: #16395f; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "A square document-insert field for filtering the skill register.",
+      "html": "<input class=\"ds-search\" type=\"search\" placeholder=\"Try debugging or curation\" aria-label=\"Search skills\">",
+      "css": ".ds-search { width: 100%; min-height: 44px; padding: 0.7rem 0.85rem; border: 1px solid #61758e; border-radius: 0; background: #ffffff; color: #13233a; font: 400 1rem ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; } .ds-search:hover { border-color: #075fc9; } .ds-search:focus-visible { outline: 3px solid #005bd1; outline-offset: 3px; }"
+    },
+    {
+      "name": "Read-only Permission Stamp",
+      "kind": "chip",
+      "refersTo": "permission-read",
+      "description": "A compact green stamp for capabilities with no declared writes.",
+      "html": "<span class=\"ds-permission-read\">Read-only</span>",
+      "css": ".ds-permission-read { display: inline-block; padding: 0.3rem 0.5rem; background: #daf1e7; color: #20644b; font: 700 0.75rem ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }"
+    },
+    {
+      "name": "Approval-gated Write Stamp",
+      "kind": "chip",
+      "refersTo": "permission-write",
+      "description": "A compact amber stamp for write capability that requires explicit approval.",
+      "html": "<span class=\"ds-permission-write\">Approval-gated write</span>",
+      "css": ".ds-permission-write { display: inline-block; padding: 0.3rem 0.5rem; background: #fff0d2; color: #8a4d00; font: 700 0.75rem ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }"
+    },
+    {
+      "name": "Field Record",
+      "kind": "card",
+      "description": "A ruled three-column skill entry with an index, evidence body, and action metadata.",
+      "html": "<article class=\"ds-record\"><div class=\"ds-register\">01</div><div class=\"ds-body\"><a href=\"#\">Efficient Stack Internal Search</a><p>Find company-specific guidance with focused retrieval.</p></div><div class=\"ds-meta\"><span>CORE</span><button type=\"button\">Open field record</button></div></article>",
+      "css": ".ds-record { display: grid; grid-template-columns: 4rem minmax(0, 1fr) 13rem; min-height: 7.5rem; border-top: 2px solid #13233a; border-bottom: 1px solid #61758e; background: color-mix(in srgb, #f4f7fb 94%, #ffffff); color: #13233a; font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; } .ds-record:hover { background: #ffffff; } .ds-register { padding: 1.5rem 1rem; border-right: 1px solid #aab8c9; color: #075fc9; font: 800 0.78rem ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; } .ds-body { padding: 1rem 1.5rem; } .ds-body a { color: #13233a; font-size: 1.25rem; font-weight: 700; text-decoration: none; } .ds-body a:hover { color: #075fc9; text-decoration: underline; } .ds-body a:focus-visible, .ds-meta button:focus-visible { outline: 3px solid #005bd1; outline-offset: 3px; } .ds-body p { margin: 0.65rem 0 0; color: #53647a; } .ds-meta { display: flex; flex-direction: column; gap: 0.65rem; padding: 1rem 1.5rem; border-left: 1px solid #aab8c9; } .ds-meta span { color: #53647a; font: 800 0.68rem ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: 0.08em; } .ds-meta button { margin-top: auto; min-height: 44px; border: 0; background: transparent; color: #004898; font-weight: 750; text-align: left; cursor: pointer; } .ds-meta button:hover { color: #075fc9; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Release Field Manual",
+    "overview": "Stack Internal Skills reads as an auditable technical guide, not a soft SaaS gallery. Cool paper, navy ink, ruled boundaries, monospaced registration labels, and numbered records make source, safety, and installation state scannable at a glance.\n\nThe system is deliberately dense but ordered: product truth and the core install ledger share the opening field, then filters and skill records continue the same ruled register. Color communicates function rather than decoration—blue marks action and selection, green marks read-only status, and amber is reserved for approval-gated write capability.",
+    "keyCharacteristics": ["Ruled ledger layouts and square index controls over rounded card collections.", "System sans for reading, paired with monospace only for provenance, commands, versions, and classifications.", "Strong semantic color discipline for actions, permissions, and keyboard focus."],
+    "rules": [
+      { "name": "The Permission Color Rule", "body": "Blue is for action or selection, green is for read-only capability, and amber is exclusively for approval-gated write capability.", "section": "colors" },
+      { "name": "The Ruled Surface Rule", "body": "Establish grouping with paper tones and one-pixel rules; do not substitute soft, floating cards.", "section": "colors" },
+      { "name": "The Annotation Layer Rule", "body": "Use monospace to label evidence and controls; reserve proportional sans for product statements and explanatory prose.", "section": "typography" },
+      { "name": "The Flat Evidence Rule", "body": "Depth comes from a ruled boundary, a column change, or a paper-tone change—not from ambient card shadows.", "section": "elevation" }
+    ],
+    "dos": ["Do use ruled columns, numbered records, and compact metadata to make technical evidence easy to audit.", "Do use registration blue for selected controls, action affordances, and visible keyboard focus.", "Do keep installation commands in a dark, high-contrast specimen with a dedicated copy action.", "Do reserve amber for the precise moment a capability is approval-gated and write-capable."],
+    "donts": ["Don't turn the directory into a generic grid of rounded, shadowed SaaS cards.", "Don't use amber as an ordinary accent, warning flourish, or non-write status color.", "Don't use monospace as the main reading face; it is an annotation tool.", "Don't hide installation, MCP authorization, or experimental-compatibility boundaries behind marketing language."]
+  }
+}
