@@ -26,7 +26,6 @@ jobs:
       - run: uv run pytest -q
       - run: uv run python scripts/validate_catalog.py .
       - run: uv run python scripts/build_marketplace.py packages --mode check --root .
-      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
       - run: uv run python scripts/build_marketplace.py site --root . --output dist --source-commit "$GITHUB_SHA"
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
         with:

@@ -41,9 +41,9 @@ def test_pages_workflow_uses_pinned_actions_and_job_scoped_permissions():
         if "uses" in step
     ]
 
-    assert "actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b" in uses
     assert "actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b" in uses
     assert "actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e" in uses
+    assert all(not action.startswith("actions/configure-pages@") for action in uses)
     assert all(re.search(r"@[0-9a-f]{40}$", action) for action in uses)
     assert "permissions" not in workflow
     assert workflow["jobs"]["build"]["permissions"] == {"contents": "read"}
