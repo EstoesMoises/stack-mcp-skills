@@ -8,7 +8,12 @@ from pathlib import Path
 import shutil
 from tempfile import TemporaryDirectory
 
-from .catalog import load_catalog
+from .generation_safety import (
+    load_catalog_entries,
+    safe_join,
+    validate_skill_entry,
+    validate_unique_skill_ids,
+)
 from .marketplace_config import MarketplaceConfig, load_marketplace_config
 from .plugin_package import build_plugin_package
 
@@ -49,24 +54,16 @@ def _preflight_destinations(root: Path) -> None:
                 raise ValueError("refusing to use an incompatible marketplace destination")
 
 
-def _validate_entries(entries: list[dict[str, object]]) -> None:
+def _validate_entries(root: Path, entries: list[dict[str, object]]) -> None:
     """Reject catalogs that cannot represent the fixed nine-plugin distribution."""
-    ids = [entry.get("id") for entry in entries]
-    duplicates = sorted(
-        {identifier for identifier in ids if isinstance(identifier, str) and ids.count(identifier) > 1}
-    )
-    if duplicates:
-        raise ValueError(f"catalog contains duplicate skill IDs: {', '.join(duplicates)}")
-
-    for entry in entries:
-        identifier = entry.get("id")
-        path = entry.get("path")
-        if not isinstance(identifier, str) or not isinstance(path, str) or Path(path).name != identifier:
-            raise ValueError(f"catalog skill ID must match path: {identifier}")
+    validate_unique_skill_ids(entries)
 
     counts = Counter(entry.get("tier") for entry in entries)
     if counts != Counter({"core": 3, "extended": 6}):
         raise ValueError("catalog must contain exactly three core and six extended skills")
+
+    for entry in entries:
+        validate_skill_entry(root, entry)
 
 
 def build_codex_marketplace(
@@ -111,26 +108,24 @@ def build_claude_marketplace(
 
 def generate_distribution(root: Path, output_root: Path) -> None:
     """Generate all marketplace artifacts inside *output_root* only."""
-    catalog = load_catalog(root / "catalog/skills.json")
-    entries = catalog.get("skills")
-    if not isinstance(entries, list) or not all(isinstance(entry, dict) for entry in entries):
-        raise ValueError("catalog skills must be a list of objects")
-    _validate_entries(entries)
+    root = Path(root).resolve()
+    entries = load_catalog_entries(root)
+    _validate_entries(root, entries)
     config = load_marketplace_config(root / "catalog/marketplace.json")
     _preflight_destinations(output_root)
 
-    plugins_root = output_root / "plugins"
+    plugins_root = safe_join(output_root, "plugins")
     plugins_root.mkdir(parents=True, exist_ok=True)
-    (plugins_root / ".generated-marketplace").write_text(GENERATED_MARKER, encoding="utf-8")
+    safe_join(plugins_root, ".generated-marketplace").write_text(GENERATED_MARKER, encoding="utf-8")
     for entry in entries:
         build_plugin_package(root, entry, config, plugins_root)
 
     _write_json(
-        output_root / ".agents/plugins/marketplace.json",
+        safe_join(output_root, ".agents", "plugins", "marketplace.json"),
         build_codex_marketplace(entries, config),
     )
     _write_json(
-        output_root / ".claude-plugin/marketplace.json",
+        safe_join(output_root, ".claude-plugin", "marketplace.json"),
         build_claude_marketplace(entries, config),
     )
 
@@ -159,7 +154,12 @@ def distribution_diff(root: Path) -> list[str]:
                 differences.append(f"missing: {label}")
                 continue
             if expected.is_file():
-                if actual.is_symlink() or not actual.is_file() or actual.read_bytes() != expected.read_bytes():
+                if (
+                    actual.is_symlink()
+                    or not actual.is_file()
+                    or actual.read_bytes() != expected.read_bytes()
+                    or (actual.stat().st_mode & 0o111) != (expected.stat().st_mode & 0o111)
+                ):
                     differences.append(f"changed: {label}")
                 continue
             if actual.is_symlink() or not actual.is_dir():
@@ -179,6 +179,8 @@ def distribution_diff(root: Path) -> list[str]:
                     actual_file.is_symlink()
                     or not actual_file.is_file()
                     or actual_file.read_bytes() != expected_file.read_bytes()
+                    or (actual_file.stat().st_mode & 0o111)
+                    != (expected_file.stat().st_mode & 0o111)
                 ):
                     differences.append(f"changed: {label}/{relative}")
         return sorted(differences)
@@ -188,8 +190,8 @@ def write_distribution(root: Path) -> None:
     """Safely replace only generated marketplace surfaces under *root*."""
     root = root.resolve()
     _preflight_destinations(root)
-    plugins = root / "plugins"
-    marker = plugins / ".generated-marketplace"
+    plugins = safe_join(root, "plugins")
+    marker = safe_join(plugins, ".generated-marketplace")
     if plugins.exists() or plugins.is_symlink():
         marker_is_exact = (
             plugins.is_dir()
@@ -201,14 +203,60 @@ def write_distribution(root: Path) -> None:
         if not marker_is_exact:
             raise ValueError("refusing to replace plugins without the exact generated marker")
 
-    with TemporaryDirectory(prefix=f".{root.name}-marketplace-", dir=root.parent) as temporary:
+    with TemporaryDirectory(prefix=f".{root.name}-marketplace-stage-", dir=root.parent) as temporary:
         generated = Path(temporary)
         generate_distribution(root, generated)
 
-        if plugins.exists():
-            shutil.rmtree(plugins)
-        shutil.move(str(generated / "plugins"), plugins)
-        for surface in SURFACES[1:]:
-            destination = root / surface
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            (generated / surface).replace(destination)
+        with TemporaryDirectory(prefix=f".{root.name}-marketplace-backup-", dir=root.parent) as backup_temp:
+            backup_root = Path(backup_temp)
+            created_parents: list[Path] = []
+            for surface in SURFACES:
+                destination = safe_join(root, surface)
+                missing: list[Path] = []
+                parent = destination.parent
+                while parent != root and not parent.exists():
+                    missing.append(parent)
+                    parent = parent.parent
+                for directory in reversed(missing):
+                    directory.mkdir()
+                    created_parents.append(directory)
+
+            moved_live: list[tuple[Path, Path]] = []
+            installed: list[Path] = []
+            try:
+                for surface in SURFACES:
+                    destination = safe_join(root, surface)
+                    if destination.exists() or destination.is_symlink():
+                        backup = safe_join(backup_root, surface)
+                        backup.parent.mkdir(parents=True, exist_ok=True)
+                        destination.replace(backup)
+                        moved_live.append((destination, backup))
+
+                for surface in SURFACES:
+                    staged = safe_join(generated, surface)
+                    destination = safe_join(root, surface)
+                    staged.replace(destination)
+                    installed.append(destination)
+            except OSError as error:
+                rollback_errors: list[OSError] = []
+                for destination in reversed(installed):
+                    try:
+                        if destination.is_dir() and not destination.is_symlink():
+                            shutil.rmtree(destination)
+                        elif destination.exists() or destination.is_symlink():
+                            destination.unlink()
+                    except OSError as rollback_error:
+                        rollback_errors.append(rollback_error)
+                for destination, backup in reversed(moved_live):
+                    try:
+                        backup.replace(destination)
+                    except OSError as rollback_error:
+                        rollback_errors.append(rollback_error)
+                for directory in reversed(created_parents):
+                    try:
+                        directory.rmdir()
+                    except OSError:
+                        pass
+                if rollback_errors:
+                    raise OSError("marketplace publication rollback failed") from error
+                raise

@@ -29,18 +29,22 @@ def _source_root(tmp_path: Path) -> Path:
     return root
 
 
-def _distribution_state(root: Path) -> dict[str, tuple[str, bytes]]:
+def _distribution_state(root: Path) -> dict[str, tuple[str, bytes, int]]:
     """Capture node types and bytes for all three committed distribution surfaces."""
-    state: dict[str, tuple[str, bytes]] = {}
+    state: dict[str, tuple[str, bytes, int]] = {}
     for relative in ("plugins", ".agents", ".claude-plugin"):
         surface = root / relative
         if not surface.exists():
-            state[relative] = ("missing", b"")
+            state[relative] = ("missing", b"", 0)
             continue
         paths = [surface] if surface.is_file() else [surface, *sorted(surface.rglob("*"))]
         for path in paths:
             key = path.relative_to(root).as_posix()
-            state[key] = ("file", path.read_bytes()) if path.is_file() else ("directory", b"")
+            state[key] = (
+                ("file", path.read_bytes(), path.stat().st_mode & 0o777)
+                if path.is_file()
+                else ("directory", b"", path.stat().st_mode & 0o777)
+            )
     return state
 
 
@@ -112,6 +116,58 @@ def test_site_command_sanitizes_a_malformed_catalog_entry(tmp_path, capsys):
     assert output == '{"error": "site build failed", "valid": false}\n'
     assert "Traceback" not in output
     assert str(root) not in output
+
+
+@pytest.mark.parametrize("hostile_id", ("../escaped-skill", "/tmp/escaped-skill"))
+def test_site_command_rejects_nonportable_skill_ids_before_writing(tmp_path, capsys, hostile_id):
+    """Absolute or traversing IDs must not redirect a generated skill page outside staging."""
+    root = _source_root(tmp_path)
+    catalog_path = root / "catalog" / "skills.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    if hostile_id.startswith("/"):
+        hostile_id = str(tmp_path / "absolute-escape")
+    catalog["skills"][0]["id"] = hostile_id
+    catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+    output = root / "dist"
+
+    assert main(["site", "--root", str(root), "--output", str(output), "--source-commit", "a" * 40]) == 1
+
+    assert json.loads(capsys.readouterr().out) == {"error": "site build failed", "valid": False}
+    assert not output.exists()
+    assert not (tmp_path / "absolute-escape").exists()
+
+
+@pytest.mark.parametrize("source_kind", ("absolute", "traversal", "symlink-parent"))
+def test_packages_command_rejects_catalog_sources_outside_canonical_skill_tree(
+    tmp_path, capsys, source_kind
+):
+    """Catalog paths must be relative canonical paths whose resolution stays in the repository."""
+    root = _source_root(tmp_path)
+    catalog_path = root / "catalog" / "skills.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    if source_kind == "absolute":
+        external = tmp_path / "external" / "efficient-search"
+        shutil.copytree(root / catalog["skills"][0]["path"], external)
+        catalog["skills"][0]["path"] = str(external)
+        catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+    elif source_kind == "traversal":
+        catalog["skills"][0]["path"] = "skills/core/../core/efficient-search"
+        catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+    else:
+        external = tmp_path / "external-skills"
+        shutil.copytree(root / "skills", external)
+        shutil.rmtree(root / "skills")
+        (root / "skills").symlink_to(external, target_is_directory=True)
+
+    assert main(["packages", "--mode", "write", "--root", str(root)]) == 1
+
+    assert json.loads(capsys.readouterr().out) == {
+        "error": "package write failed",
+        "generated": False,
+    }
+    assert not (root / "plugins").exists()
+    assert not (root / ".agents").exists()
+    assert not (root / ".claude-plugin").exists()
 
 
 def test_site_command_sanitizes_malformed_skill_frontmatter(tmp_path, capsys):
@@ -326,6 +382,27 @@ def test_check_reports_changed_generated_bytes_and_unexpected_stale_files(tmp_pa
     assert str(root) not in output
 
 
+@pytest.mark.parametrize(
+    "relative",
+    (
+        "plugins/efficient-search/README.md",
+        ".agents/plugins/marketplace.json",
+        ".claude-plugin/marketplace.json",
+    ),
+)
+def test_check_reports_executable_mode_drift(tmp_path, capsys, relative):
+    """Adding an execute bit alone must make a committed package surface drift."""
+    root = _source_root(tmp_path)
+    assert main(["packages", "--mode", "write", "--root", str(root)]) == 0
+    capsys.readouterr()
+    changed = root / relative
+    changed.chmod(changed.stat().st_mode | 0o100)
+
+    assert main(["packages", "--mode", "check", "--root", str(root)]) == 1
+
+    assert f"changed: {relative}" in json.loads(capsys.readouterr().out)["differences"]
+
+
 def test_write_refuses_unmarked_plugins_and_preserves_existing_content(tmp_path, capsys):
     """Write mode must not replace a plugins tree it cannot prove was generated."""
     root = _source_root(tmp_path)
@@ -413,3 +490,41 @@ def test_write_preflights_manifest_collisions_before_replacing_any_surface(
     payload = json.loads(capsys.readouterr().out)
     assert payload["generated"] is False
     assert _distribution_state(root) == before
+
+
+@pytest.mark.parametrize("failed_rename", range(1, 7))
+def test_write_rolls_back_every_surface_when_any_transaction_rename_fails(
+    tmp_path, capsys, monkeypatch, failed_rename
+):
+    """Every backup/install rename failure must restore one exact prior distribution generation."""
+    root = _source_root(tmp_path)
+    assert main(["packages", "--mode", "write", "--root", str(root)]) == 0
+    capsys.readouterr()
+    (root / "plugins/efficient-search/README.md").write_bytes(b"prior plugin generation\n")
+    (root / ".agents/plugins/marketplace.json").write_bytes(b'{"prior":"codex"}\n')
+    (root / ".claude-plugin/marketplace.json").write_bytes(b'{"prior":"claude"}\n')
+    before = _distribution_state(root)
+    original_replace = Path.replace
+    rename_count = 0
+
+    def replace_with_failure(path: Path, target: Path) -> Path:
+        nonlocal rename_count
+        rename_count += 1
+        if rename_count == failed_rename:
+            raise OSError("injected rename failure")
+        return original_replace(path, target)
+
+    monkeypatch.setattr(Path, "replace", replace_with_failure)
+
+    assert main(["packages", "--mode", "write", "--root", str(root)]) == 1
+
+    assert json.loads(capsys.readouterr().out) == {
+        "error": "package write failed",
+        "generated": False,
+    }
+    assert _distribution_state(root) == before
+    assert not [
+        path
+        for path in root.parent.iterdir()
+        if path.name.startswith(f".{root.name}-marketplace-")
+    ]

@@ -147,6 +147,39 @@ def test_plugin_rejects_a_symlinked_canonical_skill_directory(tmp_path):
     assert not (root / "packages").exists()
 
 
+@pytest.mark.parametrize(
+    ("hostile_id", "hostile_path"),
+    [
+        ("../escaped", "skills/core/efficient-search"),
+        ("absolute", "../external/efficient-search"),
+    ],
+)
+def test_plugin_rejects_nonportable_catalog_fields_before_writing(
+    tmp_path, hostile_id, hostile_path
+):
+    """Direct package callers cannot use catalog IDs or paths to escape source/destination roots."""
+    entry = load_catalog(ROOT / "catalog/skills.json")["skills"][0].copy()
+    config = load_marketplace_config(ROOT / "catalog/marketplace.json")
+    root = tmp_path / "root"
+    shutil.copytree(ROOT / "skills", root / "skills")
+    shutil.copyfile(ROOT / "LICENSE", root / "LICENSE")
+    destination = tmp_path / "packages"
+    if hostile_id == "absolute":
+        external = tmp_path / "external" / "efficient-search"
+        shutil.copytree(ROOT / entry["path"], external)
+        entry["id"] = str(tmp_path / "absolute-package")
+        entry["path"] = str(external)
+    else:
+        entry["id"] = hostile_id
+        entry["path"] = hostile_path
+
+    with pytest.raises(ValueError, match="catalog skill"):
+        build_plugin_package(root, entry, config, destination)
+
+    assert not destination.exists()
+    assert not (tmp_path / "absolute-package").exists()
+
+
 @pytest.mark.parametrize("kind", ["mcp", "app", "hooks", "executable"])
 def test_plugin_rejects_forbidden_canonical_content_before_writing(kind, tmp_path):
     """A canonical skill cannot smuggle plugin surfaces or executable content into a package."""

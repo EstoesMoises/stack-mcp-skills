@@ -310,7 +310,7 @@ def test_assets_define_automatic_dark_mode_and_true_narrow_single_column_layout(
 
 
 def test_catalog_and_frontmatter_values_are_html_escaped(repo_fixture, tmp_path):
-    hostile_path = 'skills/core/hostile-skill" onmouseover="alert(2)'
+    hostile_path = "skills/core/hostile-skill"
     repo_fixture.add_skill(path=hostile_path, name="hostile-skill")
     catalog_path = repo_fixture.root / "catalog" / "skills.json"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
@@ -351,9 +351,8 @@ def test_catalog_and_frontmatter_values_are_html_escaped(repo_fixture, tmp_path)
     assert "&lt;b&gt;unsafe &amp; &quot;quoted&quot; description&lt;/b&gt;" in detail
     assert (
         'href="https://github.com/EstoesMoises/stack-mcp-skills/tree/'
-        f'{SHA}/skills/core/hostile-skill&quot; onmouseover=&quot;alert(2)"'
+        f'{SHA}/skills/core/hostile-skill"'
     ) in detail
-    assert 'hostile-skill" onmouseover="alert(2)' not in detail
     manifest_match = re.search(
         r'<script type="application/json" data-codex-project-manifest>(.*?)</script>', detail, re.DOTALL
     )

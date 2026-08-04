@@ -6,6 +6,7 @@ import json
 import shutil
 from pathlib import Path
 
+from .generation_safety import safe_join, validate_skill_entry
 from .marketplace_config import MarketplaceConfig
 from .skill import load_frontmatter
 
@@ -90,8 +91,11 @@ def build_plugin_package(
     destination: Path,
 ) -> Path:
     """Create one self-contained plugin without executable or MCP configuration."""
-    plugin_root = destination / str(entry["id"])
-    source = root / str(entry["path"])
+    identifier, source = validate_skill_entry(root, entry)
+    destination = Path(destination)
+    if destination.is_symlink():
+        raise ValueError("package destination may not be a symlink")
+    plugin_root = safe_join(destination, identifier)
     if plugin_root.exists() or plugin_root.is_symlink():
         raise ValueError(f"package root already exists: {plugin_root}")
     if source.is_symlink():
@@ -104,9 +108,15 @@ def build_plugin_package(
     metadata, _ = load_frontmatter(source)
     if metadata.get("metadata", {}).get("stack-internal-version") != entry["version"]:
         raise ValueError("catalog and skill versions differ")
-    shutil.copytree(source, plugin_root / "skills" / str(entry["id"]), copy_function=shutil.copyfile)
-    shutil.copyfile(root / "LICENSE", plugin_root / "LICENSE")
-    _write_json(plugin_root / ".codex-plugin/plugin.json", build_codex_plugin_manifest(entry, config))
-    _write_json(plugin_root / ".claude-plugin/plugin.json", build_claude_plugin_manifest(entry, config))
-    (plugin_root / "README.md").write_text(plugin_readme(entry, config), encoding="utf-8")
+    shutil.copytree(source, safe_join(plugin_root, "skills", identifier), copy_function=shutil.copyfile)
+    shutil.copyfile(root / "LICENSE", safe_join(plugin_root, "LICENSE"))
+    _write_json(
+        safe_join(plugin_root, ".codex-plugin", "plugin.json"),
+        build_codex_plugin_manifest(entry, config),
+    )
+    _write_json(
+        safe_join(plugin_root, ".claude-plugin", "plugin.json"),
+        build_claude_plugin_manifest(entry, config),
+    )
+    safe_join(plugin_root, "README.md").write_text(plugin_readme(entry, config), encoding="utf-8")
     return plugin_root

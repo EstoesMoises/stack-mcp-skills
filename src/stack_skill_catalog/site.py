@@ -13,7 +13,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Mapping
 
-from .catalog import load_catalog
+from .generation_safety import load_validated_catalog_entries, safe_join, validate_unique_skill_ids
 from .marketplace_config import load_marketplace_config
 from .skill import load_frontmatter
 
@@ -96,10 +96,8 @@ def build_site_model(root: Path, source_commit: str) -> dict[str, object]:
 
     root = Path(root)
     config = load_marketplace_config(root / "catalog" / "marketplace.json")
-    catalog = load_catalog(root / "catalog" / "skills.json")
-    catalog_skills = catalog.get("skills")
-    if not isinstance(catalog_skills, list):
-        raise ValueError("catalog skills must be a list")
+    catalog_skills = load_validated_catalog_entries(root)
+    validate_unique_skill_ids(catalog_skills)
 
     skills: list[dict[str, object]] = []
     for raw_entry in catalog_skills:
@@ -476,21 +474,21 @@ def _safe_output_root(root: Path, output_root: Path) -> Path:
 
 def _write_site_tree(root: Path, output_root: Path, model: dict[str, object]) -> None:
     """Write a complete site into an empty staging directory."""
-    assets = output_root / "assets"
+    assets = safe_join(output_root, "assets")
     assets.mkdir(parents=True, exist_ok=True)
 
-    (output_root / "catalog.json").write_text(_json_text(model), encoding="utf-8")
-    (output_root / "index.html").write_text(_render_index(model), encoding="utf-8")
-    shutil.copyfile(root / "marketplace_web" / "styles.css", assets / "styles.css")
-    shutil.copyfile(root / "marketplace_web" / "app.js", assets / "app.js")
+    safe_join(output_root, "catalog.json").write_text(_json_text(model), encoding="utf-8")
+    safe_join(output_root, "index.html").write_text(_render_index(model), encoding="utf-8")
+    shutil.copyfile(root / "marketplace_web" / "styles.css", safe_join(assets, "styles.css"))
+    shutil.copyfile(root / "marketplace_web" / "app.js", safe_join(assets, "app.js"))
 
     skills = model["skills"]
     assert isinstance(skills, list)
     for skill in skills:
         assert isinstance(skill, dict)
-        destination = output_root / "skills" / str(skill["id"])
+        destination = safe_join(output_root, "skills", str(skill["id"]))
         destination.mkdir(parents=True, exist_ok=True)
-        (destination / "index.html").write_text(_render_skill(model, skill), encoding="utf-8")
+        safe_join(destination, "index.html").write_text(_render_skill(model, skill), encoding="utf-8")
 
 
 def write_site(root: Path, output_root: Path, source_commit: str) -> None:
