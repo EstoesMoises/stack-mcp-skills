@@ -310,7 +310,8 @@ def test_assets_define_automatic_dark_mode_and_true_narrow_single_column_layout(
 
 
 def test_catalog_and_frontmatter_values_are_html_escaped(repo_fixture, tmp_path):
-    repo_fixture.add_skill(path="skills/core/hostile-skill", name="hostile-skill")
+    hostile_path = 'skills/core/hostile-skill" onmouseover="alert(2)'
+    repo_fixture.add_skill(path=hostile_path, name="hostile-skill")
     catalog_path = repo_fixture.root / "catalog" / "skills.json"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
     catalog["skills"][0].update(
@@ -321,7 +322,7 @@ def test_catalog_and_frontmatter_values_are_html_escaped(repo_fixture, tmp_path)
         }
     )
     catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
-    skill_path = repo_fixture.root / "skills" / "core" / "hostile-skill" / "SKILL.md"
+    skill_path = repo_fixture.root / hostile_path / "SKILL.md"
     skill_path.write_text(
         skill_path.read_text(encoding="utf-8").replace(
             "description: Find company-specific guidance when an internal answer may help.",
@@ -346,7 +347,13 @@ def test_catalog_and_frontmatter_values_are_html_escaped(repo_fixture, tmp_path)
     assert "</script><script>alert('category')</script>" not in detail
     assert "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;" in index
     assert "&lt;script&gt;alert(&#x27;summary&#x27;)&lt;/script&gt; &amp; evidence" in index
+    assert 'data-tags="&lt;unsafe&amp;tag&gt;"' in index
     assert "&lt;b&gt;unsafe &amp; &quot;quoted&quot; description&lt;/b&gt;" in detail
+    assert (
+        'href="https://github.com/EstoesMoises/stack-mcp-skills/tree/'
+        f'{SHA}/skills/core/hostile-skill&quot; onmouseover=&quot;alert(2)"'
+    ) in detail
+    assert 'hostile-skill" onmouseover="alert(2)' not in detail
     manifest_match = re.search(
         r'<script type="application/json" data-codex-project-manifest>(.*?)</script>', detail, re.DOTALL
     )
