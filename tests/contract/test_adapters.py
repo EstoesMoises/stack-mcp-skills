@@ -46,9 +46,17 @@ ADAPTERS = {
             ".agents/skills/<skill-name>/",
             "~/.agents/skills/<skill-name>/",
         ),
-        "commands": (),
-        "invocation": ("automatic selection", "/SKILL-NAME", "Copilot CLI"),
-        "notes": (),
+        "commands": (
+            "copilot plugin marketplace add EstoesMoises/stack-mcp-skills",
+            "copilot plugin install efficient-search@stack-internal",
+            "copilot mcp add --transport http stack-internal https://[slug].stackenterprise.co/mcp",
+            "/mcp auth stack-internal",
+        ),
+        "invocation": ("automatically when the request matches its description", "/SKILL-NAME", "Copilot CLI"),
+        "notes": (
+            "The browser opens when you invoke this explicit authentication action.",
+            "Unauthenticated use may report that authentication is required; it is not promised to open a browser automatically.",
+        ),
     },
 }
 

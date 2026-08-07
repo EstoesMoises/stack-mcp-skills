@@ -4,7 +4,7 @@ Each contribution should solve one coherent user goal with one independently ins
 
 ## Canonical sources and generated marketplace surfaces
 
-Edit `catalog/skills.json`, `catalog/marketplace.json`, and the canonical `skills/` directories. Do not edit `plugins/` directly: plugin wrappers and the native manifests `.agents/plugins/marketplace.json` and `.claude-plugin/marketplace.json` are generated.
+Edit `catalog/skills.json`, `catalog/marketplace.json`, and the canonical `skills/` directories. Do not edit `plugins/` directly: plugin wrappers and the native manifests `.agents/plugins/marketplace.json`, `.claude-plugin/marketplace.json`, and `.github/plugin/marketplace.json` are generated.
 
 Regenerate committed marketplace packages after changing their canonical inputs, then verify that the committed generated output is exact:
 

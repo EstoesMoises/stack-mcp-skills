@@ -2,7 +2,7 @@
 
 - Plugin ID: `efficient-search`
 - Skill ID: `efficient-search`
-- Version: `0.1.0`
+- Version: `0.2.0`
 
 Canonical source: https://estoesmoises.github.io/stack-mcp-skills/skills/efficient-search/
 
@@ -16,4 +16,6 @@ Codex: `$efficient-search:efficient-search`
 
 Claude Code: `/efficient-search:efficient-search`
 
-Compatibility: experimental for Codex and Claude Code.
+GitHub Copilot CLI: `/efficient-search`
+
+Compatibility: experimental for Codex, Claude Code, and GitHub Copilot CLI.

@@ -16,6 +16,7 @@ SECTION_HEADINGS = (
     "Safety",
     "Install in Codex",
     "Install in Claude Code",
+    "Install in GitHub Copilot",
     "Connect Stack Internal MCP",
     "Try it",
     "Troubleshooting",
@@ -166,6 +167,7 @@ def test_index_has_field_manual_controls_core_ledger_and_accessibility(tmp_path)
     assert all(attribute in body for attribute in ("data-tier=", "data-tags=", "data-clients=", "data-write-capable="))
     assert body.count("codex plugin add ") == 3
     assert body.count("claude plugin install ") == 3
+    assert body.count("copilot plugin install ") == 3
     assert "/plugin install " not in body
     assert all(
         command.endswith(" --scope project")
@@ -187,6 +189,7 @@ def test_core_ledger_is_operational_without_unapproved_theme_control(tmp_path):
 
     assert "codex plugin marketplace add EstoesMoises/stack-mcp-skills" in body
     assert "claude plugin marketplace add EstoesMoises/stack-mcp-skills --scope project" in body
+    assert "copilot plugin marketplace add EstoesMoises/stack-mcp-skills" in body
     assert "data-theme-toggle" not in body
     assert "toggleTheme" not in script
 
@@ -200,6 +203,7 @@ def test_every_skill_page_has_native_commands_smokes_and_required_sections(tmp_p
         assert body.count("<h1") == 1
         assert f"codex plugin add {entry['id']}@stack-internal" in body
         assert f"claude plugin install {entry['id']}@stack-internal --scope project" in body
+        assert f"copilot plugin install {entry['id']}@stack-internal" in body
         assert "/plugin install " not in body
         assert all(
             command.endswith(" --scope project")
@@ -251,7 +255,7 @@ def test_generated_site_has_no_network_or_tenant_data_surfaces(tmp_path):
     assert "XMLHttpRequest" not in all_text
     assert "analytics" not in all_text.lower()
     assert str(ROOT) not in all_text
-    assert all_text.count("[tenant-slug]") == 18
+    assert all_text.count("[tenant-slug]") == 27
     for line in all_text.splitlines():
         if "[tenant-slug]" in line:
             assert "mcp add" in line

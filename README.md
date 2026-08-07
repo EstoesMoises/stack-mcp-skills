@@ -32,7 +32,7 @@ Auditable compatibility records use the versioned [evidence schema](standards/ad
 
 ## Install from the public marketplace
 
-Browse the [Stack Internal Skills catalog](https://estoesmoises.github.io/stack-mcp-skills/) to choose a skill and see its client-specific installation guidance. The native marketplace is the primary installation path for Codex and Claude Code; it keeps each installed plugin independently updatable, disableable, and removable.
+Browse the [Stack Internal Skills catalog](https://estoesmoises.github.io/stack-mcp-skills/) to choose a skill and see its client-specific installation guidance. The native marketplace is the primary installation path for Codex, Claude Code, and GitHub Copilot CLI; it keeps each installed plugin independently updatable, disableable, and removable.
 
 For Codex, add the marketplace and install an individual plugin:
 
@@ -55,7 +55,14 @@ claude plugin install efficient-search@stack-internal --scope project
 /reload-plugins
 ```
 
-The catalog's core action expands to three independent plugin installs: `efficient-search`, `company-debugging`, and `capture-quality-qa`. It is a convenience action, not a bundle plugin, so each core workflow remains independently manageable.
+For GitHub Copilot CLI, add the marketplace and install an individual plugin:
+
+```bash
+copilot plugin marketplace add EstoesMoises/stack-mcp-skills
+copilot plugin install efficient-search@stack-internal
+```
+
+The catalog's core action expands to three independent plugin installs: `efficient-search`, `company-debugging`, and `capture-quality-qa`. It is a convenience action, not a bundle plugin, so each core workflow remains independently manageable. Copilot cloud, code review, and IDE surfaces can use the filesystem fallback documented in the Copilot adapter guide.
 
 ## Filesystem fallback: ten-minute quickstart
 

@@ -18,7 +18,7 @@ def test_public_marketplace_config_loads_as_typed_value():
 
     assert config == MarketplaceConfig(
         schema_version="1.0.0",
-        marketplace_version="0.1.0",
+        marketplace_version="0.2.0",
         name="stack-internal",
         display_name="Stack Internal Skills",
         repository="EstoesMoises/stack-mcp-skills",

@@ -1,0 +1,18 @@
+{
+  "author": {
+    "name": "Stack Internal Skills"
+  },
+  "category": "Productivity",
+  "description": "Turn validated technical learnings into sanitized, duplicate-aware Stack Internal Q&A drafts with exact approval before writes.",
+  "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/capture-quality-qa/",
+  "keywords": [
+    "knowledge-capture",
+    "qa",
+    "curation"
+  ],
+  "license": "Apache-2.0",
+  "name": "capture-quality-qa",
+  "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
+  "skills": "./skills/",
+  "version": "0.2.0"
+}

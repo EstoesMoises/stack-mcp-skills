@@ -4,7 +4,7 @@
     {
       "id": "efficient-search",
       "name": "Efficient Stack Internal Search",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tier": "core",
       "summary": "Find company-specific guidance with focused, bounded, evidence-backed retrieval.",
       "path": "skills/core/efficient-search",
@@ -21,7 +21,7 @@
     {
       "id": "company-debugging",
       "name": "Company-Grounded Debugging",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tier": "core",
       "summary": "Diagnose company-specific failures with internal evidence and systematic root-cause investigation.",
       "path": "skills/core/company-debugging",
@@ -38,7 +38,7 @@
     {
       "id": "capture-quality-qa",
       "name": "Capture High-Quality Stack Internal Q&A",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tier": "core",
       "summary": "Turn validated technical learnings into sanitized, duplicate-aware Stack Internal Q&A drafts with exact approval before writes.",
       "path": "skills/core/capture-quality-qa",
@@ -55,7 +55,7 @@
     {
       "id": "onboarding",
       "name": "Stack Internal Onboarding Paths",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tier": "extended",
       "summary": "Build role- and goal-specific onboarding paths from bounded, fully retrieved company knowledge.",
       "path": "skills/extended/onboarding",
@@ -72,7 +72,7 @@
     {
       "id": "find-sme",
       "name": "Find Stack Internal Subject-Matter Experts",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tier": "extended",
       "summary": "Find internal subject-matter experts through read-only topic discovery and exact existing-tag resolution.",
       "path": "skills/extended/find-sme",
@@ -89,7 +89,7 @@
     {
       "id": "incident-to-knowledge",
       "name": "Incident to Stack Internal Knowledge",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tier": "extended",
       "summary": "Turn verified internal incidents into sourced, approval-gated articles or Q&A with objective incident records.",
       "path": "skills/extended/incident-to-knowledge",
@@ -106,7 +106,7 @@
     {
       "id": "fill-knowledge-gap",
       "name": "Fill a Stack Internal Knowledge Gap",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tier": "extended",
       "summary": "Turn an exhausted, fully retrieved internal search into an approval-gated, answer-neutral question draft.",
       "path": "skills/extended/fill-knowledge-gap",
@@ -123,7 +123,7 @@
     {
       "id": "review-stale-content",
       "name": "Review Stale Stack Internal Content",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tier": "extended",
       "summary": "Compare existing company guidance with current verified evidence and propose only approval-gated, targeted updates.",
       "path": "skills/extended/review-stale-content",
@@ -140,7 +140,7 @@
     {
       "id": "triage-unanswered",
       "name": "Triage Unanswered Stack Internal Questions",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tier": "extended",
       "summary": "Prioritize questions without accepted answers and prepare only fully retrieved, evidence-based answer or vote actions for approval.",
       "path": "skills/extended/triage-unanswered",
