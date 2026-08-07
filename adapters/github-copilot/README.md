@@ -1,16 +1,34 @@
 # GitHub Copilot adapter
 
-## Install the skills
+## Install from the marketplace in Copilot CLI
+
+Add the public marketplace, install one plugin, and verify that Copilot discovered it:
+
+```bash
+copilot plugin marketplace add EstoesMoises/stack-mcp-skills
+copilot plugin install efficient-search@stack-internal
+copilot plugins list --kind plugin --kind skill
+```
+
+The repository publishes Copilot’s native `.github/plugin/marketplace.json` manifest, and each generated package publishes `.github/plugin/plugin.json` plus its complete `skills/` directory. Invoke the installed skill explicitly as `/efficient-search`, or let Copilot select it automatically when the request matches its description.
+
+This native plugin flow targets GitHub Copilot CLI. Use the filesystem installation below for Copilot cloud agent, code review, and IDE agent mode.
+
+## Connect Stack Internal MCP in Copilot CLI
+
+Your Stack Internal administrator must enable the MCP server, and you must have tenant access before connecting. Replace `[slug]` with your customer-specific tenant slug; it is not a shared catalog value.
+
+```bash
+copilot mcp add --transport http stack-internal https://[slug].stackenterprise.co/mcp
+```
+
+Start Copilot CLI and inspect `/mcp list`. If the server reports `needs-auth`, run `/mcp auth stack-internal` and complete OAuth with an authorized tenant account. The browser opens when you invoke this explicit authentication action. Unauthenticated use may report that authentication is required; it is not promised to open a browser automatically. A failed authorization, unavailable endpoint, or missing permission is an MCP access failure, not evidence that Stack Internal was searched.
+
+## Filesystem fallback for other Copilot surfaces
 
 For a repository, copy each complete, self-contained skill directory into `.github/skills/<skill-name>/`. For your user scope, copy it into `~/.copilot/skills/<skill-name>/`. In a shared Agent Skills setup, the alternate project path is `.agents/skills/<skill-name>/` and the alternate personal path is `~/.agents/skills/<skill-name>/`; do not treat those two scopes as interchangeable. Preserve each directory’s `SKILL.md`, `evals/`, and referenced local resources; do not copy only the markdown file or flatten the folders. Select any of the nine directories listed in the [common adapter guide](../README.md).
 
-An automatic selection can use a skill when the request matches its description. For Copilot CLI, or another surface that documents this invocation, invoke a selected skill explicitly as `/SKILL-NAME`; do not assume that slash command exists in every Copilot surface. Follow the current [GitHub Copilot Agent Skills documentation](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills) for discovery behavior and any client-specific invocation surface.
-
-## Connect Stack Internal MCP
-
-Your Stack Internal administrator must enable the MCP server, and you must have tenant access before connecting. Open your customer-specific `https://[slug].stackenterprise.co/mcp` landing page, then follow its current Copilot MCP setup or use current Copilot MCP settings. Do not substitute another customer’s slug or paste an unverified client-specific JSON shape.
-
-Complete the OAuth browser flow when Copilot opens it, using an authorized tenant account. A failed authorization, unavailable endpoint, or missing permission is an MCP access failure, not evidence that Stack Internal was searched.
+An automatic selection can use a skill when the request matches its description. Copilot CLI supports explicit `/SKILL-NAME` invocation; do not assume the same slash command exists in every Copilot surface. Follow the current [GitHub Copilot Agent Skills documentation](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills) for discovery behavior and the current MCP setup for the surface you use. Do not substitute another customer’s slug or paste an unverified client-specific JSON shape.
 
 ## Compatibility status
 

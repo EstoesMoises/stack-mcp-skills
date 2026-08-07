@@ -11,6 +11,8 @@ def test_readme_has_native_marketplace_quickstart():
     assert "codex plugin add efficient-search@stack-internal" in body
     assert "claude plugin marketplace add EstoesMoises/stack-mcp-skills --scope project" in body
     assert "claude plugin install efficient-search@stack-internal --scope project" in body
+    assert "copilot plugin marketplace add EstoesMoises/stack-mcp-skills" in body
+    assert "copilot plugin install efficient-search@stack-internal" in body
     assert "/plugin install " not in body
 
 

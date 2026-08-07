@@ -2,7 +2,7 @@
 
 - Plugin ID: `fill-knowledge-gap`
 - Skill ID: `fill-knowledge-gap`
-- Version: `0.1.0`
+- Version: `0.2.0`
 
 Canonical source: https://estoesmoises.github.io/stack-mcp-skills/skills/fill-knowledge-gap/
 
@@ -16,4 +16,6 @@ Codex: `$fill-knowledge-gap:fill-knowledge-gap`
 
 Claude Code: `/fill-knowledge-gap:fill-knowledge-gap`
 
-Compatibility: experimental for Codex and Claude Code.
+GitHub Copilot CLI: `/fill-knowledge-gap`
+
+Compatibility: experimental for Codex, Claude Code, and GitHub Copilot CLI.

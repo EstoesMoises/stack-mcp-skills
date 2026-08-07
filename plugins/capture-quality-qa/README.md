@@ -2,7 +2,7 @@
 
 - Plugin ID: `capture-quality-qa`
 - Skill ID: `capture-quality-qa`
-- Version: `0.1.0`
+- Version: `0.2.0`
 
 Canonical source: https://estoesmoises.github.io/stack-mcp-skills/skills/capture-quality-qa/
 
@@ -16,4 +16,6 @@ Codex: `$capture-quality-qa:capture-quality-qa`
 
 Claude Code: `/capture-quality-qa:capture-quality-qa`
 
-Compatibility: experimental for Codex and Claude Code.
+GitHub Copilot CLI: `/capture-quality-qa`
+
+Compatibility: experimental for Codex, Claude Code, and GitHub Copilot CLI.

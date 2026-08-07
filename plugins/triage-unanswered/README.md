@@ -2,7 +2,7 @@
 
 - Plugin ID: `triage-unanswered`
 - Skill ID: `triage-unanswered`
-- Version: `0.1.0`
+- Version: `0.2.0`
 
 Canonical source: https://estoesmoises.github.io/stack-mcp-skills/skills/triage-unanswered/
 
@@ -16,4 +16,6 @@ Codex: `$triage-unanswered:triage-unanswered`
 
 Claude Code: `/triage-unanswered:triage-unanswered`
 
-Compatibility: experimental for Codex and Claude Code.
+GitHub Copilot CLI: `/triage-unanswered`
+
+Compatibility: experimental for Codex, Claude Code, and GitHub Copilot CLI.

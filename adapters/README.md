@@ -1,6 +1,6 @@
 # Native agent adapters
 
-All four clients now support filesystem-based Agent Skills. These thin adapter guides install the same canonical skill directories; they do not translate or relax a skill's workflow or safety rules.
+All four clients support filesystem-based Agent Skills, and Codex, Claude Code, and GitHub Copilot CLI also have native marketplace flows. These thin adapter guides install the same canonical skill directories; they do not translate or relax a skill's workflow or safety rules.
 
 | Client | Project location | User location | Primary documentation |
 | --- | --- | --- | --- |

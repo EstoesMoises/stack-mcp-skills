@@ -140,6 +140,8 @@ def build_site_model(root: Path, source_commit: str) -> dict[str, object]:
                 "codex_install": f"codex plugin add {skill_id}@{config.name}",
                 "codex_invoke": f"${skill_id}:{skill_id}",
                 "codex_project_manifest": _script_json(manifest),
+                "copilot_install": f"copilot plugin install {skill_id}@{config.name}",
+                "copilot_invoke": f"/{skill_id}",
                 "description": description,
                 "site_url": f"{config.site_url}skills/{skill_id}/",
                 "source_url": f"https://github.com/{config.repository}/tree/{source_commit}/{skill_path}",
@@ -202,6 +204,12 @@ def _render_index(model: Mapping[str, object]) -> str:
             *(str(skill["claude_install"]) for skill in core),
         ]
     )
+    copilot_core = "\n".join(
+        [
+            f"copilot plugin marketplace add {marketplace['repository']}",
+            *(str(skill["copilot_install"]) for skill in core),
+        ]
+    )
     rows = []
     for number, skill in enumerate(skills, start=1):
         assert isinstance(skill, dict)
@@ -251,7 +259,7 @@ def _render_index(model: Mapping[str, object]) -> str:
   <section class="opening-field" aria-labelledby="page-title">
     <div class="opening-copy">
       <h1 id="page-title">Install company-grounded workflows as native skills.</h1>
-      <p class="lede">Nine public Stack Internal skills, packaged individually for Codex and Claude Code. Browse the source, install through each client’s marketplace, connect MCP separately, and verify behavior locally.</p>
+      <p class="lede">Nine public Stack Internal skills, packaged individually for Codex, Claude Code, and GitHub Copilot CLI. Browse the source, install through each client’s marketplace, connect MCP separately, and verify behavior locally.</p>
       <dl class="truth-ledger">
         <div><dt>Marketplace</dt><dd>{escape(str(marketplace['name']))}</dd></div>
         <div><dt>Skills</dt><dd>9 public records</dd></div>
@@ -269,12 +277,16 @@ def _render_index(model: Mapping[str, object]) -> str:
         <div role="tablist" aria-label="Core installation client">
           <button type="button" role="tab" id="core-tab-codex" aria-selected="true" aria-controls="core-panel-codex">Codex</button>
           <button type="button" role="tab" id="core-tab-claude" aria-selected="false" aria-controls="core-panel-claude">Claude Code</button>
+          <button type="button" role="tab" id="core-tab-copilot" aria-selected="false" aria-controls="core-panel-copilot">GitHub Copilot</button>
         </div>
         <section role="tabpanel" id="core-panel-codex" aria-labelledby="core-tab-codex">
           {_copy_block(codex_core, 'core-codex')}
         </section>
         <section role="tabpanel" id="core-panel-claude" aria-labelledby="core-tab-claude">
           {_copy_block(claude_core, 'core-claude')}
+        </section>
+        <section role="tabpanel" id="core-panel-copilot" aria-labelledby="core-tab-copilot">
+          {_copy_block(copilot_core, 'core-copilot')}
         </section>
       </div>
       <p class="ledger-note">Plugin installation does not configure or authorize Stack Internal MCP.</p>
@@ -300,6 +312,7 @@ def _render_index(model: Mapping[str, object]) -> str:
         <legend>Client</legend>
         <label><input type="checkbox" name="client" value="codex"> Codex</label>
         <label><input type="checkbox" name="client" value="claude-code"> Claude Code</label>
+        <label><input type="checkbox" name="client" value="github-copilot"> GitHub Copilot</label>
       </fieldset>
       <fieldset data-filter-group="write">
         <legend>Capability</legend>
@@ -355,6 +368,7 @@ def _render_skill(model: Mapping[str, object], skill: Mapping[str, object]) -> s
 
     codex_mcp = "codex mcp add stack-internal --url https://[tenant-slug].stackenterprise.co/mcp"
     claude_mcp = "claude mcp add --transport http stack-internal https://[tenant-slug].stackenterprise.co/mcp"
+    copilot_mcp = "copilot mcp add --transport http stack-internal https://[tenant-slug].stackenterprise.co/mcp"
     title = f"{skill['name']} · {marketplace['display_name']}"
     return f"""<!doctype html>
 <html lang="en">
@@ -391,6 +405,7 @@ def _render_skill(model: Mapping[str, object], skill: Mapping[str, object]) -> s
         <a href="#safety">Safety</a>
         <a href="#codex">Install in Codex</a>
         <a href="#claude">Install in Claude Code</a>
+        <a href="#copilot">Install in GitHub Copilot</a>
         <a href="#mcp">Connect MCP</a>
         <a href="#try">Try it</a>
         <a href="#troubleshooting">Troubleshooting</a>
@@ -398,7 +413,7 @@ def _render_skill(model: Mapping[str, object], skill: Mapping[str, object]) -> s
       <div class="record-sections">
         <section id="purpose"><h2>Purpose</h2><p>{escape(str(skill['description']))}</p></section>
         <section id="requirements"><h2>Requirements</h2>
-          <p>Install the public plugin in Codex or Claude Code. Separately configure an enabled Stack Internal MCP endpoint and authenticate with an authorized account.</p>
+          <p>Install the public plugin in Codex, Claude Code, or GitHub Copilot CLI. Separately configure an enabled Stack Internal MCP endpoint and authenticate with an authorized account.</p>
           <h3>Required MCP tools</h3><ul class="tool-list">{tools}</ul>
         </section>
         <section id="safety"><h2>Safety</h2>{safety}<p>The marketplace package contains instructions, not tenant credentials, MCP configuration, hooks, or executables. Review source and permissions before use.</p></section>
@@ -416,15 +431,23 @@ def _render_skill(model: Mapping[str, object], skill: Mapping[str, object]) -> s
           {_copy_block(str(skill['claude_install']), f'{skill_id}-claude-install')}
           <p>Invoke explicitly with <code>{escape(str(skill['claude_invoke']))}</code>.</p>
         </section>
+        <section id="copilot"><h2>Install in GitHub Copilot</h2>
+          <p>Add the repository marketplace, then install this plugin in GitHub Copilot CLI. The generated package includes Copilot’s native plugin manifest and the complete skill directory.</p>
+          {_copy_block(f"copilot plugin marketplace add {marketplace['repository']}", f'{skill_id}-copilot-marketplace')}
+          {_copy_block(str(skill['copilot_install']), f'{skill_id}-copilot-install')}
+          <p>Invoke explicitly with <code>{escape(str(skill['copilot_invoke']))}</code>, or let Copilot select the skill when the request matches its description. Use the filesystem fallback in the adapter guide for Copilot cloud and IDE surfaces.</p>
+        </section>
         <section id="mcp"><h2>Connect Stack Internal MCP</h2>
           <p>Plugin installation does not grant Stack Internal access. Ask an administrator to enable MCP, replace the placeholder locally, and complete OAuth in your chosen client.</p>
           <div class="client-tabs" data-tabs>
             <div role="tablist" aria-label="MCP setup client">
               <button type="button" role="tab" id="{escape(skill_id)}-mcp-tab-codex" aria-selected="true" aria-controls="{escape(skill_id)}-mcp-panel-codex">Codex</button>
               <button type="button" role="tab" id="{escape(skill_id)}-mcp-tab-claude" aria-selected="false" aria-controls="{escape(skill_id)}-mcp-panel-claude">Claude Code</button>
+              <button type="button" role="tab" id="{escape(skill_id)}-mcp-tab-copilot" aria-selected="false" aria-controls="{escape(skill_id)}-mcp-panel-copilot">GitHub Copilot</button>
             </div>
             <section role="tabpanel" id="{escape(skill_id)}-mcp-panel-codex" aria-labelledby="{escape(skill_id)}-mcp-tab-codex">{_copy_block(codex_mcp, f'{skill_id}-codex-mcp')}</section>
             <section role="tabpanel" id="{escape(skill_id)}-mcp-panel-claude" aria-labelledby="{escape(skill_id)}-mcp-tab-claude">{_copy_block(claude_mcp, f'{skill_id}-claude-mcp')}</section>
+            <section role="tabpanel" id="{escape(skill_id)}-mcp-panel-copilot" aria-labelledby="{escape(skill_id)}-mcp-tab-copilot">{_copy_block(copilot_mcp, f'{skill_id}-copilot-mcp')}</section>
           </div>
         </section>
         <section id="try"><h2>Try it</h2><p>Start a new or reloaded client session, invoke the skill explicitly if needed, and observe local tool calls. Do not record raw tenant content.</p><ol class="smoke-ledger">{_render_smokes(model['smokes'], bool(skill['write_capable']))}</ol></section>
@@ -433,11 +456,11 @@ def _render_skill(model: Mapping[str, object], skill: Mapping[str, object]) -> s
             <div><dt>Plugin commands are missing</dt><dd>Your client version may not expose native marketplace commands. Confirm the exact version and use the documented filesystem fallback without changing the canonical skill.</dd></div>
             <div><dt>Marketplace Git or policy failure</dt><dd>Confirm repository access and ask the managed-policy owner to allow this marketplace. Do not work around organization policy.</dd></div>
             <div><dt>Plugin not found</dt><dd>Refresh the marketplace metadata, confirm the plugin ID <code>{escape(skill_id)}</code>, and retry the native install.</dd></div>
-            <div><dt>Installed but undiscovered</dt><dd>List installed plugins, reload the client, then invoke the namespaced skill explicitly.</dd></div>
+            <div><dt>Installed but undiscovered</dt><dd>List installed plugins, reload the client, then use that client’s explicit skill invocation syntax.</dd></div>
             <div><dt>MCP or OAuth failure</dt><dd>The plugin remains installed. Recheck the separate endpoint, authorization, and tenant permission; report failure honestly rather than claiming an internal search.</dd></div>
           </dl>
         </section>
-        <section id="compatibility"><h2>Compatibility</h2><p>Codex and Claude Code compatibility is experimental until exact-version, tenant-backed release evidence passes all four smokes. Automated catalog tests are not live compatibility proof.</p></section>
+        <section id="compatibility"><h2>Compatibility</h2><p>Codex, Claude Code, and GitHub Copilot compatibility is experimental until exact-version, tenant-backed release evidence passes all four smokes. Automated catalog tests are not live compatibility proof.</p></section>
         <section id="source"><h2>Source</h2><p>Canonical skill content at commit <code>{escape(str(model['source_commit']))}</code>.</p><p><a href="{escape(str(skill['source_url']), quote=True)}">Inspect the canonical source for {escape(skill_id)}</a></p></section>
       </div>
     </div>

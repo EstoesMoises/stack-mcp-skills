@@ -1,0 +1,18 @@
+{
+  "author": {
+    "name": "Stack Internal Skills"
+  },
+  "category": "Productivity",
+  "description": "Find company-specific guidance with focused, bounded, evidence-backed retrieval.",
+  "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/efficient-search/",
+  "keywords": [
+    "search",
+    "grounding",
+    "company-knowledge"
+  ],
+  "license": "Apache-2.0",
+  "name": "efficient-search",
+  "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
+  "skills": "./skills/",
+  "version": "0.2.0"
+}

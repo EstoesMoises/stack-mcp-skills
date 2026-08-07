@@ -2,7 +2,7 @@
 
 - Plugin ID: `review-stale-content`
 - Skill ID: `review-stale-content`
-- Version: `0.1.0`
+- Version: `0.2.0`
 
 Canonical source: https://estoesmoises.github.io/stack-mcp-skills/skills/review-stale-content/
 
@@ -16,4 +16,6 @@ Codex: `$review-stale-content:review-stale-content`
 
 Claude Code: `/review-stale-content:review-stale-content`
 
-Compatibility: experimental for Codex and Claude Code.
+GitHub Copilot CLI: `/review-stale-content`
+
+Compatibility: experimental for Codex, Claude Code, and GitHub Copilot CLI.

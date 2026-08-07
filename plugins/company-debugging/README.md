@@ -2,7 +2,7 @@
 
 - Plugin ID: `company-debugging`
 - Skill ID: `company-debugging`
-- Version: `0.1.0`
+- Version: `0.2.0`
 
 Canonical source: https://estoesmoises.github.io/stack-mcp-skills/skills/company-debugging/
 
@@ -16,4 +16,6 @@ Codex: `$company-debugging:company-debugging`
 
 Claude Code: `/company-debugging:company-debugging`
 
-Compatibility: experimental for Codex and Claude Code.
+GitHub Copilot CLI: `/company-debugging`
+
+Compatibility: experimental for Codex, Claude Code, and GitHub Copilot CLI.

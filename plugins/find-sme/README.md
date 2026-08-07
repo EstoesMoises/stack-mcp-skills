@@ -2,7 +2,7 @@
 
 - Plugin ID: `find-sme`
 - Skill ID: `find-sme`
-- Version: `0.1.0`
+- Version: `0.2.0`
 
 Canonical source: https://estoesmoises.github.io/stack-mcp-skills/skills/find-sme/
 
@@ -16,4 +16,6 @@ Codex: `$find-sme:find-sme`
 
 Claude Code: `/find-sme:find-sme`
 
-Compatibility: experimental for Codex and Claude Code.
+GitHub Copilot CLI: `/find-sme`
+
+Compatibility: experimental for Codex, Claude Code, and GitHub Copilot CLI.

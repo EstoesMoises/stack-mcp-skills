@@ -1,4 +1,4 @@
-"""Build safe, dual-client plugin packages from canonical skills."""
+"""Build safe, multi-client plugin packages from canonical skills."""
 
 from __future__ import annotations
 
@@ -60,6 +60,22 @@ def build_claude_plugin_manifest(entry: dict[str, object], config: MarketplaceCo
     }
 
 
+def build_copilot_plugin_manifest(entry: dict[str, object], config: MarketplaceConfig) -> dict[str, object]:
+    """Build the GitHub Copilot CLI manifest for one canonical skill."""
+    return {
+        "name": entry["id"],
+        "version": entry["version"],
+        "description": entry["summary"],
+        "author": {"name": config.publisher_name},
+        "homepage": f"{config.site_url}skills/{entry['id']}/",
+        "repository": f"https://github.com/{config.repository}",
+        "license": "Apache-2.0",
+        "keywords": entry["tags"],
+        "category": config.category,
+        "skills": "./skills/",
+    }
+
+
 def plugin_readme(entry: dict[str, object], config: MarketplaceConfig) -> str:
     """Describe the package, its prerequisites, and client invocations."""
     return f"""# {entry['name']}
@@ -80,7 +96,9 @@ Codex: `${entry['id']}:{entry['id']}`
 
 Claude Code: `/{entry['id']}:{entry['id']}`
 
-Compatibility: experimental for Codex and Claude Code.
+GitHub Copilot CLI: `/{entry['id']}`
+
+Compatibility: experimental for Codex, Claude Code, and GitHub Copilot CLI.
 """
 
 
@@ -117,6 +135,10 @@ def build_plugin_package(
     _write_json(
         safe_join(plugin_root, ".claude-plugin", "plugin.json"),
         build_claude_plugin_manifest(entry, config),
+    )
+    _write_json(
+        safe_join(plugin_root, ".github", "plugin", "plugin.json"),
+        build_copilot_plugin_manifest(entry, config),
     )
     safe_join(plugin_root, "README.md").write_text(plugin_readme(entry, config), encoding="utf-8")
     return plugin_root

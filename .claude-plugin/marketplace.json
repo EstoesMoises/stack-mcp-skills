@@ -12,7 +12,7 @@
       "description": "Find company-specific guidance with focused, bounded, evidence-backed retrieval.",
       "name": "efficient-search",
       "source": "./plugins/efficient-search",
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     {
       "author": {
@@ -21,7 +21,7 @@
       "description": "Diagnose company-specific failures with internal evidence and systematic root-cause investigation.",
       "name": "company-debugging",
       "source": "./plugins/company-debugging",
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     {
       "author": {
@@ -30,7 +30,7 @@
       "description": "Turn validated technical learnings into sanitized, duplicate-aware Stack Internal Q&A drafts with exact approval before writes.",
       "name": "capture-quality-qa",
       "source": "./plugins/capture-quality-qa",
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     {
       "author": {
@@ -39,7 +39,7 @@
       "description": "Build role- and goal-specific onboarding paths from bounded, fully retrieved company knowledge.",
       "name": "onboarding",
       "source": "./plugins/onboarding",
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     {
       "author": {
@@ -48,7 +48,7 @@
       "description": "Find internal subject-matter experts through read-only topic discovery and exact existing-tag resolution.",
       "name": "find-sme",
       "source": "./plugins/find-sme",
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     {
       "author": {
@@ -57,7 +57,7 @@
       "description": "Turn verified internal incidents into sourced, approval-gated articles or Q&A with objective incident records.",
       "name": "incident-to-knowledge",
       "source": "./plugins/incident-to-knowledge",
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     {
       "author": {
@@ -66,7 +66,7 @@
       "description": "Turn an exhausted, fully retrieved internal search into an approval-gated, answer-neutral question draft.",
       "name": "fill-knowledge-gap",
       "source": "./plugins/fill-knowledge-gap",
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     {
       "author": {
@@ -75,7 +75,7 @@
       "description": "Compare existing company guidance with current verified evidence and propose only approval-gated, targeted updates.",
       "name": "review-stale-content",
       "source": "./plugins/review-stale-content",
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     {
       "author": {
@@ -84,7 +84,7 @@
       "description": "Prioritize questions without accepted answers and prepare only fully retrieved, evidence-based answer or vote actions for approval.",
       "name": "triage-unanswered",
       "source": "./plugins/triage-unanswered",
-      "version": "0.1.0"
+      "version": "0.2.0"
     }
   ]
 }

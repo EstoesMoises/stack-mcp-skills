@@ -1,0 +1,18 @@
+{
+  "author": {
+    "name": "Stack Internal Skills"
+  },
+  "category": "Productivity",
+  "description": "Diagnose company-specific failures with internal evidence and systematic root-cause investigation.",
+  "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/company-debugging/",
+  "keywords": [
+    "debugging",
+    "grounding",
+    "company-knowledge"
+  ],
+  "license": "Apache-2.0",
+  "name": "company-debugging",
+  "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
+  "skills": "./skills/",
+  "version": "0.2.0"
+}

@@ -252,12 +252,15 @@ h1 {
 }
 
 .client-tabs [role="tab"] {
+  flex: 1 1 0;
+  min-width: 0;
   padding: 0.65rem 1rem;
   border: 0;
   border-right: 1px solid var(--rule);
   background: transparent;
   color: var(--ink-muted);
   cursor: pointer;
+  text-align: center;
 }
 
 .client-tabs [role="tab"][aria-selected="true"] {
@@ -553,6 +556,18 @@ footer {
   border-top: 1px solid var(--rule-strong);
   color: var(--ink-muted);
   font-size: 0.82rem;
+}
+
+footer code {
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.record-sections p code,
+.record-sections dd code,
+.record-sections li code {
+  overflow-wrap: anywhere;
+  word-break: break-all;
 }
 
 .detail-main {
@@ -890,6 +905,11 @@ footer {
 
   .client-tabs [role="tablist"] {
     margin-top: 0.65rem;
+  }
+
+  .client-tabs [role="tab"] {
+    padding-inline: 0.45rem;
+    font-size: 0.78rem;
   }
 
   .client-tabs [role="tabpanel"] {

@@ -23,6 +23,7 @@ SURFACES = (
     Path("plugins"),
     Path(".agents/plugins/marketplace.json"),
     Path(".claude-plugin/marketplace.json"),
+    Path(".github/plugin/marketplace.json"),
 )
 
 
@@ -106,6 +107,35 @@ def build_claude_marketplace(
     }
 
 
+def build_copilot_marketplace(
+    entries: list[dict[str, object]], config: MarketplaceConfig
+) -> dict[str, object]:
+    """Build the ordered GitHub Copilot CLI marketplace manifest."""
+    return {
+        "name": config.name,
+        "owner": {"name": config.publisher_name},
+        "metadata": {
+            "description": "Public Stack Internal Agent Skills for company-grounded coding workflows.",
+            "version": config.marketplace_version,
+        },
+        "plugins": [
+            {
+                "name": entry["id"],
+                "source": f"./plugins/{entry['id']}",
+                "description": entry["summary"],
+                "version": entry["version"],
+                "author": {"name": config.publisher_name},
+                "homepage": f"{config.site_url}skills/{entry['id']}/",
+                "repository": f"https://github.com/{config.repository}",
+                "license": "Apache-2.0",
+                "keywords": entry["tags"],
+                "category": config.category,
+            }
+            for entry in entries
+        ],
+    }
+
+
 def generate_distribution(root: Path, output_root: Path) -> None:
     """Generate all marketplace artifacts inside *output_root* only."""
     root = Path(root).resolve()
@@ -128,6 +158,10 @@ def generate_distribution(root: Path, output_root: Path) -> None:
         safe_join(output_root, ".claude-plugin", "marketplace.json"),
         build_claude_marketplace(entries, config),
     )
+    _write_json(
+        safe_join(output_root, ".github", "plugin", "marketplace.json"),
+        build_copilot_marketplace(entries, config),
+    )
 
 
 def _tree_files(path: Path) -> dict[str, Path]:
@@ -140,7 +174,7 @@ def _tree_files(path: Path) -> dict[str, Path]:
 
 
 def distribution_diff(root: Path) -> list[str]:
-    """Return byte-level drift for the three committed marketplace surfaces."""
+    """Return byte-level drift for the committed marketplace surfaces."""
     root = root.resolve()
     with TemporaryDirectory(prefix="stack-marketplace-check-") as temporary:
         expected_root = Path(temporary)

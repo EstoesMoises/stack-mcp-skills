@@ -20,7 +20,7 @@ def _files(path: Path) -> dict[str, bytes]:
     }
 
 
-def test_plugin_contains_exact_canonical_skill_and_both_manifests(tmp_path):
+def test_plugin_contains_exact_canonical_skill_and_all_native_manifests(tmp_path):
     """Packaging must preserve every canonical skill file and version."""
     entry = load_catalog(ROOT / "catalog/skills.json")["skills"][0]
     config = load_marketplace_config(ROOT / "catalog/marketplace.json")
@@ -32,6 +32,7 @@ def test_plugin_contains_exact_canonical_skill_and_both_manifests(tmp_path):
     assert _files(packaged) == _files(canonical)
     codex = json.loads((plugin / ".codex-plugin/plugin.json").read_text())
     claude = json.loads((plugin / ".claude-plugin/plugin.json").read_text())
+    copilot = json.loads((plugin / ".github/plugin/plugin.json").read_text())
     assert codex["version"] == entry["version"]
     assert claude == {
         "name": entry["id"],
@@ -42,6 +43,11 @@ def test_plugin_contains_exact_canonical_skill_and_both_manifests(tmp_path):
         "repository": f"https://github.com/{config.repository}",
         "license": "Apache-2.0",
         "keywords": entry["tags"],
+    }
+    assert copilot == {
+        **claude,
+        "category": config.category,
+        "skills": "./skills/",
     }
     assert (plugin / "LICENSE").read_bytes() == (ROOT / "LICENSE").read_bytes()
     readme = (plugin / "README.md").read_text(encoding="utf-8")
@@ -55,7 +61,8 @@ def test_plugin_contains_exact_canonical_skill_and_both_manifests(tmp_path):
         "separate Stack Internal MCP connection and OAuth authentication",
         f"Codex: `${entry['id']}:{entry['id']}`",
         f"Claude Code: `/{entry['id']}:{entry['id']}`",
-        "Compatibility: experimental for Codex and Claude Code.",
+        f"GitHub Copilot CLI: `/{entry['id']}`",
+        "Compatibility: experimental for Codex, Claude Code, and GitHub Copilot CLI.",
     ):
         assert expected in readme
 
@@ -70,7 +77,9 @@ def test_plugin_contains_no_executable_or_mcp_surface(tmp_path):
     relative = {path.relative_to(plugin).as_posix() for path in plugin.rglob("*")}
     assert not {"hooks", ".mcp.json", ".app.json"} & relative
     codex = json.loads((plugin / ".codex-plugin/plugin.json").read_text())
+    copilot = json.loads((plugin / ".github/plugin/plugin.json").read_text())
     assert not {"hooks", "mcpServers", "apps"} & codex.keys()
+    assert not {"hooks", "mcpServers", "apps"} & copilot.keys()
 
 
 def test_codex_manifest_includes_required_interface_content(tmp_path):

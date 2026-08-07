@@ -30,9 +30,9 @@ def _source_root(tmp_path: Path) -> Path:
 
 
 def _distribution_state(root: Path) -> dict[str, tuple[str, bytes, int]]:
-    """Capture node types and bytes for all three committed distribution surfaces."""
+    """Capture node types and bytes for all committed distribution surfaces."""
     state: dict[str, tuple[str, bytes, int]] = {}
-    for relative in ("plugins", ".agents", ".claude-plugin"):
+    for relative in ("plugins", ".agents", ".claude-plugin", ".github"):
         surface = root / relative
         if not surface.exists():
             state[relative] = ("missing", b"", 0)
@@ -99,7 +99,7 @@ def test_version_command_prints_only_semver(capsys):
     """Version output stays directly usable by release workflows."""
     assert main(["version", "--root", str(ROOT)]) == 0
 
-    assert capsys.readouterr().out == "0.1.0\n"
+    assert capsys.readouterr().out == "0.2.0\n"
 
 
 def test_site_command_sanitizes_a_malformed_catalog_entry(tmp_path, capsys):
@@ -168,6 +168,7 @@ def test_packages_command_rejects_catalog_sources_outside_canonical_skill_tree(
     assert not (root / "plugins").exists()
     assert not (root / ".agents").exists()
     assert not (root / ".claude-plugin").exists()
+    assert not (root / ".github").exists()
 
 
 def test_site_command_sanitizes_malformed_skill_frontmatter(tmp_path, capsys):
@@ -344,6 +345,7 @@ def test_check_reports_relative_missing_surfaces_before_generation(tmp_path, cap
         "differences": [
             "missing: .agents/plugins/marketplace.json",
             "missing: .claude-plugin/marketplace.json",
+            "missing: .github/plugin/marketplace.json",
             "missing: plugins",
         ],
         "valid": False,
@@ -388,6 +390,7 @@ def test_check_reports_changed_generated_bytes_and_unexpected_stale_files(tmp_pa
         "plugins/efficient-search/README.md",
         ".agents/plugins/marketplace.json",
         ".claude-plugin/marketplace.json",
+        ".github/plugin/marketplace.json",
     ),
 )
 def test_check_reports_executable_mode_drift(tmp_path, capsys, relative):
@@ -417,6 +420,7 @@ def test_write_refuses_unmarked_plugins_and_preserves_existing_content(tmp_path,
     assert keep.read_text(encoding="utf-8") == "keep me\n"
     assert not (root / ".agents/plugins/marketplace.json").exists()
     assert not (root / ".claude-plugin/marketplace.json").exists()
+    assert not (root / ".github/plugin/marketplace.json").exists()
 
 
 def test_write_refuses_a_plugins_tree_with_an_edited_marker(tmp_path, capsys):
@@ -433,7 +437,10 @@ def test_write_refuses_a_plugins_tree_with_an_edited_marker(tmp_path, capsys):
     assert marker.read_text(encoding="utf-8") == "generated but edited\n"
 
 
-@pytest.mark.parametrize("symlinked_parent", [".agents", ".agents/plugins", ".claude-plugin"])
+@pytest.mark.parametrize(
+    "symlinked_parent",
+    [".agents", ".agents/plugins", ".claude-plugin", ".github", ".github/plugin"],
+)
 def test_write_refuses_symlinked_manifest_parents(tmp_path, capsys, symlinked_parent):
     """Write mode must not redirect either manifest outside the requested repository root."""
     root = _source_root(tmp_path)
@@ -460,8 +467,11 @@ def test_write_refuses_symlinked_manifest_parents(tmp_path, capsys, symlinked_pa
         ("parent-file", ".agents"),
         ("parent-file", ".agents/plugins"),
         ("parent-file", ".claude-plugin"),
+        ("parent-file", ".github"),
+        ("parent-file", ".github/plugin"),
         ("manifest-directory", ".agents/plugins/marketplace.json"),
         ("manifest-directory", ".claude-plugin/marketplace.json"),
+        ("manifest-directory", ".github/plugin/marketplace.json"),
     ],
 )
 def test_write_preflights_manifest_collisions_before_replacing_any_surface(
@@ -492,7 +502,7 @@ def test_write_preflights_manifest_collisions_before_replacing_any_surface(
     assert _distribution_state(root) == before
 
 
-@pytest.mark.parametrize("failed_rename", range(1, 7))
+@pytest.mark.parametrize("failed_rename", range(1, 9))
 def test_write_rolls_back_every_surface_when_any_transaction_rename_fails(
     tmp_path, capsys, monkeypatch, failed_rename
 ):
@@ -503,6 +513,7 @@ def test_write_rolls_back_every_surface_when_any_transaction_rename_fails(
     (root / "plugins/efficient-search/README.md").write_bytes(b"prior plugin generation\n")
     (root / ".agents/plugins/marketplace.json").write_bytes(b'{"prior":"codex"}\n')
     (root / ".claude-plugin/marketplace.json").write_bytes(b'{"prior":"claude"}\n')
+    (root / ".github/plugin/marketplace.json").write_bytes(b'{"prior":"copilot"}\n')
     before = _distribution_state(root)
     original_replace = Path.replace
     rename_count = 0
@@ -530,7 +541,9 @@ def test_write_rolls_back_every_surface_when_any_transaction_rename_fails(
     ]
 
 
-@pytest.mark.parametrize("failed_parent", (".agents", ".agents/plugins", ".claude-plugin"))
+@pytest.mark.parametrize(
+    "failed_parent", (".agents", ".agents/plugins", ".claude-plugin", ".github", ".github/plugin")
+)
 def test_write_removes_only_transaction_created_parents_when_setup_fails(
     tmp_path, capsys, monkeypatch, failed_parent
 ):

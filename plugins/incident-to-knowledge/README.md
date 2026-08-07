@@ -2,7 +2,7 @@
 
 - Plugin ID: `incident-to-knowledge`
 - Skill ID: `incident-to-knowledge`
-- Version: `0.1.0`
+- Version: `0.2.0`
 
 Canonical source: https://estoesmoises.github.io/stack-mcp-skills/skills/incident-to-knowledge/
 
@@ -16,4 +16,6 @@ Codex: `$incident-to-knowledge:incident-to-knowledge`
 
 Claude Code: `/incident-to-knowledge:incident-to-knowledge`
 
-Compatibility: experimental for Codex and Claude Code.
+GitHub Copilot CLI: `/incident-to-knowledge`
+
+Compatibility: experimental for Codex, Claude Code, and GitHub Copilot CLI.
