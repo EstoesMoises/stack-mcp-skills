@@ -15,17 +15,12 @@ Before releasing an adapter version, re-check the primary documentation above. C
 
 An administrator must enable the Stack Internal MCP server for the tenant, and every person using a guide must be authorized to access it. Replace `[slug]` with the customer-specific tenant slug in `https://[slug].stackenterprise.co/mcp`; never copy a URL from a different tenant. Complete the client’s OAuth browser flow when it opens and use an account with access to the tenant.
 
-Copy each complete, self-contained skill directory, including `SKILL.md`, `evals/`, and every local resource it references. Do not copy only a `SKILL.md`, merge contents into an instruction file, or flatten the directory. The current catalog has these nine source directories:
+Copy each complete, self-contained skill directory, including `SKILL.md`, `evals/`, and every local resource it references. Do not copy only a `SKILL.md`, merge contents into an instruction file, or flatten the directory. The initial catalog has these four source directories:
 
-- `skills/core/efficient-search/`
-- `skills/core/company-debugging/`
-- `skills/core/capture-quality-qa/`
+- `skills/core/uncertainty-guardrail/`
 - `skills/extended/onboarding/`
-- `skills/extended/find-sme/`
 - `skills/extended/incident-to-knowledge/`
-- `skills/extended/fill-knowledge-gap/`
 - `skills/extended/review-stale-content/`
-- `skills/extended/triage-unanswered/`
 
 ## Compatibility status
 

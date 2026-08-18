@@ -1,0 +1,22 @@
+{
+  "positive": [
+    "Implement Guest exports, but first determine whether our product policy permits that role to export project data.",
+    "Choose the approved queue library for this service; the repository does not record the current platform decision.",
+    "Update the billing grace-period behavior according to the current internal entitlement rules.",
+    "Finish this migration without guessing which legacy plan aliases we still support.",
+    "The code and issue disagree about token lifetime. Resolve the current company standard before changing it.",
+    "Implement everything supported and isolate the one deployment requirement that our local docs do not establish.",
+    "These two internal architecture decisions conflict. Determine what is current and identify who must clarify it.",
+    "Before changing this security-sensitive default, verify the organization-specific requirement that is missing locally."
+  ],
+  "negative": [
+    "Search Stack Internal for our logging standard.",
+    "Fix the null dereference shown by this complete failing unit test.",
+    "Rename usageByWorkspace without changing behavior.",
+    "Reduce the table row padding by four pixels.",
+    "Explain how JavaScript promises work.",
+    "Implement the retry policy exactly as specified in ADR-014.",
+    "Find an internal subject-matter expert for Kubernetes.",
+    "Draft a Stack Internal question about the missing export policy."
+  ]
+}

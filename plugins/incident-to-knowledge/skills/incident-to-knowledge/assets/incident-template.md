@@ -7,8 +7,10 @@ Use this template only after all material incident facts are verified, related s
 ```json
 {
   "format": "article or qa",
+  "article_type": "Required only for an article: one value accepted by the connected create_article schema.",
   "title": "Searchable incident title",
   "question": "Required only for Q&A: the visible searchable operational question.",
+  "draftReviewed": "Required only when the connected write schema declares it; display the exact Boolean before approval.",
   "body": "Required only for an article: complete rendered incident record.",
   "answer": "Required only for Q&A: complete rendered incident record.",
   "summary": "Objective one-paragraph description of what happened.",

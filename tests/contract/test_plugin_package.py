@@ -159,8 +159,8 @@ def test_plugin_rejects_a_symlinked_canonical_skill_directory(tmp_path):
 @pytest.mark.parametrize(
     ("hostile_id", "hostile_path"),
     [
-        ("../escaped", "skills/core/efficient-search"),
-        ("absolute", "../external/efficient-search"),
+        ("../escaped", "skills/core/uncertainty-guardrail"),
+        ("absolute", "../external/uncertainty-guardrail"),
     ],
 )
 def test_plugin_rejects_nonportable_catalog_fields_before_writing(
@@ -174,7 +174,7 @@ def test_plugin_rejects_nonportable_catalog_fields_before_writing(
     shutil.copyfile(ROOT / "LICENSE", root / "LICENSE")
     destination = tmp_path / "packages"
     if hostile_id == "absolute":
-        external = tmp_path / "external" / "efficient-search"
+        external = tmp_path / "external" / "uncertainty-guardrail"
         shutil.copytree(ROOT / entry["path"], external)
         entry["id"] = str(tmp_path / "absolute-package")
         entry["path"] = str(external)

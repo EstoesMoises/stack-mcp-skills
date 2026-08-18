@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from collections import Counter
 from pathlib import Path
 import shutil
 from tempfile import TemporaryDirectory
@@ -56,12 +55,10 @@ def _preflight_destinations(root: Path) -> None:
 
 
 def _validate_entries(root: Path, entries: list[dict[str, object]]) -> None:
-    """Reject catalogs that cannot represent the fixed nine-plugin distribution."""
+    """Reject catalogs that cannot produce a usable plugin distribution."""
     validate_unique_skill_ids(entries)
-
-    counts = Counter(entry.get("tier") for entry in entries)
-    if counts != Counter({"core": 3, "extended": 6}):
-        raise ValueError("catalog must contain exactly three core and six extended skills")
+    if not entries:
+        raise ValueError("catalog must contain at least one skill")
 
     for entry in entries:
         validate_skill_entry(root, entry)

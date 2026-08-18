@@ -48,7 +48,7 @@ ADAPTERS = {
         ),
         "commands": (
             "copilot plugin marketplace add EstoesMoises/stack-mcp-skills",
-            "copilot plugin install efficient-search@stack-internal",
+            "copilot plugin install uncertainty-guardrail@stack-internal",
             "copilot mcp add --transport http stack-internal https://[slug].stackenterprise.co/mcp",
             "/mcp auth stack-internal",
         ),
@@ -70,12 +70,12 @@ DOCUMENTATION_URLS = {
 SMOKE_TESTS = (
     (
         "### Smoke test 1 — Conditional search",
-        "How should I structure logging in this service?",
-        "`search`, then full-content retrieval for a promising result, with title and ID.",
+        "The repository does not establish whether Guests may export project data.",
+        "supported work separated from the knowledge-dependent work.",
     ),
     (
         "### Smoke test 2 — Negative trigger",
-        "Write a Python function that reverses a string.",
+        "Fix the null dereference demonstrated by this complete failing unit test.",
         "no Stack Internal MCP call.",
     ),
     (
@@ -85,8 +85,8 @@ SMOKE_TESTS = (
     ),
     (
         "### Smoke test 4 — MCP failure",
-        "Disconnect or deny access, then ask an internal-policy question.",
-        "honest access failure and an offer to continue with clearly labeled general knowledge.",
+        "Disconnect or deny access, then ask for a company-specific permission decision",
+        "`unknown`, no guessed policy",
     ),
 )
 
@@ -101,7 +101,7 @@ def test_adapter_guides_preserve_native_install_auth_and_smoke_contracts(repo_ro
     catalog = json.loads((repo_root / "catalog" / "skills.json").read_text(encoding="utf-8"))
     skill_paths = [entry["path"] for entry in catalog["skills"]]
 
-    assert len(skill_paths) == 9
+    assert len(skill_paths) == 4
     for path in skill_paths:
         assert (repo_root / path / "SKILL.md").is_file()
 

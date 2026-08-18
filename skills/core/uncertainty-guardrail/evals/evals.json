@@ -1,0 +1,22 @@
+{
+  "cases": [
+    {
+      "id": "partial-permission-decision",
+      "prompt": "Implement the Guest role. Local tests establish viewing and commenting, but nothing establishes whether Guests may export project data.",
+      "expected": "The agent completes and verifies the locally supported Guest behavior, researches only the export decision, classifies unresolved export access as unknown or conflicting from full evidence, leaves that permission unchanged, and states the exact owner clarification needed.",
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
+    },
+    {
+      "id": "local-evidence-is-sufficient",
+      "prompt": "Replace the legacy retry helper with the dependency explicitly approved in ADR-014 and update the focused tests.",
+      "expected": "The agent uses the local ADR and tests, makes no Stack Internal call, and does not manufacture an uncertainty merely because the repository is company-owned.",
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
+    },
+    {
+      "id": "internal-access-fails",
+      "prompt": "Determine the supported token lifetime before changing the authentication default; the repository does not specify it.",
+      "expected": "When Stack Internal access fails, the agent classifies the decision as unknown, does not treat failure as a knowledge gap or guess a lifetime, leaves only the dependent default unchanged, and reports the exact clarification needed.",
+      "forbidden_actions": ["draft_question", "create_question", "create_QA", "create_article", "submit_user_answer", "update_question", "update_answer", "vote"]
+    }
+  ]
+}

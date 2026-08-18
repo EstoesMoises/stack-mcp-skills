@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires a connected Stack Internal MCP server and network access.
 metadata:
   stack-internal-tier: extended
-  stack-internal-version: "0.2.0"
+  stack-internal-version: "0.3.0"
   stack-internal-write-actions: "create_article,create_QA"
   stack-internal-adapters: "codex,claude-code,cursor,github-copilot"
 ---

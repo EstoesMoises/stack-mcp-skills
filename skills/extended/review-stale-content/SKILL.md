@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires a connected Stack Internal MCP server and network access.
 metadata:
   stack-internal-tier: extended
-  stack-internal-version: "0.2.0"
+  stack-internal-version: "0.3.0"
   stack-internal-write-actions: "update_question,update_answer"
   stack-internal-adapters: "codex,claude-code,cursor,github-copilot"
 ---
@@ -26,7 +26,7 @@ Review a specific internal question or answer against current, independently ver
    - `possible-divergence`: the evidence suggests a mismatch but lacks a direct, verified comparison, is incomplete, or needs an owner to interpret it. Do not propose or execute an update.
    - `still-current`: the fully retrieved target remains consistent with current verified code or practice. Do not propose or execute an update.
    Age, score, style, or a weak signal alone never proves stale content. If authoritative sources conflict, report each source and its ID, classify `possible-divergence`, and require human resolution; do not write.
-7. For `confirmed-divergence`, choose the narrowest retrieved target. For `update_answer`, the target is the retrieved answer ID, never the parent question ID; retain the parent question ID as required context. For `update_question`, the target is the retrieved question ID. Edit only material text directly contradicted by current evidence. Preserve an unchanged title, body, or tags exactly as fully retrieved; never invent tags or change an unverified non-sensitive field. If an existing field required by the live update schema was not retrieved in full, stop without an edit.
+7. For `confirmed-divergence`, choose the narrowest retrieved target and confirm that the connected update tool permits the authenticated user to edit it. If ownership or edit eligibility is not established, report the divergence and route it to the owner without rendering an update. For `update_answer`, the target is the retrieved answer ID, never the parent question ID; retain the parent question ID as required context. For `update_question`, the target is the retrieved question ID. Edit only material text directly contradicted by current evidence. Preserve an unchanged title, body, or tags exactly as fully retrieved; never invent tags or change an unverified non-sensitive field. If an existing field required by the live update schema was not retrieved in full, stop without an edit.
 8. Before rendering any update, inspect every retrieved target field, relevant comment, and proposed replacement for secrets, credentials, tokens, personal data, customer data, and unnecessary sensitive operational detail. Never redisplay or resend sensitive data in the evidence comparison, proposed update, or action arguments. Do not preserve a sensitive field unchanged. When safely removing sensitive data expands the edit beyond the stale statement, show a safe description of each removal in `sensitive_data_removed` and include the sanitized replacement in the exact visible payload for approval. If a safe removal would make the intended guidance ambiguous, stop and ask the user for resolution rather than guessing or exposing the value.
 9. Before rendering, inspect the connected MCP tool's current input schema for the selected update action. Construct `intended_action.args` as the complete argument object with the live schema's exact keys, types, and values. With the currently connected schemas, `update_question` requires `questionId`, `newTitle`, `newBodyContent`, and `newTags`; `update_answer` requires `questionId`, `answerId`, and `newBodyContent`. If the live schema is unavailable, ambiguous, differs in a way that cannot be mapped completely, or requires an unverified value, stop without writing.
 10. Render this exact local payload and stop. It must make the comparison and every changed or preserved field visible without exposing sensitive source material:
@@ -72,6 +72,7 @@ Report only the confirmed result and returned updated content ID when available.
 
 - If Stack Internal, MCP connectivity, authentication, permission, search, retrieval, or comments access fails, state the failed step honestly. Do not claim the target was fully reviewed, do not classify it as stale or current, and do not write.
 - If current code or practice cannot be independently verified, classify only `possible-divergence` when a concern remains. Explain the missing evidence and ask for a verified source or owner; do not draft an update.
+- If edit ownership or eligibility cannot be established, report the evidence comparison and owner route; do not render an approval-ready update or call an update tool.
 - If the content is still current, report the evidence comparison and `still-current` classification. Do not make a cosmetic edit.
 - If an article has confirmed divergence, report the evidence comparison and that no article update tool is declared. Do not render an approval-ready update or use a different write tool.
 - If sources conflict, show the conflict and all source IDs, request human resolution, and do not render an approval-ready payload or write.

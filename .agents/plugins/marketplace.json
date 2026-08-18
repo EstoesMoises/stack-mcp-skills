@@ -6,37 +6,13 @@
   "plugins": [
     {
       "category": "Productivity",
-      "name": "efficient-search",
+      "name": "uncertainty-guardrail",
       "policy": {
         "authentication": "ON_INSTALL",
         "installation": "AVAILABLE"
       },
       "source": {
-        "path": "./plugins/efficient-search",
-        "source": "local"
-      }
-    },
-    {
-      "category": "Productivity",
-      "name": "company-debugging",
-      "policy": {
-        "authentication": "ON_INSTALL",
-        "installation": "AVAILABLE"
-      },
-      "source": {
-        "path": "./plugins/company-debugging",
-        "source": "local"
-      }
-    },
-    {
-      "category": "Productivity",
-      "name": "capture-quality-qa",
-      "policy": {
-        "authentication": "ON_INSTALL",
-        "installation": "AVAILABLE"
-      },
-      "source": {
-        "path": "./plugins/capture-quality-qa",
+        "path": "./plugins/uncertainty-guardrail",
         "source": "local"
       }
     },
@@ -54,18 +30,6 @@
     },
     {
       "category": "Productivity",
-      "name": "find-sme",
-      "policy": {
-        "authentication": "ON_INSTALL",
-        "installation": "AVAILABLE"
-      },
-      "source": {
-        "path": "./plugins/find-sme",
-        "source": "local"
-      }
-    },
-    {
-      "category": "Productivity",
       "name": "incident-to-knowledge",
       "policy": {
         "authentication": "ON_INSTALL",
@@ -78,18 +42,6 @@
     },
     {
       "category": "Productivity",
-      "name": "fill-knowledge-gap",
-      "policy": {
-        "authentication": "ON_INSTALL",
-        "installation": "AVAILABLE"
-      },
-      "source": {
-        "path": "./plugins/fill-knowledge-gap",
-        "source": "local"
-      }
-    },
-    {
-      "category": "Productivity",
       "name": "review-stale-content",
       "policy": {
         "authentication": "ON_INSTALL",
@@ -97,18 +49,6 @@
       },
       "source": {
         "path": "./plugins/review-stale-content",
-        "source": "local"
-      }
-    },
-    {
-      "category": "Productivity",
-      "name": "triage-unanswered",
-      "policy": {
-        "authentication": "ON_INSTALL",
-        "installation": "AVAILABLE"
-      },
-      "source": {
-        "path": "./plugins/triage-unanswered",
         "source": "local"
       }
     }

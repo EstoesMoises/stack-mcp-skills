@@ -26,8 +26,8 @@ _CSP = (
 _DIRECTION_CONTRACT = """<!--
 THESIS: Release Field Manual makes public skill installation read like an auditable technical guide and refuses the generic SaaS grid of interchangeable soft cards.
 OWN-WORLD: Cool paper and navy ink use ruled dividers, squared index tabs, registration blue for action, and amber only for approval-gated write capability.
-STORY: Understand native public installation, scan the nine-skill ledger, open one record, install it for a chosen client, connect MCP separately, and run observable smokes.
-FIRST VIEWPORT: The title and product truth share the opening field with a visible three-plugin core-install ledger; filter controls and the first directory rows begin immediately below.
+STORY: Understand native public installation, scan the initial skill ledger, open one record, install it for a chosen client, connect MCP separately, and run observable smokes.
+FIRST VIEWPORT: The title and product truth share the opening field with a visible core-install ledger; filter controls and the first directory rows begin immediately below.
 FORM: Release Field Manual, grounded candidate 5, seed 6d37fffd.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
 -->"""
@@ -36,11 +36,14 @@ SMOKE_TESTS: tuple[Mapping[str, str], ...] = (
     MappingProxyType(
         {
             "id": "conditional-search",
-            "name": "Conditional search and full retrieval",
-            "prompt": "How should I structure logging in this service?",
+            "name": "Local-first uncertainty resolution",
+            "prompt": (
+                "The repository does not establish whether Guests may export project data. "
+                "Implement the supported permissions without guessing."
+            ),
             "expected": (
-                "Expect search, then full-content retrieval for a promising result, "
-                "with the source title and content ID."
+                "Expect local evidence inspection, then search and full retrieval only for the unresolved "
+                "permission, with supported work separated from knowledge-dependent work."
             ),
         }
     ),
@@ -48,7 +51,7 @@ SMOKE_TESTS: tuple[Mapping[str, str], ...] = (
         {
             "id": "negative-trigger",
             "name": "Generic request makes no internal call",
-            "prompt": "Write a Python function that reverses a string.",
+            "prompt": "Fix the null dereference demonstrated by this complete failing unit test.",
             "expected": "Expect no Stack Internal MCP call.",
         }
     ),
@@ -70,9 +73,12 @@ SMOKE_TESTS: tuple[Mapping[str, str], ...] = (
         {
             "id": "mcp-failure",
             "name": "Honest MCP failure",
-            "prompt": "Disconnect or deny access, then ask an internal-policy question.",
+            "prompt": (
+                "Disconnect or deny access, then ask for a company-specific permission decision "
+                "missing from the repository."
+            ),
             "expected": (
-                "Expect an honest access failure and an offer to continue with clearly labeled general knowledge."
+                "Expect unknown status, no guessed policy, and only the knowledge-dependent change left unchanged."
             ),
         }
     ),
@@ -191,6 +197,9 @@ def _render_index(model: Mapping[str, object]) -> str:
     core_ids = set(model["core_skill_ids"])
     assert isinstance(marketplace, dict) and isinstance(skills, list)
     core = [skill for skill in skills if isinstance(skill, dict) and skill["id"] in core_ids]
+    skill_count = len(skills)
+    core_count = len(core)
+    core_label = "plugin" if core_count == 1 else "plugins"
 
     codex_core = "\n".join(
         [
@@ -259,10 +268,10 @@ def _render_index(model: Mapping[str, object]) -> str:
   <section class="opening-field" aria-labelledby="page-title">
     <div class="opening-copy">
       <h1 id="page-title">Install company-grounded workflows as native skills.</h1>
-      <p class="lede">Nine public Stack Internal skills, packaged individually for Codex, Claude Code, and GitHub Copilot CLI. Browse the source, install through each client’s marketplace, connect MCP separately, and verify behavior locally.</p>
+      <p class="lede">{skill_count} public Stack Internal skills, packaged individually for Codex, Claude Code, and GitHub Copilot CLI. Browse the source, install through each client’s marketplace, connect MCP separately, and verify behavior locally.</p>
       <dl class="truth-ledger">
         <div><dt>Marketplace</dt><dd>{escape(str(marketplace['name']))}</dd></div>
-        <div><dt>Skills</dt><dd>9 public records</dd></div>
+        <div><dt>Skills</dt><dd>{skill_count} public records</dd></div>
         <div><dt>Data path</dt><dd>No backend or tenant data</dd></div>
         <div><dt>Compatibility</dt><dd>Experimental</dd></div>
       </dl>
@@ -270,9 +279,9 @@ def _render_index(model: Mapping[str, object]) -> str:
     <section class="core-ledger" aria-labelledby="core-title">
       <div class="ledger-heading">
         <h2 id="core-title">Core install ledger</h2>
-        <span>3 independent plugins</span>
+        <span>{core_count} independent {core_label}</span>
       </div>
-      <p>Register this public repository as <strong>{escape(str(marketplace['name']))}</strong>, then add the three core skills in your chosen client.</p>
+      <p>Register this public repository as <strong>{escape(str(marketplace['name']))}</strong>, then add the core selection in your chosen client.</p>
       <div class="client-tabs" data-tabs>
         <div role="tablist" aria-label="Core installation client">
           <button type="button" role="tab" id="core-tab-codex" aria-selected="true" aria-controls="core-panel-codex">Codex</button>
@@ -297,10 +306,10 @@ def _render_index(model: Mapping[str, object]) -> str:
     <div class="directory-head">
       <div>
         <h2 id="directory-title">Skill directory</h2>
-        <p><span id="visible-count">9</span> of 9 field records visible</p>
+        <p><span id="visible-count">{skill_count}</span> of {skill_count} field records visible</p>
       </div>
       <label for="skill-search">Search by skill, outcome, or tag</label>
-      <input id="skill-search" type="search" autocomplete="off" placeholder="Try debugging or curation">
+      <input id="skill-search" type="search" autocomplete="off" placeholder="Try uncertainty or onboarding">
     </div>
     <div class="filter-index" aria-label="Filter skill directory">
       <fieldset data-filter-group="tier">

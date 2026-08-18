@@ -2,7 +2,7 @@
 
 - Plugin ID: `incident-to-knowledge`
 - Skill ID: `incident-to-knowledge`
-- Version: `0.2.0`
+- Version: `0.3.0`
 
 Canonical source: https://estoesmoises.github.io/stack-mcp-skills/skills/incident-to-knowledge/
 

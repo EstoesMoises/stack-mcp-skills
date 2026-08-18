@@ -99,7 +99,7 @@ def test_version_command_prints_only_semver(capsys):
     """Version output stays directly usable by release workflows."""
     assert main(["version", "--root", str(ROOT)]) == 0
 
-    assert capsys.readouterr().out == "0.2.0\n"
+    assert capsys.readouterr().out == "0.3.0\n"
 
 
 def test_site_command_sanitizes_a_malformed_catalog_entry(tmp_path, capsys):
@@ -146,12 +146,12 @@ def test_packages_command_rejects_catalog_sources_outside_canonical_skill_tree(
     catalog_path = root / "catalog" / "skills.json"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
     if source_kind == "absolute":
-        external = tmp_path / "external" / "efficient-search"
+        external = tmp_path / "external" / "uncertainty-guardrail"
         shutil.copytree(root / catalog["skills"][0]["path"], external)
         catalog["skills"][0]["path"] = str(external)
         catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
     elif source_kind == "traversal":
-        catalog["skills"][0]["path"] = "skills/core/../core/efficient-search"
+        catalog["skills"][0]["path"] = "skills/core/../core/uncertainty-guardrail"
         catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
     else:
         external = tmp_path / "external-skills"
@@ -369,7 +369,7 @@ def test_check_reports_changed_generated_bytes_and_unexpected_stale_files(tmp_pa
     root = _source_root(tmp_path)
     assert main(["packages", "--mode", "write", "--root", str(root)]) == 0
     capsys.readouterr()
-    readme = root / "plugins/efficient-search/README.md"
+    readme = root / "plugins/uncertainty-guardrail/README.md"
     readme.write_bytes(readme.read_bytes() + b"changed\n")
     stale = root / "plugins/stale/file.txt"
     stale.parent.mkdir(parents=True)
@@ -379,7 +379,7 @@ def test_check_reports_changed_generated_bytes_and_unexpected_stale_files(tmp_pa
 
     output = capsys.readouterr().out
     differences = json.loads(output)["differences"]
-    assert "changed: plugins/efficient-search/README.md" in differences
+    assert "changed: plugins/uncertainty-guardrail/README.md" in differences
     assert "unexpected: plugins/stale/file.txt" in differences
     assert str(root) not in output
 
@@ -387,7 +387,7 @@ def test_check_reports_changed_generated_bytes_and_unexpected_stale_files(tmp_pa
 @pytest.mark.parametrize(
     "relative",
     (
-        "plugins/efficient-search/README.md",
+        "plugins/uncertainty-guardrail/README.md",
         ".agents/plugins/marketplace.json",
         ".claude-plugin/marketplace.json",
         ".github/plugin/marketplace.json",
@@ -481,7 +481,7 @@ def test_write_preflights_manifest_collisions_before_replacing_any_surface(
     root = _source_root(tmp_path)
     assert main(["packages", "--mode", "write", "--root", str(root)]) == 0
     capsys.readouterr()
-    readme = root / "plugins/efficient-search/README.md"
+    readme = root / "plugins/uncertainty-guardrail/README.md"
     readme.write_bytes(readme.read_bytes() + b"preserve this drift\n")
     collision = root / collision_path
     if collision.is_dir():
@@ -510,7 +510,7 @@ def test_write_rolls_back_every_surface_when_any_transaction_rename_fails(
     root = _source_root(tmp_path)
     assert main(["packages", "--mode", "write", "--root", str(root)]) == 0
     capsys.readouterr()
-    (root / "plugins/efficient-search/README.md").write_bytes(b"prior plugin generation\n")
+    (root / "plugins/uncertainty-guardrail/README.md").write_bytes(b"prior plugin generation\n")
     (root / ".agents/plugins/marketplace.json").write_bytes(b'{"prior":"codex"}\n')
     (root / ".claude-plugin/marketplace.json").write_bytes(b'{"prior":"claude"}\n')
     (root / ".github/plugin/marketplace.json").write_bytes(b'{"prior":"copilot"}\n')

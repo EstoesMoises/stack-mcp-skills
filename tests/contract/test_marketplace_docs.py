@@ -8,11 +8,11 @@ ROOT = Path(__file__).parents[2]
 def test_readme_has_native_marketplace_quickstart():
     body = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "codex plugin marketplace add EstoesMoises/stack-mcp-skills" in body
-    assert "codex plugin add efficient-search@stack-internal" in body
+    assert "codex plugin add uncertainty-guardrail@stack-internal" in body
     assert "claude plugin marketplace add EstoesMoises/stack-mcp-skills --scope project" in body
-    assert "claude plugin install efficient-search@stack-internal --scope project" in body
+    assert "claude plugin install uncertainty-guardrail@stack-internal --scope project" in body
     assert "copilot plugin marketplace add EstoesMoises/stack-mcp-skills" in body
-    assert "copilot plugin install efficient-search@stack-internal" in body
+    assert "copilot plugin install uncertainty-guardrail@stack-internal" in body
     assert "/plugin install " not in body
 
 
