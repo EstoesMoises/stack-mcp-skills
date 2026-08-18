@@ -52,16 +52,12 @@ def _css_at_rule(css: str, header: str) -> str:
     raise AssertionError(f"unclosed CSS at-rule: {header}")
 
 
-def test_site_model_has_nine_skills_and_exact_core_selection():
+def test_site_model_has_initial_skills_and_exact_core_selection():
     model = build_site_model(ROOT, SHA)
 
     assert model["source_commit"] == SHA
-    assert len(model["skills"]) == 9
-    assert model["core_skill_ids"] == [
-        "efficient-search",
-        "company-debugging",
-        "capture-quality-qa",
-    ]
+    assert len(model["skills"]) == 4
+    assert model["core_skill_ids"] == ["uncertainty-guardrail"]
 
 
 @pytest.mark.parametrize("sha", ["", "A" * 40, "a" * 39, "a" * 41, "g" * 40])
@@ -163,11 +159,11 @@ def test_index_has_field_manual_controls_core_ledger_and_accessibility(tmp_path)
     assert '<label for="skill-search">' in body
     assert '<input id="skill-search"' in body
     assert all(f'<fieldset data-filter-group="{name}">' in body for name in ("tier", "client", "write"))
-    assert body.count("data-skill-card") == 9
+    assert body.count("data-skill-card") == 4
     assert all(attribute in body for attribute in ("data-tier=", "data-tags=", "data-clients=", "data-write-capable="))
-    assert body.count("codex plugin add ") == 3
-    assert body.count("claude plugin install ") == 3
-    assert body.count("copilot plugin install ") == 3
+    assert body.count("codex plugin add ") == 1
+    assert body.count("claude plugin install ") == 1
+    assert body.count("copilot plugin install ") == 1
     assert "/plugin install " not in body
     assert all(
         command.endswith(" --scope project")
@@ -209,8 +205,8 @@ def test_every_skill_page_has_native_commands_smokes_and_required_sections(tmp_p
             command.endswith(" --scope project")
             for command in re.findall(r"claude plugin install [^<\n]+", body)
         )
-        assert "How should I structure logging in this service?" in body
-        assert "Write a Python function that reverses a string." in body
+        assert "The repository does not establish whether Guests may export project data." in body
+        assert "Fix the null dereference demonstrated by this complete failing unit test." in body
         assert all(f">{heading}</h2>" in body for heading in SECTION_HEADINGS)
         assert DIRECTION_SEED in body
         assert re.search(r"<body[^>]*>\s*<!--\s*THESIS:", body)
@@ -255,7 +251,7 @@ def test_generated_site_has_no_network_or_tenant_data_surfaces(tmp_path):
     assert "XMLHttpRequest" not in all_text
     assert "analytics" not in all_text.lower()
     assert str(ROOT) not in all_text
-    assert all_text.count("[tenant-slug]") == 27
+    assert all_text.count("[tenant-slug]") == 3 * len(_catalog_entries())
     for line in all_text.splitlines():
         if "[tenant-slug]" in line:
             assert "mcp add" in line

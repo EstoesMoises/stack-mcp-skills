@@ -2,7 +2,7 @@
 
 - Plugin ID: `review-stale-content`
 - Skill ID: `review-stale-content`
-- Version: `0.2.0`
+- Version: `0.3.0`
 
 Canonical source: https://estoesmoises.github.io/stack-mcp-skills/skills/review-stale-content/
 

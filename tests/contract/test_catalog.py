@@ -87,13 +87,13 @@ def test_catalog_requires_write_actions_to_be_required_tools(repo_fixture):
     ) in validate_repository(repo_fixture.root)
 
 
-def test_v1_has_three_core_and_six_extended():
+def test_initial_release_has_one_core_and_three_extended():
     root = Path(__file__).parents[2]
     catalog = load_catalog(root / "catalog" / "skills.json")
     tiers = [entry["tier"] for entry in catalog["skills"]]
 
-    assert tiers.count("core") == 3
-    assert tiers.count("extended") == 6
+    assert tiers.count("core") == 1
+    assert tiers.count("extended") == 3
 
 
 def test_all_documented_mcp_tools_are_known():

@@ -6,11 +6,11 @@ Add the public marketplace, install one plugin, and verify that Copilot discover
 
 ```bash
 copilot plugin marketplace add EstoesMoises/stack-mcp-skills
-copilot plugin install efficient-search@stack-internal
+copilot plugin install uncertainty-guardrail@stack-internal
 copilot plugins list --kind plugin --kind skill
 ```
 
-The repository publishes Copilot’s native `.github/plugin/marketplace.json` manifest, and each generated package publishes `.github/plugin/plugin.json` plus its complete `skills/` directory. Invoke the installed skill explicitly as `/efficient-search`, or let Copilot select it automatically when the request matches its description.
+The repository publishes Copilot’s native `.github/plugin/marketplace.json` manifest, and each generated package publishes `.github/plugin/plugin.json` plus its complete `skills/` directory. Invoke the installed skill explicitly as `/uncertainty-guardrail`, or let Copilot select it automatically when the request matches its description.
 
 This native plugin flow targets GitHub Copilot CLI. Use the filesystem installation below for Copilot cloud agent, code review, and IDE agent mode.
 
@@ -26,7 +26,7 @@ Start Copilot CLI and inspect `/mcp list`. If the server reports `needs-auth`, r
 
 ## Filesystem fallback for other Copilot surfaces
 
-For a repository, copy each complete, self-contained skill directory into `.github/skills/<skill-name>/`. For your user scope, copy it into `~/.copilot/skills/<skill-name>/`. In a shared Agent Skills setup, the alternate project path is `.agents/skills/<skill-name>/` and the alternate personal path is `~/.agents/skills/<skill-name>/`; do not treat those two scopes as interchangeable. Preserve each directory’s `SKILL.md`, `evals/`, and referenced local resources; do not copy only the markdown file or flatten the folders. Select any of the nine directories listed in the [common adapter guide](../README.md).
+For a repository, copy each complete, self-contained skill directory into `.github/skills/<skill-name>/`. For your user scope, copy it into `~/.copilot/skills/<skill-name>/`. In a shared Agent Skills setup, the alternate project path is `.agents/skills/<skill-name>/` and the alternate personal path is `~/.agents/skills/<skill-name>/`; do not treat those two scopes as interchangeable. Preserve each directory’s `SKILL.md`, `evals/`, and referenced local resources; do not copy only the markdown file or flatten the folders. Select any directory listed in the [common adapter guide](../README.md).
 
 An automatic selection can use a skill when the request matches its description. Copilot CLI supports explicit `/SKILL-NAME` invocation; do not assume the same slash command exists in every Copilot surface. Follow the current [GitHub Copilot Agent Skills documentation](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills) for discovery behavior and the current MCP setup for the surface you use. Do not substitute another customer’s slug or paste an unverified client-specific JSON shape.
 
@@ -36,11 +36,11 @@ Adapter compatibility: experimental until Task 13 records tenant-backed results.
 
 ### Smoke test 1 — Conditional search
 
-Ask: “How should I structure logging in this service?” Expect `search`, then full-content retrieval for a promising result, with title and ID.
+Ask: “The repository does not establish whether Guests may export project data. Implement the supported permissions without guessing.” Expect local evidence inspection, then `search` and full retrieval only for the unresolved permission, with the supported work separated from the knowledge-dependent work.
 
 ### Smoke test 2 — Negative trigger
 
-Ask: “Write a Python function that reverses a string.” Expect no Stack Internal MCP call.
+Ask: “Fix the null dereference demonstrated by this complete failing unit test.” Expect no Stack Internal MCP call.
 
 ### Smoke test 3 — Write approval
 
@@ -48,4 +48,4 @@ Use a verified non-sensitive resolution in a deterministic multi-turn test. Ask 
 
 ### Smoke test 4 — MCP failure
 
-Disconnect or deny access, then ask an internal-policy question. Expect an honest access failure and an offer to continue with clearly labeled general knowledge.
+Disconnect or deny access, then ask for a company-specific permission decision missing from the repository. Expect `unknown`, no guessed policy, and only the knowledge-dependent change left unchanged.

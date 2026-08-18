@@ -72,7 +72,7 @@ def test_marketplace_manifests_include_native_client_metadata_in_catalog_order()
     assert copilot["owner"] == {"name": "Stack Internal Skills"}
     assert copilot["metadata"] == {
         "description": "Public Stack Internal Agent Skills for company-grounded coding workflows.",
-        "version": "0.2.0",
+        "version": "0.3.0",
     }
     assert copilot["plugins"][0] == {
         **claude["plugins"][0],
@@ -92,11 +92,11 @@ def test_marketplace_manifests_include_native_client_metadata_in_catalog_order()
             lambda entries: entries[0].__setitem__("path", "skills/core/different-id"),
             "skill ID must match path",
         ),
-        (lambda entries: entries[0].__setitem__("tier", "extended"), "three core and six extended"),
+        (lambda entries: entries[0].__setitem__("tier", "invalid"), "skill tier is invalid"),
     ],
 )
-def test_distribution_rejects_invalid_fixed_catalog_shape(tmp_path, mutation, message):
-    """Invalid IDs, paths, or tier counts must fail before an output tree is created."""
+def test_distribution_rejects_invalid_catalog_shape(tmp_path, mutation, message):
+    """Invalid IDs, paths, or tiers must fail before an output tree is created."""
     catalog = load_catalog(ROOT / "catalog/skills.json")
     mutation(catalog["skills"])
     root = tmp_path / "root"

@@ -1,7 +1,7 @@
 {
   "metadata": {
     "description": "Public Stack Internal Agent Skills for company-grounded coding workflows.",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "name": "stack-internal",
   "owner": {
@@ -13,54 +13,18 @@
         "name": "Stack Internal Skills"
       },
       "category": "Productivity",
-      "description": "Find company-specific guidance with focused, bounded, evidence-backed retrieval.",
-      "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/efficient-search/",
+      "description": "Prevent unsupported company-specific assumptions from becoming code or operational decisions while unrelated safe work continues.",
+      "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/uncertainty-guardrail/",
       "keywords": [
-        "search",
+        "uncertainty",
         "grounding",
         "company-knowledge"
       ],
       "license": "Apache-2.0",
-      "name": "efficient-search",
+      "name": "uncertainty-guardrail",
       "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
-      "source": "./plugins/efficient-search",
-      "version": "0.2.0"
-    },
-    {
-      "author": {
-        "name": "Stack Internal Skills"
-      },
-      "category": "Productivity",
-      "description": "Diagnose company-specific failures with internal evidence and systematic root-cause investigation.",
-      "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/company-debugging/",
-      "keywords": [
-        "debugging",
-        "grounding",
-        "company-knowledge"
-      ],
-      "license": "Apache-2.0",
-      "name": "company-debugging",
-      "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
-      "source": "./plugins/company-debugging",
-      "version": "0.2.0"
-    },
-    {
-      "author": {
-        "name": "Stack Internal Skills"
-      },
-      "category": "Productivity",
-      "description": "Turn validated technical learnings into sanitized, duplicate-aware Stack Internal Q&A drafts with exact approval before writes.",
-      "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/capture-quality-qa/",
-      "keywords": [
-        "knowledge-capture",
-        "qa",
-        "curation"
-      ],
-      "license": "Apache-2.0",
-      "name": "capture-quality-qa",
-      "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
-      "source": "./plugins/capture-quality-qa",
-      "version": "0.2.0"
+      "source": "./plugins/uncertainty-guardrail",
+      "version": "0.1.0"
     },
     {
       "author": {
@@ -85,24 +49,6 @@
         "name": "Stack Internal Skills"
       },
       "category": "Productivity",
-      "description": "Find internal subject-matter experts through read-only topic discovery and exact existing-tag resolution.",
-      "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/find-sme/",
-      "keywords": [
-        "sme",
-        "experts",
-        "escalation"
-      ],
-      "license": "Apache-2.0",
-      "name": "find-sme",
-      "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
-      "source": "./plugins/find-sme",
-      "version": "0.2.0"
-    },
-    {
-      "author": {
-        "name": "Stack Internal Skills"
-      },
-      "category": "Productivity",
       "description": "Turn verified internal incidents into sourced, approval-gated articles or Q&A with objective incident records.",
       "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/incident-to-knowledge/",
       "keywords": [
@@ -114,25 +60,7 @@
       "name": "incident-to-knowledge",
       "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
       "source": "./plugins/incident-to-knowledge",
-      "version": "0.2.0"
-    },
-    {
-      "author": {
-        "name": "Stack Internal Skills"
-      },
-      "category": "Productivity",
-      "description": "Turn an exhausted, fully retrieved internal search into an approval-gated, answer-neutral question draft.",
-      "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/fill-knowledge-gap/",
-      "keywords": [
-        "knowledge-gap",
-        "questions",
-        "knowledge-capture"
-      ],
-      "license": "Apache-2.0",
-      "name": "fill-knowledge-gap",
-      "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
-      "source": "./plugins/fill-knowledge-gap",
-      "version": "0.2.0"
+      "version": "0.3.0"
     },
     {
       "author": {
@@ -150,25 +78,7 @@
       "name": "review-stale-content",
       "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
       "source": "./plugins/review-stale-content",
-      "version": "0.2.0"
-    },
-    {
-      "author": {
-        "name": "Stack Internal Skills"
-      },
-      "category": "Productivity",
-      "description": "Prioritize questions without accepted answers and prepare only fully retrieved, evidence-based answer or vote actions for approval.",
-      "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/triage-unanswered/",
-      "keywords": [
-        "curation",
-        "unanswered",
-        "answers"
-      ],
-      "license": "Apache-2.0",
-      "name": "triage-unanswered",
-      "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
-      "source": "./plugins/triage-unanswered",
-      "version": "0.2.0"
+      "version": "0.3.0"
     }
   ]
 }

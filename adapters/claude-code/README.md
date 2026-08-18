@@ -11,14 +11,14 @@ claude plugin marketplace add EstoesMoises/stack-mcp-skills --scope project
 Install the selected plugin explicitly at project scope, then reload its plugin discovery:
 
 ```bash
-claude plugin install efficient-search@stack-internal --scope project
+claude plugin install uncertainty-guardrail@stack-internal --scope project
 ```
 
 ```text
 /reload-plugins
 ```
 
-Invoke the installed skill explicitly as `/efficient-search:efficient-search`. Claude Code also discovers installed skills automatically when a request matches their descriptions.
+Invoke the installed skill explicitly as `/uncertainty-guardrail:uncertainty-guardrail`. Claude Code also discovers installed skills automatically when a request matches their descriptions.
 
 ## Connect Stack Internal MCP
 
@@ -42,11 +42,11 @@ Adapter compatibility: experimental until Task 13 records tenant-backed results.
 
 ### Smoke test 1 — Conditional search
 
-Ask: “How should I structure logging in this service?” Expect `search`, then full-content retrieval for a promising result, with title and ID.
+Ask: “The repository does not establish whether Guests may export project data. Implement the supported permissions without guessing.” Expect local evidence inspection, then `search` and full retrieval only for the unresolved permission, with the supported work separated from the knowledge-dependent work.
 
 ### Smoke test 2 — Negative trigger
 
-Ask: “Write a Python function that reverses a string.” Expect no Stack Internal MCP call.
+Ask: “Fix the null dereference demonstrated by this complete failing unit test.” Expect no Stack Internal MCP call.
 
 ### Smoke test 3 — Write approval
 
@@ -54,10 +54,10 @@ Use a verified non-sensitive resolution in a deterministic multi-turn test. Ask 
 
 ### Smoke test 4 — MCP failure
 
-Disconnect or deny access, then ask an internal-policy question. Expect an honest access failure and an offer to continue with clearly labeled general knowledge.
+Disconnect or deny access, then ask for a company-specific permission decision missing from the repository. Expect `unknown`, no guessed policy, and only the knowledge-dependent change left unchanged.
 
 ## Filesystem fallback
 
-For a repository, copy each complete, self-contained skill directory into `.claude/skills/<skill-name>/`. For your user scope, copy it into `~/.claude/skills/<skill-name>/`. Preserve each directory’s `SKILL.md`, `evals/`, and referenced local resources; do not copy only the markdown file or flatten the folders. Select any of the nine directories listed in the [common adapter guide](../README.md).
+For a repository, copy each complete, self-contained skill directory into `.claude/skills/<skill-name>/`. For your user scope, copy it into `~/.claude/skills/<skill-name>/`. Preserve each directory’s `SKILL.md`, `evals/`, and referenced local resources; do not copy only the markdown file or flatten the folders. Select any directory listed in the [common adapter guide](../README.md).
 
 Claude Code discovers filesystem skills automatically when a request matches their descriptions. Invoke a selected skill directly with `/skill-name`. This guide targets Claude Code filesystem skills only: it deliberately includes no Claude API skill-upload procedure.

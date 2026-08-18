@@ -1,0 +1,18 @@
+{
+  "author": {
+    "name": "Stack Internal Skills"
+  },
+  "category": "Productivity",
+  "description": "Prevent unsupported company-specific assumptions from becoming code or operational decisions while unrelated safe work continues.",
+  "homepage": "https://estoesmoises.github.io/stack-mcp-skills/skills/uncertainty-guardrail/",
+  "keywords": [
+    "uncertainty",
+    "grounding",
+    "company-knowledge"
+  ],
+  "license": "Apache-2.0",
+  "name": "uncertainty-guardrail",
+  "repository": "https://github.com/EstoesMoises/stack-mcp-skills",
+  "skills": "./skills/",
+  "version": "0.1.0"
+}

@@ -9,11 +9,8 @@ from stack_skill_catalog.validation import validate_repository
 
 ROOT = Path(__file__).parents[2]
 WRITE_SKILLS = (
-    "skills/core/capture-quality-qa",
     "skills/extended/incident-to-knowledge",
-    "skills/extended/fill-knowledge-gap",
     "skills/extended/review-stale-content",
-    "skills/extended/triage-unanswered",
 )
 ALL_WRITES = {
     "draft_question", "create_question", "create_QA", "create_article",
@@ -54,6 +51,9 @@ def test_all_write_skills_define_response_lost_reconciliation_and_fresh_approval
         args = action["args"]
         for name, value in args.items():
             property_schema = input_schema["properties"][name]
+            if "enum" in property_schema:
+                assert value in property_schema["enum"]
+                continue
             expected_type = property_schema["type"]
             assert (
                 expected_type == "string" and isinstance(value, str)
@@ -64,10 +64,13 @@ def test_all_write_skills_define_response_lost_reconciliation_and_fresh_approval
             if expected_type == "array":
                 assert property_schema["items"] == {"type": "string"}
                 assert all(isinstance(item, str) for item in value)
-        if action["tool"] == "create_QA":
-            assert args == {name: payload[name] for name in ("title", "question", "answer", "tags")}
-        elif action["tool"] == "create_article":
-            assert args == {name: payload[name] for name in ("title", "body", "tags")}
+        if action["tool"] == "create_article":
+            assert args == {
+                "articleType": payload["article_type"],
+                "title": payload["title"],
+                "body": payload["body"],
+                "tags": payload["tags"],
+            }
         elif action["tool"] == "create_question":
             assert args == {
                 "title": payload["title"], "body": payload["question"],
@@ -128,46 +131,10 @@ def test_all_write_skills_define_response_lost_reconciliation_and_fresh_approval
 def test_every_preapproval_eval_forbids_complete_catalog_write_set():
     catalog = json.loads((ROOT / "catalog/skills.json").read_text(encoding="utf-8"))
     declared = {action for entry in catalog["skills"] for action in entry["write_actions"]}
-    assert declared == ALL_WRITES
+    assert declared == {"create_QA", "create_article", "update_question", "update_answer"}
     for skill in WRITE_SKILLS:
         for case in _cases(skill):
-            assert set(case["forbidden_actions"]) == declared
-
-
-def test_efficient_search_resolves_answer_parent_or_reports_limitation():
-    cases = {case["id"]: case for case in _cases("skills/core/efficient-search")}
-    success = cases["answer-hit-resolves-parent-question"]
-    missing = cases["answer-hit-without-parent-question-id"]
-
-    assert success["simulated_mcp"]["search"][0]["results"][0]["type"] == "answer"
-    assert success["simulated_mcp"]["search"][0]["results"][0]["question_id"] == 441
-    assert success["expected_tool_sequence"] == ["search", "get_question:441"]
-    assert missing["expected_tool_sequence"] == ["search"]
-    assert "do not guess" in missing["expected"].lower()
-    body = (ROOT / "skills/core/efficient-search/SKILL.md").read_text(encoding="utf-8").lower()
-    assert "question, answer, or article" in body
-    assert "parent question id" in body
-
-
-def test_capture_qa_uses_multi_id_schema_and_redacts_vote_answer_text():
-    cases = {case["id"]: case for case in _cases("skills/core/capture-quality-qa")}
-    update = cases["duplicate-proposes-existing-answer-update"]
-    assert update["expected_local_payload"]["target"] == {
-        "question_id": 241, "answer_id": 1241
-    }
-    assert update["expected_local_payload"]["intended_action"]["args"] == {
-        "questionId": 241,
-        "answerId": 1241,
-        "newBodyContent": update["expected_local_payload"]["answer"],
-    }
-    for case_id in ("preapproval-upvote", "preapproval-downvote", "sensitive-answer-vote-is-redacted"):
-        case = cases[case_id]
-        payload = case["expected_local_payload"]
-        assert set(payload["intended_action"]["args"]) == {"questionId", "answerId", "isUpvote", "action"}
-        raw_answers = [answer["body"] for answer in case["simulated_mcp"]["get_question"]["answers"]]
-        rendered = json.dumps(payload)
-        assert all(raw not in rendered for raw in raw_answers)
-        assert "answer" not in payload
+            assert set(case["forbidden_actions"]) == ALL_WRITES
 
 
 def test_article_feedback_is_explicitly_incomplete_when_response_omits_comments():
@@ -177,16 +144,6 @@ def test_article_feedback_is_explicitly_incomplete_when_response_omits_comments(
     assert case["article_feedback_review"] == "incomplete-comments-unavailable"
     assert "get_comments" not in " ".join(case["expected_tool_sequence"])
     assert "incomplete" in case["expected"].lower()
-
-
-def test_sme_tag_lookup_uses_supported_no_filter_shape_then_filters_locally():
-    for case in _cases("skills/extended/find-sme"):
-        assert case["simulated_tool_schemas"]["get_existing_tags"]["required"] == []
-        assert "get_existing_tags" in case["expected_tool_sequence"][1]
-        assert case["local_tag_filter"]
-    body = (ROOT / "skills/extended/find-sme/SKILL.md").read_text(encoding="utf-8").lower()
-    assert "call it with no filter arguments" in body
-    assert "filter the returned tags locally" in body
 
 
 def test_release_docs_do_not_record_tenant_identifiers():

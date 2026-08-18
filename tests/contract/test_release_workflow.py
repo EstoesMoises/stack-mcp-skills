@@ -120,7 +120,7 @@ def test_release_checklist_covers_exact_pages_and_native_marketplace_review():
     body = (ROOT / "docs/release-checklist.md").read_text(encoding="utf-8")
 
     assert re.search(
-        r"https://estoesmoises\.github\.io/stack-mcp-skills/.*exact source commit.*exactly nine plugin entries",
+        r"https://estoesmoises\.github\.io/stack-mcp-skills/.*exact source commit.*exactly four plugin entries",
         body,
         flags=re.IGNORECASE | re.DOTALL,
     )

@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 
-EXPECTED_SKILLS = {"efficient-search", "company-debugging", "capture-quality-qa", "onboarding", "find-sme", "incident-to-knowledge", "fill-knowledge-gap", "review-stale-content", "triage-unanswered"}
+EXPECTED_SKILLS = {"uncertainty-guardrail", "onboarding", "incident-to-knowledge", "review-stale-content"}
 
 
 @pytest.fixture

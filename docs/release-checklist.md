@@ -63,18 +63,18 @@ Record the commit SHA, reviewer, review date, changed skills and adapters, pass/
 
 ## Native marketplace manual gates
 
-- [ ] In a clean project using the exact Codex version recorded in [the marketplace testing matrix](marketplace-testing.md), test the Codex native flow: marketplace add, plugin list, individual install, three-plugin core install, explicit invocation, update, disablement, and removal.
-- [ ] In a clean project using the exact Claude Code version recorded in [the marketplace testing matrix](marketplace-testing.md), test the Claude Code native flow: marketplace add, plugin list, individual install, three-plugin core install, explicit invocation, update, disablement, and removal.
-- [ ] In a clean project using the exact GitHub Copilot CLI version recorded in [the marketplace testing matrix](marketplace-testing.md), test the Copilot native flow: marketplace add, plugin list, individual install, three-plugin core install, explicit invocation, update, disablement, and removal.
-- [ ] Record the observed scope behavior separately for Codex, Claude Code, and GitHub Copilot CLI. Codex command-driven marketplace registration is client-managed; do not claim a Codex project-scope flag. Claude marketplace add and install use `--scope project`. Copilot CLI’s marketplace plugin flow is client-managed; do not claim it installs a repository-scoped plugin.
-- [ ] Navigate the public GitHub Pages URL `https://estoesmoises.github.io/stack-mcp-skills/`; confirm it presents the exact source commit deployed by Pages, lists exactly nine plugin entries, and its install instructions and linked skill pages resolve.
+- [ ] In a clean project using the exact Codex version recorded in [the marketplace testing matrix](marketplace-testing.md), test the Codex native flow: marketplace add, plugin list, individual install, core selection install, explicit invocation, update, disablement, and removal.
+- [ ] In a clean project using the exact Claude Code version recorded in [the marketplace testing matrix](marketplace-testing.md), test the Claude Code native flow: marketplace add, plugin list, individual install, core selection install, explicit invocation, update, disablement, and removal.
+- [ ] In a clean project using the exact GitHub Copilot CLI version recorded in [the marketplace testing matrix](marketplace-testing.md), test the Copilot native flow: marketplace add, plugin list, individual install, core selection install, explicit invocation, update, disablement, and removal.
+- [ ] Record the observed scope behavior separately for Codex, Claude Code, and GitHub Copilot CLI. Codex command-driven marketplace registration is client-managed; do not claim a Codex project-scope flag. Claude marketplace add and install use `--scope project`. Copilot CLI's marketplace plugin flow is client-managed; do not claim it installs a repository-scoped plugin.
+- [ ] Navigate the public GitHub Pages URL `https://estoesmoises.github.io/stack-mcp-skills/`; confirm it presents the exact source commit deployed by Pages, lists exactly four plugin entries, and its install instructions and linked skill pages resolve.
 - [ ] Run all four tenant-backed smokes for the exact Codex, Claude Code, and GitHub Copilot CLI client, plugin, and skill versions; record only redacted results under the fixed tenant purpose `non-production skill validation`.
 
 Exact client versions and pass/fail results are manual evidence fields. Do not record raw tenant data, tenant identifiers, slugs, credentials, tokens, personal data, customer data, or raw retrieved content.
 
-## Task 8 pre-evidence rehearsal status — 2026-08-04
+## Superseded nine-skill rehearsal — 2026-08-04
 
-The exercised pre-evidence rehearsal candidate was `46c91c8200b78abbbde83b39f80e42c8f91b7da0` (marketplace version `0.1.0`), not a tenant-evidence candidate. `claude plugin validate .` and all nine generated plugin directories passed with Claude Code `2.1.220`; Codex `0.142.5` completed the local isolated-profile add/list/install/remove rehearsal for `efficient-search@stack-internal` version `0.1.0`. This verifies only local structural/native validation and the limited isolated Codex lifecycle.
+The exercised pre-evidence rehearsal candidate was `46c91c8200b78abbbde83b39f80e42c8f91b7da0` (marketplace version `0.1.0`), not a tenant-evidence candidate. `claude plugin validate .` and all nine then-generated plugin directories passed with Claude Code `2.1.220`; Codex `0.142.5` completed the local isolated-profile add/list/install/remove rehearsal for the former `efficient-search@stack-internal` plugin. This historical result predates the four-skill initial-release cut and is not evidence for the current catalog.
 
 The corresponding Claude project-scoped local add was blocked before configuration when the client attempted to open its personal known-marketplace cache and received `EPERM`. No personal client state was changed, and no global or user scope was used. The Codex and Claude public GitHub-source rehearsals are pending because this candidate has not been published to public `main`. No tenant was authorized; no tenant data was accessed, no smoke artifacts were created, and `compatibility/evidence.json` remains empty.
 
@@ -82,9 +82,9 @@ GitHub Copilot CLI native manifests and install guidance were added after this r
 
 ### Outstanding publication and evidence gates
 
-- [ ] Publish the exact candidate to public `main`, then run the public GitHub-source add/list/install rehearsal for both native clients. Do not substitute the local rehearsal for this gate.
-- [ ] Deploy and inspect the public Pages catalog at `https://estoesmoises.github.io/stack-mcp-skills/`; confirm its displayed source commit, nine plugin entries, installation instructions, and linked skill pages.
-- [ ] In a clean authorized Codex profile, complete the remaining native lifecycle checks: the three independent core installs, explicit invocation, marketplace refresh/update, and any supported disable/remove behavior. Codex registration is client-managed; do not claim a project-scope flag.
+- [ ] Publish the exact candidate to public `main`, then run the public GitHub-source add/list/install rehearsal for all three native clients. Do not substitute the local rehearsal for this gate.
+- [ ] Deploy and inspect the public Pages catalog at `https://estoesmoises.github.io/stack-mcp-skills/`; confirm its displayed source commit, four plugin entries, installation instructions, and linked skill pages.
+- [ ] In a clean authorized Codex profile, complete the current native lifecycle checks: install the core `uncertainty-guardrail`, explicitly invoke it, exercise marketplace refresh/update, and verify any supported disable/remove behavior. Codex registration is client-managed; do not claim a project-scope flag.
 - [ ] In a clean Claude Code environment that does not touch personal state, complete the project-scoped marketplace add/list/install/update/disable/remove checks. Resolve the blocked personal-cache behavior before treating that lifecycle as exercised.
 - [ ] In a clean GitHub Copilot CLI environment, complete the public marketplace add/list/install/update/disable/remove checks, explicit `/skill-name` invocation, and separate Stack Internal MCP OAuth flow.
 - [ ] With an authorized non-production tenant and the fixed purpose `non-production skill validation`, run all four redacted smokes for each required adapter/client and exact plugin/skill versions.

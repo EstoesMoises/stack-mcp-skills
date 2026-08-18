@@ -2,6 +2,8 @@
 
 Each contribution should solve one coherent user goal with one independently installable Agent Skill. New skills enter the extended tier by default; propose the core tier only for a broadly required foundation used by multiple workflows.
 
+Before proposing a skill, compare its intended behavior with the connected MCP tool descriptions. Do not add a plugin whose primary behavior is selecting one dedicated tool, restating that tool's inputs, or repeating the MCP's shared retrieval and creation rules. A catalog skill must add reusable judgment, evidence transformation, or multi-step composition; use the [initial release assessment](docs/initial-release-skill-assessment.md) as the baseline.
+
 ## Canonical sources and generated marketplace surfaces
 
 Edit `catalog/skills.json`, `catalog/marketplace.json`, and the canonical `skills/` directories. Do not edit `plugins/` directly: plugin wrappers and the native manifests `.agents/plugins/marketplace.json`, `.claude-plugin/marketplace.json`, and `.github/plugin/marketplace.json` are generated.
@@ -63,6 +65,7 @@ Add `evals/evals.json` and `evals/trigger-evals.json` beside the skill:
 ## Pull request checklist
 
 - [ ] The skill addresses one coherent user goal and does not duplicate an existing workflow.
+- [ ] The skill adds behavior beyond the connected MCP tool definition rather than wrapping a dedicated tool.
 - [ ] Frontmatter, local resources, catalog metadata, tool declarations, and write declarations satisfy the contract above.
 - [ ] Trigger behavior stays narrow enough that generic work does not search Stack Internal automatically.
 - [ ] Every write uses exact live-schema arguments and unchanged-payload approval; no draft, create, answer, update, or vote happens before approval.
